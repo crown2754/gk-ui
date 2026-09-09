@@ -16,7 +16,8 @@
   "sideEffects": [
     "./dist/index.js",
     "./src/index.ts",
-    "./src/button/gk-button.ts"
+    "./src/button/gk-button.ts",
+    "./src/button/gk-button-group.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",

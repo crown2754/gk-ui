@@ -290,4 +290,34 @@ export const buttonStyles = css`
       transform: rotate(360deg);
     }
   }
+
+  :host-context(gk-button-group) {
+    display: inline-flex;
+  }
+
+  :host-context(gk-button-group) [part="base"] {
+    border-radius: 0;
+    transform: none;
+    box-shadow: none;
+  }
+
+  :host-context(gk-button-group) [part="base"]:hover,
+  :host-context(gk-button-group) [part="base"]:active {
+    transform: none;
+    box-shadow: none;
+  }
+
+  :host-context(gk-button-group):first-child [part="base"] {
+    border-start-start-radius: var(--gk-radius-sm, 0.375rem);
+    border-end-start-radius: var(--gk-radius-sm, 0.375rem);
+  }
+
+  :host-context(gk-button-group):last-child [part="base"] {
+    border-start-end-radius: var(--gk-radius-sm, 0.375rem);
+    border-end-end-radius: var(--gk-radius-sm, 0.375rem);
+  }
+
+  :host-context(gk-button-group):not(:first-child) [part="base"] {
+    border-inline-start: 1px solid var(--gk-color-border, rgb(224, 224, 230));
+  }
 `;
