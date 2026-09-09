@@ -24,6 +24,7 @@ const sharedVite = {
 export default defineConfig({
   title: "gk-ui",
   description: "Brand-forward Web Components for Vue and Alpine",
+  base: "/gk-ui/",
   lastUpdated: true,
   locales: {
     root: {
