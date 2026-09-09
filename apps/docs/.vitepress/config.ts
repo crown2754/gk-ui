@@ -48,7 +48,10 @@ export default defineConfig({
           },
           {
             text: "Components",
-            items: [{ text: "Button", link: "/components/button" }],
+            items: [
+              { text: "Button", link: "/components/button" },
+              { text: "Avatar", link: "/components/avatar" },
+            ],
           },
         ],
         outline: { label: "On this page" },
@@ -83,7 +86,10 @@ export default defineConfig({
           },
           {
             text: "元件",
-            items: [{ text: "Button 按鈕", link: "/zh-TW/components/button" }],
+            items: [
+              { text: "Button 按鈕", link: "/zh-TW/components/button" },
+              { text: "Avatar 頭像", link: "/zh-TW/components/avatar" },
+            ],
           },
         ],
         outline: { label: "本頁目錄" },
