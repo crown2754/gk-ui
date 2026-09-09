@@ -33,4 +33,18 @@ describe("gk-button", () => {
     el.click();
     expect(spy).toHaveBeenCalledTimes(1);
   });
+
+  it("reflects size attribute", async () => {
+    const el = await fixture<GkButton>(html`<gk-button size="lg">Go</gk-button>`);
+    expect(el.size).toBe("lg");
+    expect(el.getAttribute("size")).toBe("lg");
+  });
+
+  it("renders an anchor when href is set", async () => {
+    const el = await fixture<GkButton>(html`<gk-button href="/docs">Docs</gk-button>`);
+    await el.updateComplete;
+    const anchor = el.shadowRoot?.querySelector("a[part='base']");
+    expect(anchor).toBeTruthy();
+    expect(anchor?.getAttribute("href")).toBe("/docs");
+  });
 });

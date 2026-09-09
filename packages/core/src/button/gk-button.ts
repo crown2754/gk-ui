@@ -45,6 +45,13 @@ export class GkButton extends LitElement {
     }
   };
 
+  private renderContent() {
+    return html`
+      ${this.loading ? html`<span part="spinner" aria-hidden="true"></span>` : null}
+      <span part="label"><slot></slot></span>
+    `;
+  }
+
   render() {
     const inactive = this.disabled || this.loading;
     if (this.href) {
@@ -55,13 +62,18 @@ export class GkButton extends LitElement {
           aria-disabled=${inactive ? "true" : "false"}
           tabindex=${inactive ? -1 : 0}
         >
-          <slot></slot>
+          ${this.renderContent()}
         </a>
       `;
     }
     return html`
-      <button part="base" type=${this.type} ?disabled=${inactive} aria-busy=${this.loading ? "true" : "false"}>
-        <slot></slot>
+      <button
+        part="base"
+        type=${this.type}
+        ?disabled=${inactive}
+        aria-busy=${this.loading ? "true" : "false"}
+      >
+        ${this.renderContent()}
       </button>
     `;
   }
