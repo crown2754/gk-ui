@@ -32,6 +32,15 @@ export class GkButton extends LitElement {
   @property({ type: Boolean, reflect: true })
   loading = false;
 
+  @property({ type: Boolean, reflect: true })
+  secondary = false;
+
+  @property({ type: Boolean, reflect: true })
+  dashed = false;
+
+  @property({ type: Boolean, reflect: true })
+  text = false;
+
   @property({ reflect: true })
   href?: string;
 

@@ -47,4 +47,26 @@ describe("gk-button", () => {
     expect(anchor).toBeTruthy();
     expect(anchor?.getAttribute("href")).toBe("/docs");
   });
+
+  it("reflects secondary, dashed, and text attributes", async () => {
+    const el = await fixture<GkButton>(
+      html`<gk-button secondary dashed text>Go</gk-button>`,
+    );
+    expect(el.secondary).toBe(true);
+    expect(el.dashed).toBe(true);
+    expect(el.text).toBe(true);
+    expect(el.hasAttribute("secondary")).toBe(true);
+    expect(el.hasAttribute("dashed")).toBe(true);
+    expect(el.hasAttribute("text")).toBe(true);
+  });
+
+  it("keeps text attribute when dashed and secondary are also set (precedence via attrs)", async () => {
+    const el = await fixture<GkButton>(
+      html`<gk-button variant="info" secondary dashed text>Go</gk-button>`,
+    );
+    // CSS precedence is text > dashed > secondary; attrs all present for styling hooks
+    expect(el.hasAttribute("text")).toBe(true);
+    expect(el.hasAttribute("dashed")).toBe(true);
+    expect(el.hasAttribute("secondary")).toBe(true);
+  });
 });
