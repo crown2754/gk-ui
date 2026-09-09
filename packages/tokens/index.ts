@@ -2,6 +2,11 @@
 export const tokens = {
   colorBrand: "--gk-color-brand",
   colorBrandHover: "--gk-color-brand-hover",
+  colorBrandPressed: "--gk-color-brand-pressed",
+  colorBrandOn: "--gk-color-brand-on",
+  colorInfo: "--gk-color-info",
+  colorSuccess: "--gk-color-success",
+  colorWarning: "--gk-color-warning",
   colorAccent: "--gk-color-accent",
   colorDanger: "--gk-color-danger",
   colorText: "--gk-color-text",

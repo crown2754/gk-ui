@@ -1,0 +1,55 @@
+:root {
+  --vp-c-brand-1: rgb(242, 206, 94);
+  --vp-c-brand-2: rgb(246, 217, 122);
+  --vp-c-brand-3: rgb(201, 168, 58);
+  --vp-c-brand-soft: rgba(242, 206, 94, 0.18);
+}
+
+.dark {
+  --vp-c-brand-1: rgb(246, 217, 122);
+  --vp-c-brand-2: rgb(242, 206, 94);
+  --vp-c-brand-3: rgb(201, 168, 58);
+  --vp-c-brand-soft: rgba(242, 206, 94, 0.22);
+}
+
+.VPDoc h1 {
+  margin-bottom: 0.35rem;
+}
+
+.VPDoc h1 + p {
+  margin-top: 0;
+  color: var(--gk-color-text-muted, rgb(118, 124, 130));
+}
+
+.dark .VPDoc h1 + p {
+  color: var(--vp-c-text-2);
+}
+
+/* Demo card: gray surface in dark mode (page bg stays VitePress default dark) */
+.dark .gk-demo-card {
+  --gk-color-border: #3e3e46;
+  --gk-color-divider: #3a3a42;
+  --gk-color-surface-elevated: #2a2a30;
+  --gk-color-text: rgba(255, 255, 245, 0.92);
+  --gk-color-text-muted: rgba(235, 235, 245, 0.6);
+  --gk-color-code-bg: #3a3a42;
+  --gk-playground-control-bg: #3a3a42;
+  --gk-playground-control-fg: rgba(255, 255, 245, 0.92);
+  --gk-playground-color-scheme: dark;
+  background: #2a2a30;
+  border-color: #3e3e46;
+}
+
+.dark .gk-demo-card__title {
+  color: rgba(255, 255, 245, 0.92);
+}
+
+.dark .gk-demo-card__desc {
+  color: rgba(235, 235, 245, 0.6);
+}
+
+.dark .gk-demo-card__desc :deep(code),
+.dark .gk-demo-card__desc code {
+  background: #3a3a42;
+  color: rgba(255, 255, 245, 0.86);
+}

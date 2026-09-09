@@ -1,17 +1,33 @@
 :root {
-  /* Color */
-  --gk-color-brand: #0f6e56;
-  --gk-color-brand-hover: #0b5a46;
-  --gk-color-accent: #e85d4c;
-  --gk-color-accent-hover: #d14a3a;
-  --gk-color-danger: #b42318;
-  --gk-color-danger-hover: #912018;
-  --gk-color-surface: #f7f4ef;
+  /* Color — primary brand yellow; semantic colors keep Naive-like roles */
+  --gk-color-brand: rgb(242, 206, 94);
+  --gk-color-brand-hover: rgb(246, 217, 122);
+  --gk-color-brand-pressed: rgb(201, 168, 58);
+  --gk-color-brand-on: rgb(31, 34, 37);
+  --gk-color-info: #2080f0;
+  --gk-color-info-hover: #4098fc;
+  --gk-color-info-pressed: #1060c9;
+  --gk-color-success: #18a058;
+  --gk-color-success-hover: #36ad6a;
+  --gk-color-success-pressed: #0c7a43;
+  --gk-color-warning: #f0a020;
+  --gk-color-warning-hover: #fcb040;
+  --gk-color-warning-pressed: #c97c10;
+  --gk-color-danger: #d03050;
+  --gk-color-danger-hover: #de576d;
+  --gk-color-danger-pressed: #ab1f3f;
+  --gk-color-accent: rgb(242, 206, 94);
+  --gk-color-accent-hover: rgb(246, 217, 122);
+  --gk-color-surface: #ffffff;
   --gk-color-surface-elevated: #ffffff;
-  --gk-color-text: #1c1917;
-  --gk-color-text-muted: #57534e;
-  --gk-color-border: #d6d3d1;
-  --gk-color-focus-ring: #0f6e56;
+  --gk-color-button-default: rgba(46, 51, 56, 0.05);
+  --gk-color-button-default-hover: rgba(46, 51, 56, 0.09);
+  --gk-color-text: rgb(31, 34, 37);
+  --gk-color-text-muted: rgb(118, 124, 130);
+  --gk-color-border: rgb(224, 224, 230);
+  --gk-color-divider: rgb(239, 239, 245);
+  --gk-color-focus-ring: rgb(242, 206, 94);
+  --gk-color-code-bg: rgb(244, 244, 248);
 
   /* Typography */
   --gk-font-family-sans: "Source Sans 3", "Segoe UI", sans-serif;

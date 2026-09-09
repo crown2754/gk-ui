@@ -19,5 +19,9 @@ import "@gk-ui/core";
 
 ## Live demo
 
-<gk-button>Primary</gk-button>
-<gk-button variant="secondary">Secondary</gk-button>
+<p style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+  <gk-button variant="secondary">Default</gk-button>
+  <gk-button variant="primary">Primary</gk-button>
+  <gk-button variant="info">Info</gk-button>
+  <gk-button variant="danger">Error</gk-button>
+</p>

@@ -16,6 +16,8 @@ pnpm build
 pnpm docs:dev
 ```
 
+Docs languages: English (`/`) and 繁體中文 (`/zh-TW/`). Switch from the nav language menu.
+
 On Windows when `pnpm` is not on PATH, prefix commands with `corepack` (e.g. `corepack pnpm install`). Root `package.json` scripts invoke `corepack pnpm` internally so `pnpm build`, `pnpm test`, and `pnpm docs:build` work without a global `pnpm` shim.
 
 ## Spec

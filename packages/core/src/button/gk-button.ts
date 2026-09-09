@@ -2,7 +2,14 @@ import { LitElement, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { buttonStyles } from "./gk-button.styles.js";
 
-export type GkButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+export type GkButtonVariant =
+  | "primary"
+  | "secondary"
+  | "info"
+  | "success"
+  | "warning"
+  | "danger"
+  | "ghost";
 export type GkButtonSize = "sm" | "md" | "lg";
 export type GkButtonType = "button" | "submit" | "reset";
 
