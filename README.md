@@ -11,17 +11,12 @@ Brand-forward Web Components (Lit) with design tokens. Vue and Alpine consume th
 
 ```bash
 pnpm install
-pnpm --filter @gk-ui/core test
+pnpm test
 pnpm build
 pnpm docs:dev
 ```
 
-**Windows note:** If `pnpm` is not on PATH, use `corepack pnpm` (for example `corepack pnpm install`, `corepack pnpm --filter @gk-ui/core test`). Root scripts such as `build` and `docs:build` nest a bare `pnpm` call; if those fail with “‘pnpm’ is not recognized”, either put `pnpm` on PATH (`corepack enable`, may need admin) or run the filters directly:
-
-```bash
-corepack pnpm -r --filter @gk-ui/tokens --filter @gk-ui/core run build
-corepack pnpm --filter @gk-ui/docs build
-```
+On Windows when `pnpm` is not on PATH, prefix commands with `corepack` (e.g. `corepack pnpm install`). Root `package.json` scripts invoke `corepack pnpm` internally so `pnpm build`, `pnpm test`, and `pnpm docs:build` work without a global `pnpm` shim.
 
 ## Spec
 

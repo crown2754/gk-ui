@@ -3,10 +3,10 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "build": "pnpm -r --filter @gk-ui/tokens --filter @gk-ui/core run build",
-    "test": "pnpm --filter @gk-ui/core test",
-    "docs:dev": "pnpm --filter @gk-ui/docs dev",
-    "docs:build": "pnpm --filter @gk-ui/docs build"
+    "build": "corepack pnpm -r --filter @gk-ui/tokens --filter @gk-ui/core run build",
+    "test": "corepack pnpm --filter @gk-ui/core test",
+    "docs:dev": "corepack pnpm --filter @gk-ui/docs dev",
+    "docs:build": "corepack pnpm --filter @gk-ui/docs build"
   },
   "engines": {
     "node": ">=20"
