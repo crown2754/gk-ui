@@ -53,3 +53,28 @@
   background: #3a3a42;
   color: rgba(255, 255, 245, 0.86);
 }
+
+.dark .gk-demo-card__toolbar {
+  --gk-demo-toolbar-bg: #24242a;
+  border-top-color: #3a3a42;
+}
+
+.dark .gk-demo-card__btn {
+  background: #2a2a30;
+  border-color: #3e3e46;
+  color: rgba(235, 235, 245, 0.6);
+}
+
+.dark .gk-demo-card__btn:hover:not(:disabled) {
+  color: rgba(255, 255, 245, 0.92);
+  border-color: #55555f;
+}
+
+.dark .gk-demo-card__code {
+  --gk-demo-code-bg: #1e1e24;
+  border-top-color: #3a3a42;
+}
+
+.dark .gk-demo-card__pre {
+  color: rgba(255, 255, 245, 0.86);
+}

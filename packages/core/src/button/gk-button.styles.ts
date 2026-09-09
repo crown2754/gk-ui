@@ -15,11 +15,11 @@ export const buttonStyles = css`
     gap: var(--gk-space-2, 0.5rem);
     margin: 0;
     font-family: var(--gk-font-family-sans, "Source Sans 3", "Segoe UI", sans-serif);
-    font-weight: bolder;
-    line-height: var(--gk-line-height-tight, 1.25);
+    font-weight: var(--gk-font-weight-medium, 500);
+    line-height: 1;
     text-decoration: none;
     border: 0;
-    border-radius: var(--gk-radius-md, 0.5rem);
+    border-radius: var(--gk-radius-sm, 0.375rem);
     cursor: pointer;
     box-shadow: 0 0 var(--gk-button-shadow, #999);
     transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease,
@@ -27,13 +27,13 @@ export const buttonStyles = css`
   }
 
   [part="base"]:hover {
-    transform: translate(0.3em, -0.3em);
-    box-shadow: -0.3em 0.3em var(--gk-button-shadow, #999);
+    transform: translate(2px, -2px);
+    box-shadow: -2px 2px var(--gk-button-shadow, #999);
   }
 
   [part="base"]:active {
-    transform: translate(0.1em, -0.1em);
-    box-shadow: -0.1em 0.1em var(--gk-button-shadow, #999);
+    transform: translate(1px, -1px);
+    box-shadow: -1px 1px var(--gk-button-shadow, #999);
   }
 
   [part="base"]:focus-visible {
@@ -41,23 +41,24 @@ export const buttonStyles = css`
     outline-offset: 2px;
   }
 
+  /* Size scale aligned with Naive UI small / medium / large */
   :host([size="sm"]) [part="base"] {
-    font-size: var(--gk-font-size-sm, 0.875rem);
-    padding: 0.65em 1.25em;
-    min-height: 2rem;
+    height: 28px;
+    padding: 0 10px;
+    font-size: 14px;
   }
 
   :host([size="md"]) [part="base"],
   :host(:not([size])) [part="base"] {
-    font-size: var(--gk-font-size-md, 1rem);
-    padding: 1em 2em;
-    min-height: 2.5rem;
+    height: 34px;
+    padding: 0 14px;
+    font-size: 14px;
   }
 
   :host([size="lg"]) [part="base"] {
-    font-size: var(--gk-font-size-lg, 1.125rem);
-    padding: 1.1em 2.25em;
-    min-height: 3rem;
+    height: 40px;
+    padding: 0 18px;
+    font-size: 15px;
   }
 
   :host([variant="secondary"]) [part="base"] {
