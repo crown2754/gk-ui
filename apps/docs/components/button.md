@@ -20,6 +20,34 @@ const codes = {
 <gk-button variant="ghost" size="lg">Large Ghost</gk-button>`,
   tag: `<gk-button href="/guide/getting-started">Getting started</gk-button>
 <gk-button variant="info" href="/components/button">Button docs</gk-button>`,
+  secondaryMode: `<gk-button secondary>Default</gk-button>
+<gk-button variant="primary" secondary>Primary</gk-button>
+<gk-button variant="info" secondary>Info</gk-button>
+<gk-button variant="success" secondary>Success</gk-button>
+<gk-button variant="warning" secondary>Warning</gk-button>
+<gk-button variant="danger" secondary>Danger</gk-button>`,
+  dashed: `<gk-button dashed>Default</gk-button>
+<gk-button variant="primary" dashed>Primary</gk-button>
+<gk-button variant="info" dashed>Info</gk-button>
+<gk-button variant="success" dashed>Success</gk-button>
+<gk-button variant="warning" dashed>Warning</gk-button>
+<gk-button variant="danger" dashed>Danger</gk-button>`,
+  textMode: `<gk-button text>Default</gk-button>
+<gk-button variant="primary" text>Primary</gk-button>
+<gk-button variant="info" text>Info</gk-button>
+<gk-button variant="success" text>Success</gk-button>
+<gk-button variant="warning" text>Warning</gk-button>
+<gk-button variant="danger" text>Danger</gk-button>`,
+  group: `<gk-button-group>
+  <gk-button variant="secondary">Left</gk-button>
+  <gk-button variant="secondary">Middle</gk-button>
+  <gk-button variant="secondary">Right</gk-button>
+</gk-button-group>
+<gk-button-group>
+  <gk-button variant="primary">Live a</gk-button>
+  <gk-button variant="primary">Sufficient</gk-button>
+  <gk-button variant="primary">Life</gk-button>
+</gk-button-group>`,
 };
 </script>
 
@@ -42,6 +70,18 @@ Button is used to trigger some actions.
   <gk-button variant="ghost">Ghost</gk-button>
 </DemoCard>
 
+<DemoCard title="Secondary" :code="codes.secondaryMode">
+  <template #description>
+    Secondary buttons have a lighter fill than solid variants.
+  </template>
+  <gk-button secondary>Default</gk-button>
+  <gk-button variant="primary" secondary>Primary</gk-button>
+  <gk-button variant="info" secondary>Info</gk-button>
+  <gk-button variant="success" secondary>Success</gk-button>
+  <gk-button variant="warning" secondary>Warning</gk-button>
+  <gk-button variant="danger" secondary>Danger</gk-button>
+</DemoCard>
+
 <DemoCard title="Size" :code="codes.size">
   <template #description>
     Buttons can be <code>sm</code>, <code>md</code> and <code>lg</code> in size.
@@ -49,6 +89,30 @@ Button is used to trigger some actions.
   <gk-button size="sm">Small</gk-button>
   <gk-button size="md">Medium</gk-button>
   <gk-button size="lg">Large</gk-button>
+</DemoCard>
+
+<DemoCard title="Dashed" :code="codes.dashed">
+  <template #description>
+    Dashed buttons use a dashed border style.
+  </template>
+  <gk-button dashed>Default</gk-button>
+  <gk-button variant="primary" dashed>Primary</gk-button>
+  <gk-button variant="info" dashed>Info</gk-button>
+  <gk-button variant="success" dashed>Success</gk-button>
+  <gk-button variant="warning" dashed>Warning</gk-button>
+  <gk-button variant="danger" dashed>Danger</gk-button>
+</DemoCard>
+
+<DemoCard title="Text" :code="codes.textMode">
+  <template #description>
+    Text buttons have no background or border until hovered.
+  </template>
+  <gk-button text>Default</gk-button>
+  <gk-button variant="primary" text>Primary</gk-button>
+  <gk-button variant="info" text>Info</gk-button>
+  <gk-button variant="success" text>Success</gk-button>
+  <gk-button variant="warning" text>Warning</gk-button>
+  <gk-button variant="danger" text>Danger</gk-button>
 </DemoCard>
 
 <DemoCard title="Disabled" :code="codes.disabled">
@@ -85,6 +149,22 @@ Button is used to trigger some actions.
   <gk-button variant="info" href="/components/button">Button docs</gk-button>
 </DemoCard>
 
+<DemoCard title="Button group" :code="codes.group">
+  <template #description>
+    Group related buttons with <code>gk-button-group</code>.
+  </template>
+  <gk-button-group>
+    <gk-button variant="secondary">Left</gk-button>
+    <gk-button variant="secondary">Middle</gk-button>
+    <gk-button variant="secondary">Right</gk-button>
+  </gk-button-group>
+  <gk-button-group>
+    <gk-button variant="primary">Live a</gk-button>
+    <gk-button variant="primary">Sufficient</gk-button>
+    <gk-button variant="primary">Life</gk-button>
+  </gk-button-group>
+</DemoCard>
+
 <DemoCard title="Playground">
   <template #description>
     Try combinations of props interactively.
@@ -103,6 +183,9 @@ Button is used to trigger some actions.
 | `type` | `'button' \| 'submit' \| 'reset'` | `'button'` |
 | `disabled` | `boolean` | `false` |
 | `loading` | `boolean` | `false` |
+| `secondary` | `boolean` | `false` |
+| `dashed` | `boolean` | `false` |
+| `text` | `boolean` | `false` |
 | `href` | `string` | — |
 
 ### Button Slots
@@ -110,6 +193,12 @@ Button is used to trigger some actions.
 | Name | Description |
 |------|-------------|
 | default | Button label content |
+
+### ButtonGroup
+
+| Name | Description |
+|------|-------------|
+| default | Grouped `gk-button` children |
 
 ### CSS Parts
 
