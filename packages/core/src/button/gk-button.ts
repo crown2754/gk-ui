@@ -28,10 +28,42 @@ export class GkButton extends LitElement {
   @property({ reflect: true })
   href?: string;
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener("click", this.handleClick, true);
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener("click", this.handleClick, true);
+    super.disconnectedCallback();
+  }
+
+  private handleClick = (event: Event) => {
+    if (this.disabled || this.loading) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
+
   render() {
-    return html`<button part="base" type=${this.type} ?disabled=${this.disabled || this.loading}>
-      <slot></slot>
-    </button>`;
+    const inactive = this.disabled || this.loading;
+    if (this.href) {
+      return html`
+        <a
+          part="base"
+          href=${this.href}
+          aria-disabled=${inactive ? "true" : "false"}
+          tabindex=${inactive ? -1 : 0}
+        >
+          <slot></slot>
+        </a>
+      `;
+    }
+    return html`
+      <button part="base" type=${this.type} ?disabled=${inactive} aria-busy=${this.loading ? "true" : "false"}>
+        <slot></slot>
+      </button>
+    `;
   }
 }
 
