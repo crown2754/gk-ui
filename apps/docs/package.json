@@ -1,0 +1,20 @@
+{
+  "name": "@gk-ui/docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "dependencies": {
+    "@gk-ui/core": "workspace:*",
+    "@gk-ui/tokens": "workspace:*",
+    "alpinejs": "^3.14.8",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "vitepress": "^1.5.0",
+    "typescript": "^5.7.2"
+  }
+}
