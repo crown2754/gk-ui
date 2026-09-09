@@ -302,7 +302,9 @@ export const buttonStyles = css`
   }
 
   :host-context(gk-button-group) [part="base"]:hover,
-  :host-context(gk-button-group) [part="base"]:active {
+  :host-context(gk-button-group) [part="base"]:active,
+  :host-context(gk-button-group)[secondary]:not([dashed]):not([text]) [part="base"]:hover,
+  :host-context(gk-button-group)[secondary]:not([dashed]):not([text]) [part="base"]:active {
     transform: none;
     box-shadow: none;
   }
