@@ -1,19 +1,20 @@
 <script setup lang="ts">
-const logo =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23208a5a' width='100' height='100'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23fff'/%3E%3Cpath fill='%23fff' d='M20 88c4-22 20-32 30-32s26 10 30 32'/%3E%3C/svg%3E";
+import { withBase } from "vitepress";
+
+const owl = withBase("/owl.png");
 const logo2 =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232080f0' width='100' height='100'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23fff'/%3E%3Cpath fill='%23fff' d='M20 88c4-22 20-32 30-32s26 10 30 32'/%3E%3C/svg%3E";
 const logo3 =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f0a020' width='100' height='100'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23fff'/%3E%3Cpath fill='%23fff' d='M20 88c4-22 20-32 30-32s26 10 30 32'/%3E%3C/svg%3E";
 
 const codes = {
-  size: `<gk-avatar size="sm">SM</gk-avatar>
-<gk-avatar size="md">MD</gk-avatar>
-<gk-avatar size="lg">LG</gk-avatar>
-<gk-avatar size="48">48</gk-avatar>`,
-  shape: `<gk-avatar>AB</gk-avatar>
-<gk-avatar round>AB</gk-avatar>
-<gk-avatar round src="${logo}" alt="User"></gk-avatar>`,
+  size: `<gk-avatar size="sm" round src="${owl}" alt="Owl"></gk-avatar>
+<gk-avatar size="md" round src="${owl}" alt="Owl"></gk-avatar>
+<gk-avatar size="lg" round src="${owl}" alt="Owl"></gk-avatar>
+<gk-avatar size="48" round src="${owl}" alt="Owl"></gk-avatar>`,
+  shape: `<gk-avatar src="${owl}" alt="Owl"></gk-avatar>
+<gk-avatar round src="${owl}" alt="Owl"></gk-avatar>
+<gk-avatar round>AB</gk-avatar>`,
   color: `<gk-avatar color="#18a058">GK</gk-avatar>
 <gk-avatar color="#2080f0" round>UI</gk-avatar>
 <gk-avatar color="#d03050" round>ER</gk-avatar>`,
@@ -30,7 +31,7 @@ const codes = {
   fallback: `<gk-avatar src="/broken-avatar.png" alt="Missing">FB</gk-avatar>
 <gk-avatar round src="/broken-avatar.png" color="#18a058">NA</gk-avatar>`,
   group: `<gk-avatar-group max="3" size="md">
-  <gk-avatar round src="${logo}" alt="A"></gk-avatar>
+  <gk-avatar round src="${owl}" alt="Owl"></gk-avatar>
   <gk-avatar round src="${logo2}" alt="B"></gk-avatar>
   <gk-avatar round src="${logo3}" alt="C"></gk-avatar>
   <gk-avatar round color="#18a058">D</gk-avatar>
@@ -48,21 +49,21 @@ Avatar displays a user image, initials, or icon. Pair with `gk-avatar-group` for
 
 <DemoCard title="Size" :code="codes.size">
   <template #description>
-    Named sizes <code>sm</code>, <code>md</code>, <code>lg</code>, or a custom pixel value via <code>size="48"</code>.
+    Named sizes <code>sm</code>, <code>md</code>, <code>lg</code>, or a custom pixel value via <code>size="48"</code>. Portrait photos use <code>object-fit: cover</code> by default.
   </template>
-  <gk-avatar size="sm">SM</gk-avatar>
-  <gk-avatar size="md">MD</gk-avatar>
-  <gk-avatar size="lg">LG</gk-avatar>
-  <gk-avatar size="48">48</gk-avatar>
+  <gk-avatar size="sm" round :src="owl" alt="Owl"></gk-avatar>
+  <gk-avatar size="md" round :src="owl" alt="Owl"></gk-avatar>
+  <gk-avatar size="lg" round :src="owl" alt="Owl"></gk-avatar>
+  <gk-avatar size="48" round :src="owl" alt="Owl"></gk-avatar>
 </DemoCard>
 
 <DemoCard title="Shape" :code="codes.shape">
   <template #description>
     Default corners use a small radius. Set <code>round</code> for a circle.
   </template>
-  <gk-avatar>AB</gk-avatar>
+  <gk-avatar :src="owl" alt="Owl"></gk-avatar>
+  <gk-avatar round :src="owl" alt="Owl"></gk-avatar>
   <gk-avatar round>AB</gk-avatar>
-  <gk-avatar round :src="logo" alt="User"></gk-avatar>
 </DemoCard>
 
 <DemoCard title="Color" :code="codes.color">
@@ -103,7 +104,7 @@ Avatar displays a user image, initials, or icon. Pair with `gk-avatar-group` for
     <code>max</code> limits visible avatars. Put a custom <code>+N</code> control in the <code>overflow</code> slot (here 5 avatars, <code>max="3"</code> → <code>+2</code>). The group also reflects remaining count as <code>rest</code>.
   </template>
   <gk-avatar-group max="3" size="md">
-    <gk-avatar round :src="logo" alt="A"></gk-avatar>
+    <gk-avatar round :src="owl" alt="Owl"></gk-avatar>
     <gk-avatar round :src="logo2" alt="B"></gk-avatar>
     <gk-avatar round :src="logo3" alt="C"></gk-avatar>
     <gk-avatar round color="#18a058">D</gk-avatar>
