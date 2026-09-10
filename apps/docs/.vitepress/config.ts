@@ -47,12 +47,20 @@ export default defineConfig({
             ],
           },
           {
-            text: "Components",
+            text: "General",
+            items: [{ text: "Button", link: "/components/button" }],
+          },
+          {
+            text: "Data Display",
+            items: [
+              { text: "Avatar", link: "/components/avatar" },
+              { text: "Card", link: "/components/card" },
+            ],
+          },
+          {
+            text: "Feedback",
             items: [
               { text: "Alert", link: "/components/alert" },
-              { text: "Avatar", link: "/components/avatar" },
-              { text: "Button", link: "/components/button" },
-              { text: "Card", link: "/components/card" },
               { text: "Message", link: "/components/message" },
             ],
           },
@@ -88,12 +96,20 @@ export default defineConfig({
             ],
           },
           {
-            text: "元件",
+            text: "通用",
+            items: [{ text: "Button 按鈕", link: "/zh-TW/components/button" }],
+          },
+          {
+            text: "資料展示",
+            items: [
+              { text: "Avatar 頭像", link: "/zh-TW/components/avatar" },
+              { text: "Card 卡片", link: "/zh-TW/components/card" },
+            ],
+          },
+          {
+            text: "回饋",
             items: [
               { text: "Alert 警示", link: "/zh-TW/components/alert" },
-              { text: "Avatar 頭像", link: "/zh-TW/components/avatar" },
-              { text: "Button 按鈕", link: "/zh-TW/components/button" },
-              { text: "Card 卡片", link: "/zh-TW/components/card" },
               { text: "Message 訊息", link: "/zh-TW/components/message" },
             ],
           },
