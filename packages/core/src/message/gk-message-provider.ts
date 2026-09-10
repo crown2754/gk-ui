@@ -81,13 +81,21 @@ export class GkMessageProvider extends LitElement {
   private remaining = new Map<string, number>();
   private startedAt = new Map<string, number>();
 
+  /** Promote this provider to top of stack when the user interacts inside it. */
+  private onPointerDownCapture = () => {
+    unregisterMessageProvider(this);
+    registerMessageProvider(this);
+  };
+
   connectedCallback() {
     super.connectedCallback();
     registerMessageProvider(this);
+    this.addEventListener("pointerdown", this.onPointerDownCapture, true);
     this.ensurePortal();
   }
 
   disconnectedCallback() {
+    this.removeEventListener("pointerdown", this.onPointerDownCapture, true);
     this.destroyAll();
     // Unregister before teardown so shared style cleanup sees an empty stack.
     unregisterMessageProvider(this);
