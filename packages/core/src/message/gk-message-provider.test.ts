@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { fixture, html } from "@open-wc/testing";
 import "./gk-message-provider.js";
 import type { GkMessageProvider } from "./gk-message-provider.js";
+import { gkMessage } from "./gk-message-api.js";
 
 describe("gk-message-provider", () => {
   beforeEach(() => {
@@ -158,5 +159,54 @@ describe("gk-message-provider", () => {
     expect(container?.parentElement).toBe(document.body);
     el.remove();
     expect(document.querySelector(".gk-message-container")).toBeNull();
+  });
+});
+
+describe("gkMessage", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    document.querySelectorAll("gk-message-provider").forEach((n) => n.remove());
+    document.querySelectorAll(".gk-message-container").forEach((n) => n.remove());
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    document.querySelectorAll("gk-message-provider").forEach((n) => n.remove());
+    document.querySelectorAll(".gk-message-container").forEach((n) => n.remove());
+  });
+
+  it("throws when no provider", () => {
+    expect(() => gkMessage.info("x")).toThrow(/gk-message-provider/i);
+  });
+
+  it("info/success route through top provider", async () => {
+    await fixture(html`<gk-message-provider></gk-message-provider>`);
+    gkMessage.success("ok");
+    await Promise.resolve();
+    const msg = document.querySelector(".gk-message-container gk-message") as {
+      type: string;
+      content: string;
+    };
+    expect(msg.content).toBe("ok");
+    expect(msg.type).toBe("success");
+  });
+
+  it("loading defaults to non-auto-dismiss", async () => {
+    const el = await fixture(html`<gk-message-provider duration="500"></gk-message-provider>`);
+    gkMessage.loading("wait");
+    await el.updateComplete;
+    vi.advanceTimersByTime(2000);
+    expect(
+      document.querySelectorAll(".gk-message-container gk-message").length,
+    ).toBe(1);
+  });
+
+  it("destroyAll clears via API", async () => {
+    await fixture(html`<gk-message-provider></gk-message-provider>`);
+    gkMessage.info("a", { duration: 0 });
+    gkMessage.info("b", { duration: 0 });
+    gkMessage.destroyAll();
+    expect(
+      document.querySelectorAll(".gk-message-container gk-message").length,
+    ).toBe(0);
   });
 });

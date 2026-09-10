@@ -27,3 +27,4 @@ export type {
   GkMessageOptions,
   GkMessageReactive,
 } from "./message/gk-message-provider.js";
+export { gkMessage } from "./message/gk-message-api.js";
