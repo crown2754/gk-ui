@@ -3,10 +3,16 @@ import { ref } from "vue";
 import { withBase } from "vitepress";
 
 const owl = withBase("/owl.png");
-const closeStatus = ref("");
+const cardVisible = ref(true);
+const alertVisible = ref(false);
 
 function onCardClose() {
-  closeStatus.value = "gk-close fired";
+  cardVisible.value = false;
+  alertVisible.value = true;
+}
+
+function onAlertClose() {
+  alertVisible.value = false;
 }
 
 const codes = {
@@ -30,9 +36,29 @@ const codes = {
   Main content between header and footer.
   <div slot="footer">Footer region</div>
 </gk-card>`,
-  closable: `<gk-card title="Closable" closable>
-  Close emits gk-close; the card stays mounted.
-</gk-card>`,
+  closable: `<!-- host:
+const cardVisible = ref(true);
+const alertVisible = ref(false);
+function onCardClose() {
+  cardVisible.value = false;
+  alertVisible.value = true;
+}
+function onAlertClose() {
+  alertVisible.value = false;
+}
+-->
+<gk-card v-if="cardVisible" title="Closable" closable @gk-close="onCardClose">
+  Close this card to reveal an alert.
+</gk-card>
+<gk-alert
+  v-if="alertVisible"
+  type="success"
+  title="Card closed"
+  closable
+  @gk-close="onAlertClose"
+>
+  The card emitted gk-close; the host hid it and showed this alert.
+</gk-alert>`,
 };
 </script>
 
@@ -103,14 +129,20 @@ Card groups related content with optional cover, header, footer, and actions.
 
 <DemoCard title="Closable" :code="codes.closable">
   <template #description>
-    <code>closable</code> shows a close control that dispatches bubbling <code>gk-close</code>. The card does not hide itself — handle the event in the host.
+    <code>closable</code> dispatches bubbling <code>gk-close</code>; the card does not hide itself. Here the host hides the card and shows a closable <code>gk-alert</code>.
   </template>
-  <gk-card title="Closable" closable @gk-close="onCardClose">
-    Close emits <code>gk-close</code>; the card stays mounted.
+  <gk-card v-if="cardVisible" title="Closable" closable @gk-close="onCardClose">
+    Close this card to reveal an alert.
   </gk-card>
-  <p style="margin:0.75rem 0 0;font-size:0.875rem;opacity:0.8">
-    Status: {{ closeStatus || "—" }}
-  </p>
+  <gk-alert
+    v-if="alertVisible"
+    type="success"
+    title="Card closed"
+    closable
+    @gk-close="onAlertClose"
+  >
+    The card emitted <code>gk-close</code>; the host hid it and showed this alert.
+  </gk-alert>
 </DemoCard>
 
 ## API

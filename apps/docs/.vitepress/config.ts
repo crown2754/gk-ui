@@ -34,7 +34,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "Guide", link: "/guide/getting-started" },
-          { text: "Components", link: "/components/avatar" },
+          { text: "Components", link: "/components/alert" },
         ],
         sidebar: [
           {
@@ -49,6 +49,7 @@ export default defineConfig({
           {
             text: "Components",
             items: [
+              { text: "Alert", link: "/components/alert" },
               { text: "Avatar", link: "/components/avatar" },
               { text: "Button", link: "/components/button" },
               { text: "Card", link: "/components/card" },
@@ -73,7 +74,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "指南", link: "/zh-TW/guide/getting-started" },
-          { text: "元件", link: "/zh-TW/components/avatar" },
+          { text: "元件", link: "/zh-TW/components/alert" },
         ],
         sidebar: [
           {
@@ -88,6 +89,7 @@ export default defineConfig({
           {
             text: "元件",
             items: [
+              { text: "Alert 警示", link: "/zh-TW/components/alert" },
               { text: "Avatar 頭像", link: "/zh-TW/components/avatar" },
               { text: "Button 按鈕", link: "/zh-TW/components/button" },
               { text: "Card 卡片", link: "/zh-TW/components/card" },

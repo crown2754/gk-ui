@@ -3,10 +3,16 @@ import { ref } from "vue";
 import { withBase } from "vitepress";
 
 const owl = withBase("/owl.png");
-const closeStatus = ref("");
+const cardVisible = ref(true);
+const alertVisible = ref(false);
 
 function onCardClose() {
-  closeStatus.value = "已觸發 gk-close";
+  cardVisible.value = false;
+  alertVisible.value = true;
+}
+
+function onAlertClose() {
+  alertVisible.value = false;
 }
 
 const codes = {
@@ -30,9 +36,29 @@ const codes = {
   標題、內容與頁尾之間會有分隔線。
   <div slot="footer">頁尾區域</div>
 </gk-card>`,
-  closable: `<gk-card title="可關閉" closable>
-  關閉會發出 gk-close；卡片本身不會隱藏。
-</gk-card>`,
+  closable: `<!-- 宿主：
+const cardVisible = ref(true);
+const alertVisible = ref(false);
+function onCardClose() {
+  cardVisible.value = false;
+  alertVisible.value = true;
+}
+function onAlertClose() {
+  alertVisible.value = false;
+}
+-->
+<gk-card v-if="cardVisible" title="可關閉" closable @gk-close="onCardClose">
+  關閉此卡片會顯示警示。
+</gk-card>
+<gk-alert
+  v-if="alertVisible"
+  type="success"
+  title="卡片已關閉"
+  closable
+  @gk-close="onAlertClose"
+>
+  卡片發出 gk-close；宿主隱藏卡片並顯示此警示。
+</gk-alert>`,
 };
 </script>
 
@@ -103,14 +129,20 @@ const codes = {
 
 <DemoCard title="可關閉" :code="codes.closable">
   <template #description>
-    <code>closable</code> 會顯示關閉按鈕並發出可冒泡的 <code>gk-close</code>。卡片不會自行隱藏，需由宿主處理事件。
+    <code>closable</code> 會發出可冒泡的 <code>gk-close</code>；卡片不會自行隱藏。此處由宿主隱藏卡片並顯示可關閉的 <code>gk-alert</code>。
   </template>
-  <gk-card title="可關閉" closable @gk-close="onCardClose">
-    關閉會發出 <code>gk-close</code>；卡片本身不會隱藏。
+  <gk-card v-if="cardVisible" title="可關閉" closable @gk-close="onCardClose">
+    關閉此卡片會顯示警示。
   </gk-card>
-  <p style="margin:0.75rem 0 0;font-size:0.875rem;opacity:0.8">
-    狀態：{{ closeStatus || "—" }}
-  </p>
+  <gk-alert
+    v-if="alertVisible"
+    type="success"
+    title="卡片已關閉"
+    closable
+    @gk-close="onAlertClose"
+  >
+    卡片發出 <code>gk-close</code>；宿主隱藏卡片並顯示此警示。
+  </gk-alert>
 </DemoCard>
 
 ## API
