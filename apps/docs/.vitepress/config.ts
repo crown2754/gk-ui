@@ -51,6 +51,7 @@ export default defineConfig({
             items: [
               { text: "Avatar", link: "/components/avatar" },
               { text: "Button", link: "/components/button" },
+              { text: "Card", link: "/components/card" },
             ],
           },
         ],
@@ -89,6 +90,7 @@ export default defineConfig({
             items: [
               { text: "Avatar 頭像", link: "/zh-TW/components/avatar" },
               { text: "Button 按鈕", link: "/zh-TW/components/button" },
+              { text: "Card 卡片", link: "/zh-TW/components/card" },
             ],
           },
         ],
