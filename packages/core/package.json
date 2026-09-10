@@ -25,7 +25,6 @@
     "./src/message/gk-message.ts",
     "./src/message/gk-message-provider.ts"
   ],
-
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
     "test": "vitest run",

@@ -77,7 +77,6 @@ export class GkMessageProvider extends LitElement {
   private messages: MessageRecord[] = [];
 
   private portal: HTMLDivElement | null = null;
-  private styleEl: HTMLStyleElement | null = null;
   private timers = new Map<string, ReturnType<typeof setTimeout>>();
   private remaining = new Map<string, number>();
   private startedAt = new Map<string, number>();
@@ -181,10 +180,10 @@ export class GkMessageProvider extends LitElement {
   private ensurePortal() {
     if (this.portal) return;
     if (!document.getElementById("gk-message-container-style")) {
-      this.styleEl = document.createElement("style");
-      this.styleEl.id = "gk-message-container-style";
-      this.styleEl.textContent = messageContainerCssText;
-      document.head.appendChild(this.styleEl);
+      const styleEl = document.createElement("style");
+      styleEl.id = "gk-message-container-style";
+      styleEl.textContent = messageContainerCssText;
+      document.head.appendChild(styleEl);
     }
     this.portal = document.createElement("div");
     this.portal.className = `gk-message-container gk-message-container--${this.placement}`;
@@ -207,7 +206,18 @@ export class GkMessageProvider extends LitElement {
 
   private renderPortalChildren() {
     if (!this.portal) return;
-    // Clear and rebuild (simple v1)
+    // Resume timers paused by keepAliveOnHover before rebuild, otherwise
+    // destroying hovered nodes can skip mouseleave and leave timers paused forever.
+    for (const m of this.messages) {
+      if (
+        m.keepAliveOnHover &&
+        m.duration > 0 &&
+        this.remaining.has(m.key) &&
+        !this.timers.has(m.key)
+      ) {
+        this.startTimer(m.key);
+      }
+    }
     this.portal.replaceChildren();
     for (const m of this.messages) {
       const node = document.createElement("gk-message") as HTMLElement & {

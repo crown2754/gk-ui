@@ -123,6 +123,30 @@ describe("gk-message-provider", () => {
     ).toBe(0);
   });
 
+  it("resumes keepAliveOnHover timer after portal rebuild when mouseleave never fires", async () => {
+    const el = await fixture<GkMessageProvider>(
+      html`<gk-message-provider
+        duration="1000"
+        keep-alive-on-hover
+      ></gk-message-provider>`,
+    );
+    el.createMessage("Paused then rebuilt");
+    await el.updateComplete;
+    const first = document.querySelector(
+      ".gk-message-container gk-message",
+    ) as HTMLElement;
+    first.dispatchEvent(new Event("mouseenter", { bubbles: true }));
+    // Queue change rebuilds portal; hovered node is replaced so mouseleave may never fire.
+    el.createMessage("Second", { duration: 0 });
+    await el.updateComplete;
+    vi.advanceTimersByTime(1000);
+    await el.updateComplete;
+    const texts = [
+      ...document.querySelectorAll(".gk-message-container gk-message"),
+    ].map((m) => (m as HTMLElement & { content: string }).content);
+    expect(texts).toEqual(["Second"]);
+  });
+
   it("portal uses placement class and cleans up on disconnect", async () => {
     const el = await fixture<GkMessageProvider>(
       html`<gk-message-provider placement="bottom-right"></gk-message-provider>`,
