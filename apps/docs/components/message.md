@@ -83,8 +83,9 @@ const codes = {
   </gk-button>
 </gk-message-provider>`,
   destroyAll: `<gk-message-provider>
-  <gk-button @click="() => gkMessage.info('One')">Info</gk-button>
-  <gk-button @click="() => gkMessage.success('Two')">Success</gk-button>
+  <gk-button @click="() => gkMessage.info('Informational message')">Info</gk-button>
+  <gk-button @click="() => gkMessage.success('Saved successfully')">Success</gk-button>
+  <gk-button @click="() => gkMessage.warning('Please check your input')">Warning</gk-button>
   <gk-button @click="() => gkMessage.destroyAll()">Destroy all</gk-button>
 </gk-message-provider>`,
 };

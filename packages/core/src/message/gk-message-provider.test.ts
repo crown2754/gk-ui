@@ -2,6 +2,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { fixture, html } from "@open-wc/testing";
 import "./gk-message-provider.js";
 import type { GkMessageProvider } from "./gk-message-provider.js";
+import {
+  getTopMessageProvider,
+} from "./gk-message-provider.js";
 import { gkMessage } from "./gk-message-api.js";
 
 describe("gk-message-provider", () => {
@@ -208,5 +211,38 @@ describe("gkMessage", () => {
     expect(
       document.querySelectorAll(".gk-message-container gk-message").length,
     ).toBe(0);
+  });
+
+  it("focusin promotes earlier provider so gkMessage targets it", async () => {
+    const wrap = await fixture(html`
+      <div>
+        <gk-message-provider id="first">
+          <button type="button">First</button>
+        </gk-message-provider>
+        <gk-message-provider id="second">
+          <button type="button">Second</button>
+        </gk-message-provider>
+      </div>
+    `);
+    const first = wrap.querySelector("#first") as GkMessageProvider;
+    const second = wrap.querySelector("#second") as GkMessageProvider;
+    expect(getTopMessageProvider()).toBe(second);
+
+    first.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    expect(getTopMessageProvider()).toBe(first);
+
+    gkMessage.info("from-first", { duration: 0 });
+    await first.updateComplete;
+    await second.updateComplete;
+
+    const firstPortal = document.querySelectorAll(".gk-message-container")[0];
+    const secondPortal = document.querySelectorAll(".gk-message-container")[1];
+    expect(firstPortal?.querySelectorAll("gk-message").length).toBe(1);
+    expect(
+      (firstPortal?.querySelector("gk-message") as HTMLElement & {
+        content: string;
+      }).content,
+    ).toBe("from-first");
+    expect(secondPortal?.querySelectorAll("gk-message").length).toBe(0);
   });
 });

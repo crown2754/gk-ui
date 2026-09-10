@@ -83,8 +83,9 @@ const codes = {
   </gk-button>
 </gk-message-provider>`,
   destroyAll: `<gk-message-provider>
-  <gk-button @click="() => gkMessage.info('一')">資訊</gk-button>
-  <gk-button @click="() => gkMessage.success('二')">成功</gk-button>
+  <gk-button @click="() => gkMessage.info('資訊訊息')">資訊</gk-button>
+  <gk-button @click="() => gkMessage.success('儲存成功')">成功</gk-button>
+  <gk-button @click="() => gkMessage.warning('請檢查輸入內容')">警告</gk-button>
   <gk-button @click="() => gkMessage.destroyAll()">全部銷毀</gk-button>
 </gk-message-provider>`,
 };

@@ -82,7 +82,7 @@ export class GkMessageProvider extends LitElement {
   private startedAt = new Map<string, number>();
 
   /** Promote this provider to top of stack when the user interacts inside it. */
-  private onPointerDownCapture = () => {
+  private onActivateCapture = () => {
     unregisterMessageProvider(this);
     registerMessageProvider(this);
   };
@@ -90,12 +90,15 @@ export class GkMessageProvider extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     registerMessageProvider(this);
-    this.addEventListener("pointerdown", this.onPointerDownCapture, true);
+    // focusin covers keyboard users; pointerdown covers mouse/touch.
+    this.addEventListener("focusin", this.onActivateCapture, true);
+    this.addEventListener("pointerdown", this.onActivateCapture, true);
     this.ensurePortal();
   }
 
   disconnectedCallback() {
-    this.removeEventListener("pointerdown", this.onPointerDownCapture, true);
+    this.removeEventListener("focusin", this.onActivateCapture, true);
+    this.removeEventListener("pointerdown", this.onActivateCapture, true);
     this.destroyAll();
     // Unregister before teardown so shared style cleanup sees an empty stack.
     unregisterMessageProvider(this);
