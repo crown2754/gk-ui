@@ -58,7 +58,12 @@ export class GkMessage extends LitElement {
   render() {
     return html`
       <div part="base" role="status">
-        <div part="icon" ?hidden=${!this.showIcon}>${this.builtinIcon()}</div>
+        <div
+          part="icon"
+          ?hidden=${!this.showIcon || this.type === "default"}
+        >
+          ${this.builtinIcon()}
+        </div>
         <div part="content">${this.content}</div>
         ${this.closable
           ? html`<button

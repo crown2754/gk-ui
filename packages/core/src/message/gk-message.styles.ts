@@ -19,25 +19,54 @@ export const messageStyles = css`
     font-size: var(--gk-font-size-sm, 0.875rem);
     border-radius: var(--gk-radius-md, 0.5rem);
     box-shadow: 0 4px 16px color-mix(in srgb, #000 12%, transparent);
-    background: var(--gk-color-surface, #fff);
+    background: color-mix(
+      in srgb,
+      var(--gk-color-brand, rgb(242, 206, 94)) 14%,
+      transparent
+    );
     color: var(--gk-color-text, rgb(31, 34, 37));
   }
 
   :host([type="info"]) [part="base"] {
+    background: color-mix(
+      in srgb,
+      var(--gk-color-info, #2080f0) 14%,
+      transparent
+    );
     color: var(--gk-color-info-pressed, #1060c9);
   }
   :host([type="success"]) [part="base"] {
+    background: color-mix(
+      in srgb,
+      var(--gk-color-success, #18a058) 14%,
+      transparent
+    );
     color: var(--gk-color-success-pressed, #0c7a43);
   }
   :host([type="warning"]) [part="base"] {
-    color: var(--gk-color-warning-pressed, #a35c00);
+    background: color-mix(
+      in srgb,
+      var(--gk-color-warning, #f0a020) 14%,
+      transparent
+    );
+    color: var(--gk-color-warning-pressed, #c97c10);
   }
   :host([type="error"]) [part="base"] {
-    color: var(--gk-color-danger-pressed, #d03050);
+    background: color-mix(
+      in srgb,
+      var(--gk-color-danger, #d03050) 14%,
+      transparent
+    );
+    color: var(--gk-color-danger-pressed, #ab1f3f);
   }
   :host([type="loading"]) [part="base"],
   :host([type="default"]) [part="base"],
   :host(:not([type])) [part="base"] {
+    background: color-mix(
+      in srgb,
+      var(--gk-color-brand, rgb(242, 206, 94)) 14%,
+      transparent
+    );
     color: var(--gk-color-text, rgb(31, 34, 37));
   }
 
