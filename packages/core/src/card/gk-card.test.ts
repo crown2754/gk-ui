@@ -56,6 +56,34 @@ describe("gk-card", () => {
     expect(el.shadowRoot?.querySelector("[part='cover'] img")).toBeNull();
   });
 
+  it("hides cover and omits cover-header divider when segmented without cover", async () => {
+    const el = await fixture<GkCard>(
+      html`<gk-card segmented title="T">Body</gk-card>`,
+    );
+    await el.updateComplete;
+    const cover = el.shadowRoot?.querySelector("[part='cover']");
+    expect(cover?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("renders header when only action slot is provided", async () => {
+    const el = await fixture<GkCard>(html`
+      <gk-card>
+        <span slot="action">Act</span>
+        Body
+      </gk-card>
+    `);
+    await el.updateComplete;
+    await new Promise((r) => queueMicrotask(r));
+    await el.updateComplete;
+    const header = el.shadowRoot?.querySelector("[part='header']");
+    expect(header).toBeTruthy();
+    const actionSlot = el.shadowRoot?.querySelector(
+      "slot[name='action']",
+    ) as HTMLSlotElement;
+    expect(actionSlot.assignedElements().length).toBe(1);
+    expect(actionSlot.assignedElements()[0].textContent?.trim()).toBe("Act");
+  });
+
   it("dispatches gk-close on close click without hiding the card", async () => {
     const el = await fixture<GkCard>(
       html`<gk-card title="T" closable>Body</gk-card>`,

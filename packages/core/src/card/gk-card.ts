@@ -38,6 +38,9 @@ export class GkCard extends LitElement {
   @state()
   private hasFooterSlot = false;
 
+  @state()
+  private hasActionSlot = false;
+
   private onCoverSlotChange = (e: Event) => {
     const slot = e.target as HTMLSlotElement;
     this.hasCoverSlot = slot.assignedNodes({ flatten: true }).length > 0;
@@ -53,7 +56,12 @@ export class GkCard extends LitElement {
     this.hasFooterSlot = slot.assignedNodes({ flatten: true }).length > 0;
   };
 
-  private syncSlotState(slotName: "cover" | "header" | "footer") {
+  private onActionSlotChange = (e: Event) => {
+    const slot = e.target as HTMLSlotElement;
+    this.hasActionSlot = slot.assignedNodes({ flatten: true }).length > 0;
+  };
+
+  private syncSlotState(slotName: "cover" | "header" | "footer" | "action") {
     const slot = this.shadowRoot?.querySelector(
       `slot[name="${slotName}"]`,
     ) as HTMLSlotElement | null;
@@ -62,12 +70,14 @@ export class GkCard extends LitElement {
     if (slotName === "cover") this.hasCoverSlot = hasContent;
     if (slotName === "header") this.hasHeaderSlot = hasContent;
     if (slotName === "footer") this.hasFooterSlot = hasContent;
+    if (slotName === "action") this.hasActionSlot = hasContent;
   }
 
   protected firstUpdated() {
     this.syncSlotState("cover");
     this.syncSlotState("header");
     this.syncSlotState("footer");
+    this.syncSlotState("action");
   }
 
   private onClose = () => {
@@ -81,7 +91,12 @@ export class GkCard extends LitElement {
   }
 
   private get showHeader() {
-    return this.hasHeaderSlot || Boolean(this.title) || this.closable;
+    return (
+      this.hasHeaderSlot ||
+      this.hasActionSlot ||
+      Boolean(this.title) ||
+      this.closable
+    );
   }
 
   private get showCover() {
@@ -109,7 +124,7 @@ export class GkCard extends LitElement {
                   <slot name="header" @slotchange=${this.onHeaderSlotChange}></slot>
                 </div>
                 <div part="action">
-                  <slot name="action"></slot>
+                  <slot name="action" @slotchange=${this.onActionSlotChange}></slot>
                   ${this.closable
                     ? html`<button
                         type="button"
@@ -123,7 +138,10 @@ export class GkCard extends LitElement {
                 </div>
               </header>
             `
-          : html`<slot name="header" @slotchange=${this.onHeaderSlotChange} hidden></slot>`}
+          : html`
+              <slot name="header" @slotchange=${this.onHeaderSlotChange} hidden></slot>
+              <slot name="action" @slotchange=${this.onActionSlotChange} hidden></slot>
+            `}
         <div part="content"><slot></slot></div>
         <footer part="footer" ?hidden=${!this.hasFooterSlot}>
           <slot name="footer" @slotchange=${this.onFooterSlotChange}></slot>

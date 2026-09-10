@@ -130,7 +130,7 @@ export const cardStyles = css`
     border-top: 1px solid var(--gk-color-border, rgb(224, 224, 230));
   }
 
-  :host([segmented]) [part="cover"] + [part="header"] {
+  :host([segmented]) [part="cover"]:not([hidden]) + [part="header"] {
     border-top: 1px solid var(--gk-color-border, rgb(224, 224, 230));
   }
 `;
