@@ -1,5 +1,6 @@
 import "./alert/gk-alert.js";
 import "./message/gk-message.js";
+import "./message/gk-message-provider.js";
 import "./button/gk-button.js";
 import "./button/gk-button-group.js";
 import "./avatar/gk-avatar.js";
@@ -17,3 +18,12 @@ export { GkAlert } from "./alert/gk-alert.js";
 export type { GkAlertType } from "./alert/gk-alert.js";
 export { GkMessage } from "./message/gk-message.js";
 export type { GkMessageType } from "./message/gk-message.js";
+export {
+  GkMessageProvider,
+  getTopMessageProvider,
+} from "./message/gk-message-provider.js";
+export type {
+  GkMessagePlacement,
+  GkMessageOptions,
+  GkMessageReactive,
+} from "./message/gk-message-provider.js";
