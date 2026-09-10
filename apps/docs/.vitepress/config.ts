@@ -34,23 +34,23 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "Guide", link: "/guide/getting-started" },
-          { text: "Components", link: "/components/button" },
+          { text: "Components", link: "/components/avatar" },
         ],
         sidebar: [
           {
             text: "Guide",
             items: [
+              { text: "Alpine", link: "/guide/alpine" },
               { text: "Getting started", link: "/guide/getting-started" },
               { text: "Tokens", link: "/guide/tokens" },
               { text: "Vue", link: "/guide/vue" },
-              { text: "Alpine", link: "/guide/alpine" },
             ],
           },
           {
             text: "Components",
             items: [
-              { text: "Button", link: "/components/button" },
               { text: "Avatar", link: "/components/avatar" },
+              { text: "Button", link: "/components/button" },
             ],
           },
         ],
@@ -72,23 +72,23 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "指南", link: "/zh-TW/guide/getting-started" },
-          { text: "元件", link: "/zh-TW/components/button" },
+          { text: "元件", link: "/zh-TW/components/avatar" },
         ],
         sidebar: [
           {
             text: "指南",
             items: [
+              { text: "Alpine", link: "/zh-TW/guide/alpine" },
               { text: "快速開始", link: "/zh-TW/guide/getting-started" },
               { text: "設計權杖", link: "/zh-TW/guide/tokens" },
               { text: "Vue", link: "/zh-TW/guide/vue" },
-              { text: "Alpine", link: "/zh-TW/guide/alpine" },
             ],
           },
           {
             text: "元件",
             items: [
-              { text: "Button 按鈕", link: "/zh-TW/components/button" },
               { text: "Avatar 頭像", link: "/zh-TW/components/avatar" },
+              { text: "Button 按鈕", link: "/zh-TW/components/button" },
             ],
           },
         ],
