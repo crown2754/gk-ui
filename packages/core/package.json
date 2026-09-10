@@ -20,7 +20,8 @@
     "./src/button/gk-button-group.ts",
     "./src/avatar/gk-avatar.ts",
     "./src/avatar/gk-avatar-group.ts",
-    "./src/card/gk-card.ts"
+    "./src/card/gk-card.ts",
+    "./src/alert/gk-alert.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",

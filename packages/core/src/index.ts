@@ -1,3 +1,4 @@
+import "./alert/gk-alert.js";
 import "./button/gk-button.js";
 import "./button/gk-button-group.js";
 import "./avatar/gk-avatar.js";
@@ -11,3 +12,5 @@ export type { GkAvatarSize } from "./avatar/gk-avatar.js";
 export { GkAvatarGroup } from "./avatar/gk-avatar-group.js";
 export { GkCard } from "./card/gk-card.js";
 export type { GkCardSize } from "./card/gk-card.js";
+export { GkAlert } from "./alert/gk-alert.js";
+export type { GkAlertType } from "./alert/gk-alert.js";
