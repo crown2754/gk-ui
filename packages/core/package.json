@@ -21,7 +21,8 @@
     "./src/avatar/gk-avatar.ts",
     "./src/avatar/gk-avatar-group.ts",
     "./src/card/gk-card.ts",
-    "./src/alert/gk-alert.ts"
+    "./src/alert/gk-alert.ts",
+    "./src/message/gk-message.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
