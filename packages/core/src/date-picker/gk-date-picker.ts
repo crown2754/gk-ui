@@ -61,7 +61,9 @@ function isRangePair(value: DatePickerValue): value is [string, string] {
     Array.isArray(value) &&
     value.length === 2 &&
     typeof value[0] === "string" &&
-    typeof value[1] === "string"
+    typeof value[1] === "string" &&
+    isValidIsoDate(value[0]) &&
+    isValidIsoDate(value[1])
   );
 }
 

@@ -224,6 +224,32 @@ describe("gk-date-picker daterange", () => {
     expect((spy.mock.calls[0][0] as CustomEvent).detail.value).toBeNull();
   });
 
+  it("isDateDisabled blocks day as range end without setting value", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.isDateDisabled = (iso) => iso === "2026-09-17";
+    el.open = true;
+    await el.updateComplete;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-iso="2026-09-10"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    const blocked = document.querySelector(
+      '.gk-date-picker-panel button[data-iso="2026-09-17"]',
+    ) as HTMLButtonElement;
+    expect(blocked.disabled).toBe(true);
+    blocked.click();
+    await el.updateComplete;
+    expect(el.value).toBeNull();
+    expect(el.open).toBe(true);
+    expect(onInput).not.toHaveBeenCalled();
+  });
+
   it("range panel has Clear but not Now", async () => {
     const el = await fixture<GkDatePicker>(
       html`<gk-date-picker type="daterange"></gk-date-picker>`,
