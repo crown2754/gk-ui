@@ -4,6 +4,11 @@ import { ref } from "vue";
 const value = ref("2026-09-17");
 const clearableValue = ref("2026-09-17");
 const range = ref<[string, string] | null>(["2026-09-01", "2026-09-17"]);
+const datetimeValue = ref("2026-09-17 08:00:00");
+const dateTimeRange = ref<[string, string] | null>([
+  "2026-09-01 09:00:00",
+  "2026-09-17 18:00:00",
+]);
 
 function onInput(e: CustomEvent<{ value: string }>) {
   value.value = e.detail.value;
@@ -15,6 +20,14 @@ function onClearableInput(e: CustomEvent<{ value: string }>) {
 
 function onRangeInput(e: CustomEvent<{ value: [string, string] | null }>) {
   range.value = e.detail.value;
+}
+
+function onDatetimeInput(e: CustomEvent<{ value: string }>) {
+  datetimeValue.value = e.detail.value;
+}
+
+function onDateTimeRangeInput(e: CustomEvent<{ value: [string, string] | null }>) {
+  dateTimeRange.value = e.detail.value;
 }
 
 /** Disable weekends (property-only; not an HTML attribute). */
@@ -37,6 +50,24 @@ const codes = {
   @input="onRangeInput"
 ></gk-date-picker>
 <p>{{ range }}</p>`,
+  datetime: `<!-- host: const datetimeValue = ref("2026-09-17 08:00:00"); function onDatetimeInput(e: CustomEvent<{ value: string }>) { datetimeValue.value = e.detail.value } -->
+<gk-date-picker
+  type="datetime"
+  clearable
+  :value="datetimeValue"
+  @input="onDatetimeInput"
+></gk-date-picker>
+<p>Value: {{ datetimeValue }}</p>`,
+  datetimerange: `<!-- host: const dateTimeRange = ref<[string, string] | null>(["2026-09-01 09:00:00", "2026-09-17 18:00:00"]); function onDateTimeRangeInput(e: CustomEvent<{ value: [string, string] | null }>) { dateTimeRange.value = e.detail.value } -->
+<gk-date-picker
+  type="datetimerange"
+  clearable
+  :value="dateTimeRange"
+  start-placeholder="Start"
+  end-placeholder="End"
+  @input="onDateTimeRangeInput"
+></gk-date-picker>
+<p>{{ dateTimeRange }}</p>`,
   size: `<gk-date-picker size="sm" placeholder="Small"></gk-date-picker>
 <gk-date-picker size="md" placeholder="Medium"></gk-date-picker>
 <gk-date-picker size="lg" placeholder="Large"></gk-date-picker>`,
@@ -63,9 +94,9 @@ const codes = {
 
 # Date Picker
 
-Date Picker selects a single calendar day **or** a date range (`type="daterange"`). The trigger matches Input sizing and chrome; the panel portals to `document.body` with month navigation. Single-date panels expose **Clear** / **Now**; range panels expose **Clear** only.
+Date Picker selects a single calendar day, a date range (`type="daterange"`), a date-time (`type="datetime"`), or a date-time range (`type="datetimerange"`). The trigger matches Input sizing and chrome; the panel portals to `document.body` with month navigation and optional hour/minute/second columns. Date panels expose **Clear** / **Now**; date-time panels add **Confirm** (draft until confirmed). Range panels expose **Clear** only; date-time range panels expose **Clear** / **Confirm** (no Now).
 
-Roadmap: datetime / month / year come later.
+Roadmap: month / year pickers come later.
 
 ## Demos
 
@@ -93,6 +124,38 @@ Roadmap: datetime / month / year come later.
       @input="onRangeInput"
     ></gk-date-picker>
     <p style="margin:0;font-size:0.875rem;opacity:0.8">{{ range ?? "null" }}</p>
+  </div>
+</DemoCard>
+
+<DemoCard title="Datetime" :code="codes.datetime">
+  <template #description>
+    Set <code>type="datetime"</code> and bind <code>value</code> as local <code>YYYY-MM-DD HH:mm:ss</code> (or empty). Calendar and time columns edit a draft until you click <strong>Confirm</strong> (**Clear** / **Now** commit immediately).
+  </template>
+  <div style="display:grid;gap:0.75rem;max-width:20rem">
+    <gk-date-picker
+      type="datetime"
+      clearable
+      :value="datetimeValue"
+      @input="onDatetimeInput"
+    ></gk-date-picker>
+    <p style="margin:0;font-size:0.875rem;opacity:0.8">Value: {{ datetimeValue || "(empty)" }}</p>
+  </div>
+</DemoCard>
+
+<DemoCard title="Datetimerange" :code="codes.datetimerange">
+  <template #description>
+    Set <code>type="datetimerange"</code> and bind <code>:value</code> to <code>[start, end] | null</code> (each string <code>YYYY-MM-DD HH:mm:ss</code>). Pick two days, adjust time for the active end, then <strong>Confirm</strong>. Panel shows <strong>Clear</strong> and <strong>Confirm</strong> only.
+  </template>
+  <div style="display:grid;gap:0.75rem;max-width:24rem">
+    <gk-date-picker
+      type="datetimerange"
+      clearable
+      :value="dateTimeRange"
+      start-placeholder="Start"
+      end-placeholder="End"
+      @input="onDateTimeRangeInput"
+    ></gk-date-picker>
+    <p style="margin:0;font-size:0.875rem;opacity:0.8">{{ dateTimeRange ?? "null" }}</p>
   </div>
 </DemoCard>
 
@@ -154,9 +217,9 @@ Roadmap: datetime / month / year come later.
 
 | Prop | Type | Default |
 |------|------|---------|
-| `type` | `'date' \| 'daterange'` | `'date'` |
+| `type` | `'date' \| 'daterange' \| 'datetime' \| 'datetimerange'` | `'date'` |
 | `value` | `string` \| `[string, string] \| null` | `''` / `null` |
-| `format` | `string` | `'yyyy-MM-dd'` |
+| `format` | `string` | `'yyyy-MM-dd'` or `'yyyy-MM-dd HH:mm:ss'` (datetime types) |
 | `separator` | `string` | `' - '` |
 | `start-placeholder` | `string` | `''` |
 | `end-placeholder` | `string` | `''` |
@@ -170,13 +233,13 @@ Roadmap: datetime / month / year come later.
 | `locale` | `'en' \| 'zh-TW'` | `'en'` |
 | `isDateDisabled` | `(iso: string) => boolean` | — |
 
-For `type="date"`, `value` is ISO `YYYY-MM-DD` or empty string. For `type="daterange"`, `value` is `[start, end] | null` (prefer `:value` property binding; attribute may be a JSON array). `format` only affects trigger display (`yyyy` `MM` `dd`). `separator` and `start-placeholder` / `end-placeholder` apply to range display (placeholders fall back to `placeholder` when empty). `isDateDisabled` is property-only (not an HTML attribute). Range panels show **Clear** only (no Now).
+For `type="date"`, `value` is ISO `YYYY-MM-DD` or empty string. For `type="daterange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD`). For `type="datetime"`, `value` is local `YYYY-MM-DD HH:mm:ss` or empty string. For `type="datetimerange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD HH:mm:ss`). Prefer `:value` property binding; range attributes may be a JSON array. `format` only affects trigger display: date types use `yyyy` `MM` `dd`; datetime types also support `HH` `mm` `ss`. Default `format` switches to `yyyy-MM-dd HH:mm:ss` when `type` is `datetime` or `datetimerange`. `separator` and `start-placeholder` / `end-placeholder` apply to range display (placeholders fall back to `placeholder` when empty). `isDateDisabled` is property-only (not an HTML attribute) and applies to the calendar day (`YYYY-MM-DD`) only. Date range panels show **Clear** only (no Now). Datetime panels show **Clear** / **Now** / **Confirm**; datetimerange shows **Clear** / **Confirm** only. **Confirm** commits the panel draft; **Now** and **Clear** commit immediately.
 
 ### Date Picker Events
 
 | Name | Description |
 |------|-------------|
-| `input` | Value changed (select / clear / now); bubbles; `composed: true`; `detail.value` is `string` for `date`, `[string, string] \| null` for `daterange` |
+| `input` | Value changed (select / clear / now / confirm); bubbles; `composed: true`; `detail.value` is `string` for `date` and `datetime`, `[string, string] \| null` for `daterange` and `datetimerange` |
 | `change` | Same commits as `input`; bubbles; `composed: true`; `detail.value` matches `input` |
 | `gk-open-change` | Panel open state changed; bubbles; `composed: true`; `detail: { open: boolean }` |
 
@@ -192,4 +255,6 @@ Trigger parts are exposable via `gk-date-picker::part(...)`. The panel is portal
 | `clear` | Trigger clear button (`::part`) |
 | `panel` | Portaled popup root — style via `.gk-date-picker-panel` |
 | `calendar` | Month grid region — under `.gk-date-picker-panel` |
-| `actions` | Clear / Now row (Clear only for range) — under `.gk-date-picker-panel` |
+| `time` | Hour / minute / second columns — under `.gk-date-picker-panel` |
+| `confirm` | Confirm button — under `.gk-date-picker-panel` |
+| `actions` | Clear / Now / Confirm row (varies by `type`) — under `.gk-date-picker-panel` |
