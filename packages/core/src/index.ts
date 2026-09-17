@@ -7,6 +7,7 @@ import "./avatar/gk-avatar.js";
 import "./avatar/gk-avatar-group.js";
 import "./card/gk-card.js";
 import "./input/gk-input.js";
+import "./date-picker/gk-date-picker.js";
 export { GkButton } from "./button/gk-button.js";
 export type { GkButtonVariant, GkButtonSize, GkButtonType } from "./button/gk-button.js";
 export { GkButtonGroup } from "./button/gk-button-group.js";
@@ -35,3 +36,9 @@ export type {
   GkInputSize,
   GkInputStatus,
 } from "./input/gk-input.js";
+export { GkDatePicker } from "./date-picker/gk-date-picker.js";
+export type {
+  GkDatePickerLocale,
+  GkDatePickerSize,
+  GkDatePickerStatus,
+} from "./date-picker/gk-date-picker.js";
