@@ -20,8 +20,11 @@ export const inputStyles = css`
     width: 100%;
     margin: 0;
     background: var(--gk-color-surface, #fff);
-    color: var(--gk-color-text, rgb(31, 34, 37));
+    /* Use on-surface so dark-mode chrome text tokens don't wash out field text */
+    color: var(--gk-color-on-surface, rgb(31, 34, 37));
+    caret-color: var(--gk-color-on-surface, rgb(31, 34, 37));
     border: 1px solid var(--gk-color-border, rgb(224, 224, 230));
+    color-scheme: light;
     border-radius: var(--gk-radius-sm, 0.375rem);
     font-family: var(--gk-font-family-sans, "Source Sans 3", "Segoe UI", sans-serif);
     font-weight: var(--gk-font-weight-medium, 500);
@@ -108,7 +111,7 @@ export const inputStyles = css`
     align-items: center;
     gap: var(--gk-space-1, 0.25rem);
     flex-shrink: 0;
-    color: var(--gk-color-text-muted, rgb(118, 124, 130));
+    color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
   }
 
   [part="input"] {
@@ -120,9 +123,16 @@ export const inputStyles = css`
     border: 0;
     background: transparent;
     color: inherit;
+    -webkit-text-fill-color: currentColor;
     font: inherit;
     line-height: 1.4;
     outline: none;
+  }
+
+  [part="input"]::placeholder {
+    color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
+    -webkit-text-fill-color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
+    opacity: 1;
   }
 
   textarea[part="input"] {

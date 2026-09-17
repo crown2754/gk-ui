@@ -24,6 +24,9 @@
   --gk-color-button-default-hover: rgba(46, 51, 56, 0.09);
   --gk-color-text: rgb(31, 34, 37);
   --gk-color-text-muted: rgb(118, 124, 130);
+  /* Text that sits on --gk-color-surface (form fields); keep independent of chrome text */
+  --gk-color-on-surface: rgb(31, 34, 37);
+  --gk-color-on-surface-muted: rgb(118, 124, 130);
   --gk-color-border: rgb(224, 224, 230);
   --gk-color-divider: rgb(239, 239, 245);
   --gk-color-focus-ring: rgb(242, 206, 94);
