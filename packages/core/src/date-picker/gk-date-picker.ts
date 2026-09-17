@@ -7,6 +7,7 @@ import {
 } from "./gk-date-picker.styles.js";
 import {
   buildMonthGrid,
+  compareDateTime,
   compareIso,
   datePart,
   formatDisplay,
@@ -56,11 +57,14 @@ function parseRangeAttr(raw: string | null): RangeValue {
       Array.isArray(v) &&
       v.length === 2 &&
       typeof v[0] === "string" &&
-      typeof v[1] === "string" &&
-      isValidIsoDate(v[0]) &&
-      isValidIsoDate(v[1])
+      typeof v[1] === "string"
     ) {
-      return [v[0], v[1]];
+      if (isValidDateTime(v[0]) && isValidDateTime(v[1])) {
+        return [v[0], v[1]];
+      }
+      if (isValidIsoDate(v[0]) && isValidIsoDate(v[1])) {
+        return [v[0], v[1]];
+      }
     }
   } catch {
     /* ignore */
@@ -76,6 +80,17 @@ function isRangePair(value: DatePickerValue): value is [string, string] {
     typeof value[1] === "string" &&
     isValidIsoDate(value[0]) &&
     isValidIsoDate(value[1])
+  );
+}
+
+function isDateTimeRangePair(value: DatePickerValue): value is [string, string] {
+  return (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    typeof value[0] === "string" &&
+    typeof value[1] === "string" &&
+    isValidDateTime(value[0]) &&
+    isValidDateTime(value[1])
   );
 }
 
@@ -152,6 +167,15 @@ export class GkDatePicker extends LitElement {
   private rangeDraftStart: string | null = null;
 
   @state()
+  private rangeDraftStartDt: string | null = null;
+
+  @state()
+  private rangeDraftEndDt: string | null = null;
+
+  @state()
+  private rangeTimeTarget: "start" | "end" = "start";
+
+  @state()
   private draftDate: string | null = null;
 
   @state()
@@ -203,6 +227,8 @@ export class GkDatePicker extends LitElement {
       if (this.open) {
         if (this.type === "datetime") {
           this.initDateTimeDraft();
+        } else if (this.type === "datetimerange") {
+          this.initDateTimeRangeDraft();
         }
         this.ensurePanel();
         this.bindDismissListeners();
@@ -219,6 +245,9 @@ export class GkDatePicker extends LitElement {
         changed.has("type") ||
         changed.has("separator") ||
         changed.has("rangeDraftStart") ||
+        changed.has("rangeDraftStartDt") ||
+        changed.has("rangeDraftEndDt") ||
+        changed.has("rangeTimeTarget") ||
         changed.has("draftDate") ||
         changed.has("draftH") ||
         changed.has("draftM") ||
@@ -242,8 +271,12 @@ export class GkDatePicker extends LitElement {
   }
 
   private coerceValueForType() {
-    if (this.type === "daterange" || this.type === "datetimerange") {
+    if (this.type === "daterange") {
       if (!isRangePair(this.value)) {
+        this.value = null;
+      }
+    } else if (this.type === "datetimerange") {
+      if (!isDateTimeRangePair(this.value)) {
         this.value = null;
       }
     } else if (this.type === "datetime") {
@@ -260,8 +293,16 @@ export class GkDatePicker extends LitElement {
 
   /** Clear in-progress range pick; restore stashed pair if restart was cancelled. */
   private dismissRangeDraft() {
-    if (!this.rangeDraftStart && !this.rangeStash) return;
+    const hadDraft =
+      this.rangeDraftStart ||
+      this.rangeDraftStartDt ||
+      this.rangeDraftEndDt ||
+      this.rangeStash;
+    if (!hadDraft) return;
     this.rangeDraftStart = null;
+    this.rangeDraftStartDt = null;
+    this.rangeDraftEndDt = null;
+    this.rangeTimeTarget = "start";
     if (this.rangeStash) {
       this.value = this.rangeStash;
       this.rangeStash = null;
@@ -291,10 +332,61 @@ export class GkDatePicker extends LitElement {
     }
   }
 
+  private initDateTimeRangeDraft() {
+    if (isDateTimeRangePair(this.value)) {
+      this.rangeDraftStartDt = this.value[0];
+      this.rangeDraftEndDt = this.value[1];
+      this.rangeTimeTarget = "end";
+      this.syncDraftTimeFromRangeTarget();
+    } else {
+      this.rangeDraftStartDt = null;
+      this.rangeDraftEndDt = null;
+      this.rangeTimeTarget = "start";
+      this.draftH = 0;
+      this.draftM = 0;
+      this.draftS = 0;
+    }
+  }
+
+  private syncDraftTimeFromRangeTarget() {
+    const active =
+      this.rangeTimeTarget === "start"
+        ? this.rangeDraftStartDt
+        : this.rangeDraftEndDt;
+    const parsed = active ? parseDateTime(active) : null;
+    if (parsed) {
+      this.draftH = parsed.h;
+      this.draftM = parsed.m;
+      this.draftS = parsed.s;
+    } else {
+      this.draftH = 0;
+      this.draftM = 0;
+      this.draftS = 0;
+    }
+  }
+
+  private applyDraftTimeToRangeTarget() {
+    if (this.type !== "datetimerange") return;
+    const active =
+      this.rangeTimeTarget === "start"
+        ? this.rangeDraftStartDt
+        : this.rangeDraftEndDt;
+    if (!active) return;
+    const date = datePart(active);
+    const next = toDateTime(date, this.draftH, this.draftM, this.draftS);
+    if (this.rangeTimeTarget === "start") {
+      this.rangeDraftStartDt = next;
+    } else {
+      this.rangeDraftEndDt = next;
+    }
+  }
+
   private syncViewFromValue() {
     let iso = "";
     if (this.type === "daterange" && isRangePair(this.value)) {
       iso = this.value[0];
+    } else if (this.type === "datetimerange" && isDateTimeRangePair(this.value)) {
+      iso = datePart(this.value[0]);
     } else if (typeof this.value === "string") {
       iso = this.type === "datetime" ? datePart(this.value) : this.value;
     }
@@ -350,8 +442,12 @@ export class GkDatePicker extends LitElement {
     e.stopPropagation();
     if (this.disabled) return;
     this.rangeDraftStart = null;
+    this.rangeDraftStartDt = null;
+    this.rangeDraftEndDt = null;
     this.rangeStash = null;
-    this.emitValue(this.type === "daterange" ? null : "");
+    this.emitValue(
+      this.type === "daterange" || this.type === "datetimerange" ? null : "",
+    );
   };
 
   private onDayClick = (iso: string) => {
@@ -375,6 +471,43 @@ export class GkDatePicker extends LitElement {
       this.setOpen(false);
       return;
     }
+    if (this.type === "datetimerange") {
+      if (this.rangeDraftStartDt && this.rangeDraftEndDt) {
+        if (isDateTimeRangePair(this.value)) {
+          this.rangeStash = this.value;
+          this.value = null;
+        }
+        this.rangeDraftEndDt = null;
+        this.rangeDraftStartDt = toDateTime(iso, 0, 0, 0);
+        this.rangeTimeTarget = "start";
+        this.draftH = 0;
+        this.draftM = 0;
+        this.draftS = 0;
+        return;
+      }
+      if (!this.rangeDraftStartDt) {
+        if (isDateTimeRangePair(this.value)) {
+          this.rangeStash = this.value;
+          this.value = null;
+        }
+        this.rangeDraftStartDt = toDateTime(iso, 0, 0, 0);
+        this.rangeTimeTarget = "start";
+        this.draftH = 0;
+        this.draftM = 0;
+        this.draftS = 0;
+        return;
+      }
+      let startDt = this.rangeDraftStartDt;
+      let endDt = toDateTime(iso, 0, 0, 0);
+      if (compareDateTime(startDt, endDt) > 0) {
+        [startDt, endDt] = [endDt, startDt];
+      }
+      this.rangeDraftStartDt = startDt;
+      this.rangeDraftEndDt = endDt;
+      this.rangeTimeTarget = "end";
+      this.syncDraftTimeFromRangeTarget();
+      return;
+    }
     if (this.type === "datetime") {
       this.draftDate = iso;
       return;
@@ -384,6 +517,13 @@ export class GkDatePicker extends LitElement {
   };
 
   private onTimePick = (kind: "h" | "m" | "s", n: number) => {
+    if (this.type === "datetimerange") {
+      if (kind === "h") this.draftH = n;
+      else if (kind === "m") this.draftM = n;
+      else this.draftS = n;
+      this.applyDraftTimeToRangeTarget();
+      return;
+    }
     if (this.type !== "datetime") return;
     if (kind === "h") this.draftH = n;
     else if (kind === "m") this.draftM = n;
@@ -391,6 +531,20 @@ export class GkDatePicker extends LitElement {
   };
 
   private onPanelConfirm = () => {
+    if (this.type === "datetimerange") {
+      if (!this.rangeDraftStartDt || !this.rangeDraftEndDt) return;
+      let start = this.rangeDraftStartDt;
+      let end = this.rangeDraftEndDt;
+      if (compareDateTime(start, end) > 0) {
+        [start, end] = [end, start];
+      }
+      this.rangeStash = null;
+      this.emitValue([start, end]);
+      this.rangeDraftStartDt = null;
+      this.rangeDraftEndDt = null;
+      this.setOpen(false);
+      return;
+    }
     if (this.type !== "datetime" || !this.draftDate) return;
     this.emitValue(
       toDateTime(this.draftDate, this.draftH, this.draftM, this.draftS),
@@ -400,8 +554,12 @@ export class GkDatePicker extends LitElement {
 
   private onPanelClear = () => {
     this.rangeDraftStart = null;
+    this.rangeDraftStartDt = null;
+    this.rangeDraftEndDt = null;
     this.rangeStash = null;
-    this.emitValue(this.type === "daterange" ? null : "");
+    this.emitValue(
+      this.type === "daterange" || this.type === "datetimerange" ? null : "",
+    );
     this.setOpen(false);
   };
 
@@ -517,6 +675,27 @@ export class GkDatePicker extends LitElement {
       }
       return { selected: false, inRange: false };
     }
+    if (this.type === "datetimerange") {
+      let startIso = "";
+      let endIso = "";
+      if (this.rangeDraftStartDt) {
+        startIso = datePart(this.rangeDraftStartDt);
+        if (this.rangeDraftEndDt) {
+          endIso = datePart(this.rangeDraftEndDt);
+        } else {
+          return { selected: iso === startIso, inRange: false };
+        }
+      } else if (isDateTimeRangePair(this.value)) {
+        startIso = datePart(this.value[0]);
+        endIso = datePart(this.value[1]);
+      } else {
+        return { selected: false, inRange: false };
+      }
+      const selected = iso === startIso || iso === endIso;
+      const inRange =
+        !selected && isIsoInRange(iso, startIso, endIso);
+      return { selected, inRange };
+    }
     if (this.type === "datetime") {
       let activeDate = "";
       if (this.open && this.draftDate) {
@@ -588,58 +767,64 @@ export class GkDatePicker extends LitElement {
       </div>
     `;
 
-    if (this.type === "datetime") {
+    const timeColumns = () => {
       const hours = Array.from({ length: 24 }, (_, i) => i);
       const mins = Array.from({ length: 60 }, (_, i) => i);
       const secs = Array.from({ length: 60 }, (_, i) => i);
+      return html`
+        <div part="time" class="gk-dp-time">
+          <div class="gk-dp-time-col">
+            ${hours.map(
+              (h) => html`
+                <button
+                  type="button"
+                  data-h=${h}
+                  class=${classMap({ "is-active": this.draftH === h })}
+                  @click=${() => this.onTimePick("h", h)}
+                >
+                  ${String(h).padStart(2, "0")}
+                </button>
+              `,
+            )}
+          </div>
+          <div class="gk-dp-time-col">
+            ${mins.map(
+              (m) => html`
+                <button
+                  type="button"
+                  data-m=${m}
+                  class=${classMap({ "is-active": this.draftM === m })}
+                  @click=${() => this.onTimePick("m", m)}
+                >
+                  ${String(m).padStart(2, "0")}
+                </button>
+              `,
+            )}
+          </div>
+          <div class="gk-dp-time-col">
+            ${secs.map(
+              (s) => html`
+                <button
+                  type="button"
+                  data-s=${s}
+                  class=${classMap({ "is-active": this.draftS === s })}
+                  @click=${() => this.onTimePick("s", s)}
+                >
+                  ${String(s).padStart(2, "0")}
+                </button>
+              `,
+            )}
+          </div>
+        </div>
+      `;
+    };
+
+    if (this.type === "datetime") {
       render(
         html`
           <div class="gk-dp-body">
             ${calendar}
-            <div part="time" class="gk-dp-time">
-              <div class="gk-dp-time-col">
-                ${hours.map(
-                  (h) => html`
-                    <button
-                      type="button"
-                      data-h=${h}
-                      class=${classMap({ "is-active": this.draftH === h })}
-                      @click=${() => this.onTimePick("h", h)}
-                    >
-                      ${String(h).padStart(2, "0")}
-                    </button>
-                  `,
-                )}
-              </div>
-              <div class="gk-dp-time-col">
-                ${mins.map(
-                  (m) => html`
-                    <button
-                      type="button"
-                      data-m=${m}
-                      class=${classMap({ "is-active": this.draftM === m })}
-                      @click=${() => this.onTimePick("m", m)}
-                    >
-                      ${String(m).padStart(2, "0")}
-                    </button>
-                  `,
-                )}
-              </div>
-              <div class="gk-dp-time-col">
-                ${secs.map(
-                  (s) => html`
-                    <button
-                      type="button"
-                      data-s=${s}
-                      class=${classMap({ "is-active": this.draftS === s })}
-                      @click=${() => this.onTimePick("s", s)}
-                    >
-                      ${String(s).padStart(2, "0")}
-                    </button>
-                  `,
-                )}
-              </div>
-            </div>
+            ${timeColumns()}
           </div>
           <div part="actions">
             <button type="button" data-action="clear" @click=${this.onPanelClear}>
@@ -652,6 +837,32 @@ export class GkDatePicker extends LitElement {
               @click=${this.onPanelNow}
             >
               ${labels.now}
+            </button>
+            <button
+              type="button"
+              part="confirm"
+              data-action="confirm"
+              @click=${this.onPanelConfirm}
+            >
+              ${labels.confirm}
+            </button>
+          </div>
+        `,
+        this.panel,
+      );
+      return;
+    }
+
+    if (this.type === "datetimerange") {
+      render(
+        html`
+          <div class="gk-dp-body">
+            ${calendar}
+            ${timeColumns()}
+          </div>
+          <div part="actions">
+            <button type="button" data-action="clear" @click=${this.onPanelClear}>
+              ${labels.clear}
             </button>
             <button
               type="button"
@@ -712,10 +923,29 @@ export class GkDatePicker extends LitElement {
     if (this.type === "daterange") {
       return isRangePair(this.value);
     }
+    if (this.type === "datetimerange") {
+      return isDateTimeRangePair(this.value);
+    }
     return typeof this.value === "string" && this.value.length > 0;
   }
 
   private displayText() {
+    if (this.type === "datetimerange") {
+      if (isDateTimeRangePair(this.value)) {
+        const [start, end] = this.value;
+        return (
+          formatDisplay(start, this.format) +
+          this.separator +
+          formatDisplay(end, this.format)
+        );
+      }
+      const startHint = this.startPlaceholder || this.placeholder;
+      const endHint = this.endPlaceholder || this.placeholder;
+      if (startHint || endHint) {
+        return `${startHint}${this.separator}${endHint}`;
+      }
+      return this.placeholder;
+    }
     if (this.type === "daterange") {
       if (isRangePair(this.value)) {
         const [start, end] = this.value;
@@ -747,6 +977,9 @@ export class GkDatePicker extends LitElement {
   private isEmptyDisplay() {
     if (this.type === "daterange") {
       return !isRangePair(this.value);
+    }
+    if (this.type === "datetimerange") {
+      return !isDateTimeRangePair(this.value);
     }
     if (this.type === "datetime") {
       return !(typeof this.value === "string" && isValidDateTime(this.value));

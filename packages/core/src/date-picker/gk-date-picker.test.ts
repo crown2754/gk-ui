@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { fixture, html } from "@open-wc/testing";
 import "./gk-date-picker.js";
 import type { GkDatePicker } from "./gk-date-picker.js";
-import { todayIso } from "./date-utils.js";
+import { datePart, todayIso } from "./date-utils.js";
 
 describe("gk-date-picker", () => {
   afterEach(() => {
@@ -475,5 +475,81 @@ describe("gk-date-picker datetime", () => {
     await el.updateComplete;
     expect(el.value).toBe(`${iso} 14:00:00`);
     expect(el.open).toBe(false);
+  });
+});
+
+describe("gk-date-picker datetimerange", () => {
+  afterEach(() => {
+    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+  });
+
+  it("defaults value null", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetimerange"></gk-date-picker>`,
+    );
+    expect(el.value).toBeNull();
+  });
+
+  it("two days + Confirm sets ordered pair", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetimerange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const inMonth = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+      ),
+    ] as HTMLButtonElement[];
+    const a = inMonth[5];
+    const b = inMonth[10];
+    const isoA = a.dataset.iso!;
+    const isoB = b.dataset.iso!;
+    a.click();
+    await el.updateComplete;
+    b.click();
+    await el.updateComplete;
+    expect(el.value).toBeNull();
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="confirm"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    const pair = el.value as [string, string];
+    expect(pair[0] <= pair[1]).toBe(true);
+    expect(datePart(pair[0])).toBe(isoA < isoB ? isoA : isoB);
+    expect(datePart(pair[1])).toBe(isoA < isoB ? isoB : isoA);
+    expect(el.open).toBe(false);
+  });
+
+  it("panel has Clear and Confirm but not Now", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetimerange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const panel = document.querySelector(".gk-date-picker-panel")!;
+    expect(panel.querySelector('[data-action="clear"]')).toBeTruthy();
+    expect(panel.querySelector('[data-action="confirm"]')).toBeTruthy();
+    expect(panel.querySelector('[data-action="now"]')).toBeFalsy();
+  });
+
+  it("Clear sets null", async () => {
+    const el = await fixture<GkDatePicker>(html`
+      <gk-date-picker
+        type="datetimerange"
+        .value=${["2026-09-01 00:00:00", "2026-09-10 12:00:00"]}
+      ></gk-date-picker>
+    `);
+    el.open = true;
+    await el.updateComplete;
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="clear"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(el.value).toBeNull();
   });
 });
