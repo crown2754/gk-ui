@@ -7,6 +7,7 @@ import {
 } from "./gk-date-picker.styles.js";
 import {
   buildMonthGrid,
+  buildYearPage,
   compareDateTime,
   compareIso,
   datePart,
@@ -14,10 +15,14 @@ import {
   isIsoInRange,
   isValidDateTime,
   isValidIsoDate,
+  isValidYear,
+  isValidYearMonth,
   parseDateTime,
   parseIsoDate,
   todayDateTime,
   todayIso,
+  todayYear,
+  todayYearMonth,
   toDateTime,
 } from "./date-utils.js";
 
@@ -25,7 +30,9 @@ export type GkDatePickerType =
   | "date"
   | "daterange"
   | "datetime"
-  | "datetimerange";
+  | "datetimerange"
+  | "month"
+  | "year";
 export type GkDatePickerSize = "sm" | "md" | "lg";
 export type GkDatePickerStatus = "success" | "warning" | "error" | "";
 export type GkDatePickerLocale = "en" | "zh-TW";
@@ -45,6 +52,37 @@ const LABELS: Record<
 > = {
   en: { clear: "Clear", now: "Now", confirm: "Confirm" },
   "zh-TW": { clear: "清除", now: "現在", confirm: "確認" },
+};
+
+const MONTH_NAMES: Record<GkDatePickerLocale, string[]> = {
+  en: [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ],
+  "zh-TW": [
+    "1月",
+    "2月",
+    "3月",
+    "4月",
+    "5月",
+    "6月",
+    "7月",
+    "8月",
+    "9月",
+    "10月",
+    "11月",
+    "12月",
+  ],
 };
 
 const PANEL_STYLE_ID = "gk-date-picker-panel-style";
@@ -164,6 +202,9 @@ export class GkDatePicker extends LitElement {
   private viewMonth = new Date().getMonth();
 
   @state()
+  private yearPageStart = Math.floor(new Date().getFullYear() / 12) * 12;
+
+  @state()
   private rangeDraftStart: string | null = null;
 
   @state()
@@ -256,6 +297,7 @@ export class GkDatePicker extends LitElement {
         changed.has("isDateDisabled") ||
         changed.has("viewYear") ||
         changed.has("viewMonth") ||
+        changed.has("yearPageStart") ||
         changed.has("open"))
     ) {
       this.renderPanel();
@@ -263,7 +305,15 @@ export class GkDatePicker extends LitElement {
   }
 
   private syncDefaultFormat() {
-    if (this.type === "datetime" || this.type === "datetimerange") {
+    if (this.type === "month") {
+      if (this.format === "yyyy-MM-dd") {
+        this.format = "yyyy-MM";
+      }
+    } else if (this.type === "year") {
+      if (this.format === "yyyy-MM-dd") {
+        this.format = "yyyy";
+      }
+    } else if (this.type === "datetime" || this.type === "datetimerange") {
       if (this.format === "yyyy-MM-dd") {
         this.format = "yyyy-MM-dd HH:mm:ss";
       }
@@ -283,6 +333,20 @@ export class GkDatePicker extends LitElement {
       if (
         typeof this.value !== "string" ||
         (this.value !== "" && !isValidDateTime(this.value))
+      ) {
+        this.value = "";
+      }
+    } else if (this.type === "month") {
+      if (
+        typeof this.value !== "string" ||
+        (this.value !== "" && !isValidYearMonth(this.value))
+      ) {
+        this.value = "";
+      }
+    } else if (this.type === "year") {
+      if (
+        typeof this.value !== "string" ||
+        (this.value !== "" && !isValidYear(this.value))
       ) {
         this.value = "";
       }
@@ -381,7 +445,27 @@ export class GkDatePicker extends LitElement {
     }
   }
 
+  private alignYearPageStart(year: number): number {
+    return Math.floor(year / 12) * 12;
+  }
+
   private syncViewFromValue() {
+    if (this.type === "month") {
+      if (typeof this.value === "string" && isValidYearMonth(this.value)) {
+        this.viewYear = Number(this.value.slice(0, 4));
+      }
+      return;
+    }
+    if (this.type === "year") {
+      const fallback = new Date().getFullYear();
+      const y =
+        typeof this.value === "string" && isValidYear(this.value)
+          ? Number(this.value)
+          : fallback;
+      this.viewYear = y;
+      this.yearPageStart = this.alignYearPageStart(y);
+      return;
+    }
     let iso = "";
     if (this.type === "daterange" && isRangePair(this.value)) {
       iso = this.value[0];
@@ -573,6 +657,20 @@ export class GkDatePicker extends LitElement {
   };
 
   private onPanelNow = () => {
+    if (this.type === "month") {
+      const ym = todayYearMonth();
+      if (this.isDateDisabled?.(ym)) return;
+      this.emitValue(ym);
+      this.setOpen(false);
+      return;
+    }
+    if (this.type === "year") {
+      const y = todayYear();
+      if (this.isDateDisabled?.(y)) return;
+      this.emitValue(y);
+      this.setOpen(false);
+      return;
+    }
     const iso = todayIso();
     if (this.isDateDisabled?.(iso)) return;
     if (this.type === "datetime") {
@@ -582,6 +680,26 @@ export class GkDatePicker extends LitElement {
     }
     this.setOpen(false);
   };
+
+  private onMonthClick = (ym: string) => {
+    if (this.isDateDisabled?.(ym)) return;
+    this.emitValue(ym);
+    this.setOpen(false);
+  };
+
+  private onYearClick = (year: string) => {
+    if (this.isDateDisabled?.(year)) return;
+    this.emitValue(year);
+    this.setOpen(false);
+  };
+
+  private shiftViewYear(delta: number) {
+    this.viewYear += delta;
+  }
+
+  private shiftYearPage(delta: number) {
+    this.yearPageStart += delta * 12;
+  }
 
   private shiftMonth(delta: number) {
     let y = this.viewYear;
@@ -828,6 +946,137 @@ export class GkDatePicker extends LitElement {
       `;
     };
 
+    if (this.type === "month") {
+      const monthLabels = MONTH_NAMES[locale];
+      const todayYm = todayYearMonth();
+      const nowDisabledMonth = !!this.isDateDisabled?.(todayYm);
+      const monthButtons = Array.from({ length: 12 }, (_, i) => {
+        const mo = String(i + 1).padStart(2, "0");
+        const ym = `${this.viewYear}-${mo}`;
+        const disabled = !!this.isDateDisabled?.(ym);
+        const selected =
+          typeof this.value === "string" && this.value === ym;
+        return html`
+          <button
+            type="button"
+            data-month=${ym}
+            class=${classMap({ "is-selected": selected })}
+            ?disabled=${disabled}
+            ?data-today=${ym === todayYm}
+            ?data-selected=${selected}
+            @click=${() => this.onMonthClick(ym)}
+          >
+            ${monthLabels[i]}
+          </button>
+        `;
+      });
+      render(
+        html`
+          <div part="calendar">
+            <div class="gk-date-picker-panel__nav">
+              <button
+                type="button"
+                aria-label="Previous year"
+                @click=${() => this.shiftViewYear(-1)}
+              >
+                ‹
+              </button>
+              <div class="gk-date-picker-panel__nav-title">${this.viewYear}</div>
+              <button
+                type="button"
+                aria-label="Next year"
+                @click=${() => this.shiftViewYear(1)}
+              >
+                ›
+              </button>
+            </div>
+            <div class="gk-dp-month-grid">${monthButtons}</div>
+          </div>
+          <div part="actions">
+            <button type="button" data-action="clear" @click=${this.onPanelClear}>
+              ${labels.clear}
+            </button>
+            <button
+              type="button"
+              data-action="now"
+              ?disabled=${nowDisabledMonth}
+              @click=${this.onPanelNow}
+            >
+              ${labels.now}
+            </button>
+          </div>
+        `,
+        this.panel,
+      );
+      return;
+    }
+
+    if (this.type === "year") {
+      const todayY = todayYear();
+      const nowDisabledYear = !!this.isDateDisabled?.(todayY);
+      const years = buildYearPage(this.yearPageStart);
+      const yearEnd = this.yearPageStart + years.length - 1;
+      const yearButtons = years.map((y) => {
+        const ys = String(y);
+        const disabled = !!this.isDateDisabled?.(ys);
+        const selected = typeof this.value === "string" && this.value === ys;
+        return html`
+          <button
+            type="button"
+            data-year=${ys}
+            class=${classMap({ "is-selected": selected })}
+            ?disabled=${disabled}
+            ?data-today=${ys === todayY}
+            ?data-selected=${selected}
+            @click=${() => this.onYearClick(ys)}
+          >
+            ${ys}
+          </button>
+        `;
+      });
+      render(
+        html`
+          <div part="calendar">
+            <div class="gk-date-picker-panel__nav">
+              <button
+                type="button"
+                aria-label="Previous years"
+                @click=${() => this.shiftYearPage(-1)}
+              >
+                ‹
+              </button>
+              <div class="gk-date-picker-panel__nav-title">
+                ${this.yearPageStart} – ${yearEnd}
+              </div>
+              <button
+                type="button"
+                aria-label="Next years"
+                @click=${() => this.shiftYearPage(1)}
+              >
+                ›
+              </button>
+            </div>
+            <div class="gk-dp-year-grid">${yearButtons}</div>
+          </div>
+          <div part="actions">
+            <button type="button" data-action="clear" @click=${this.onPanelClear}>
+              ${labels.clear}
+            </button>
+            <button
+              type="button"
+              data-action="now"
+              ?disabled=${nowDisabledYear}
+              @click=${this.onPanelNow}
+            >
+              ${labels.now}
+            </button>
+          </div>
+        `,
+        this.panel,
+      );
+      return;
+    }
+
     if (this.type === "datetime") {
       render(
         html`
@@ -977,6 +1226,18 @@ export class GkDatePicker extends LitElement {
       }
       return this.placeholder;
     }
+    if (this.type === "month") {
+      if (typeof this.value === "string" && isValidYearMonth(this.value)) {
+        return formatDisplay(this.value, this.format);
+      }
+      return this.placeholder;
+    }
+    if (this.type === "year") {
+      if (typeof this.value === "string" && isValidYear(this.value)) {
+        return formatDisplay(this.value, this.format);
+      }
+      return this.placeholder;
+    }
     if (typeof this.value === "string" && isValidIsoDate(this.value)) {
       return formatDisplay(this.value, this.format);
     }
@@ -992,6 +1253,12 @@ export class GkDatePicker extends LitElement {
     }
     if (this.type === "datetime") {
       return !(typeof this.value === "string" && isValidDateTime(this.value));
+    }
+    if (this.type === "month") {
+      return !(typeof this.value === "string" && isValidYearMonth(this.value));
+    }
+    if (this.type === "year") {
+      return !(typeof this.value === "string" && isValidYear(this.value));
     }
     return !(typeof this.value === "string" && isValidIsoDate(this.value));
   }

@@ -237,6 +237,47 @@ export const datePickerPanelCssText = `
   opacity: 0.4;
   cursor: not-allowed;
 }
+.gk-date-picker-panel .gk-dp-month-grid,
+.gk-date-picker-panel .gk-dp-year-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.gk-date-picker-panel .gk-dp-month-grid button,
+.gk-date-picker-panel .gk-dp-year-grid button {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: var(--gk-radius-sm, 0.375rem);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.2;
+}
+.gk-date-picker-panel .gk-dp-month-grid button:hover:not(:disabled),
+.gk-date-picker-panel .gk-dp-year-grid button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--gk-color-brand, rgb(242, 206, 94)) 18%, transparent);
+}
+.gk-date-picker-panel .gk-dp-month-grid button[data-today],
+.gk-date-picker-panel .gk-dp-year-grid button[data-today] {
+  outline: 1px solid var(--gk-color-brand, rgb(242, 206, 94));
+  outline-offset: -1px;
+}
+.gk-date-picker-panel .gk-dp-month-grid button[data-selected],
+.gk-date-picker-panel .gk-dp-month-grid button.is-selected,
+.gk-date-picker-panel .gk-dp-year-grid button[data-selected],
+.gk-date-picker-panel .gk-dp-year-grid button.is-selected {
+  background: var(--gk-color-brand, rgb(242, 206, 94));
+  color: var(--gk-color-brand-on, rgb(31, 34, 37));
+  outline: none;
+}
+.gk-date-picker-panel .gk-dp-month-grid button:disabled,
+.gk-date-picker-panel .gk-dp-year-grid button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 .gk-date-picker-panel [part="actions"] {
   display: flex;
   justify-content: flex-end;

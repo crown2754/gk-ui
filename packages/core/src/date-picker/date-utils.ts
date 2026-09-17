@@ -5,6 +5,32 @@ export type CalendarCell = {
 };
 
 const ISO_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+const YM_RE = /^(\d{4})-(\d{2})$/;
+const Y_RE = /^(\d{4})$/;
+
+export function isValidYearMonth(value: string): boolean {
+  const m = YM_RE.exec(value);
+  if (!m) return false;
+  const mo = Number(m[2]);
+  return mo >= 1 && mo <= 12;
+}
+
+export function isValidYear(value: string): boolean {
+  return Y_RE.test(value);
+}
+
+export function todayYearMonth(): string {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}`;
+}
+
+export function todayYear(): string {
+  return String(new Date().getFullYear());
+}
+
+export function buildYearPage(startYear: number, size = 12): number[] {
+  return Array.from({ length: size }, (_, i) => startYear + i);
+}
 
 export function isValidIsoDate(value: string): boolean {
   const m = ISO_RE.exec(value);
@@ -87,6 +113,13 @@ export function compareDateTime(a: string, b: string): number {
 }
 
 export function formatDisplay(value: string, format: string): string {
+  if (isValidYearMonth(value)) {
+    const [yyyy, MM] = value.split("-");
+    return format.replace(/yyyy/g, yyyy).replace(/MM/g, MM);
+  }
+  if (isValidYear(value)) {
+    return format.replace(/yyyy/g, value);
+  }
   const dt = parseDateTime(value);
   if (dt) {
     const pad = (n: number) => String(n).padStart(2, "0");

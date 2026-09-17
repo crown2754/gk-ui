@@ -643,3 +643,115 @@ describe("gk-date-picker datetimerange", () => {
     expect(onInput).not.toHaveBeenCalled();
   });
 });
+
+describe("gk-date-picker month", () => {
+  afterEach(() => {
+    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+  });
+
+  it("defaults empty and format yyyy-MM", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="month"></gk-date-picker>`,
+    );
+    expect(el.value).toBe("");
+    expect(el.format).toBe("yyyy-MM");
+  });
+
+  it("clicking a month commits and closes", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="month"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const btn = document.querySelector(
+      ".gk-date-picker-panel button[data-month]",
+    ) as HTMLButtonElement;
+    const ym = btn.dataset.month!;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    btn.click();
+    await el.updateComplete;
+    expect(el.value).toBe(ym);
+    expect(el.open).toBe(false);
+    expect((onInput.mock.calls[0][0] as CustomEvent).detail.value).toBe(ym);
+  });
+
+  it("panel has Clear and Now, not Confirm", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="month"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const panel = document.querySelector(".gk-date-picker-panel")!;
+    expect(panel.querySelector('[data-action="clear"]')).toBeTruthy();
+    expect(panel.querySelector('[data-action="now"]')).toBeTruthy();
+    expect(panel.querySelector('[data-action="confirm"]')).toBeFalsy();
+  });
+
+  it("Now sets current month", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="month"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="now"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(el.value).toMatch(/^\d{4}-\d{2}$/);
+    expect(el.open).toBe(false);
+  });
+});
+
+describe("gk-date-picker year", () => {
+  afterEach(() => {
+    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+  });
+
+  it("defaults empty and format yyyy", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="year"></gk-date-picker>`,
+    );
+    expect(el.value).toBe("");
+    expect(el.format).toBe("yyyy");
+  });
+
+  it("clicking a year commits and closes", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="year"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const btn = document.querySelector(
+      ".gk-date-picker-panel button[data-year]",
+    ) as HTMLButtonElement;
+    const y = btn.dataset.year!;
+    btn.click();
+    await el.updateComplete;
+    expect(el.value).toBe(y);
+    expect(el.open).toBe(false);
+  });
+
+  it("isDateDisabled blocks year cell", async () => {
+    const el = await fixture<GkDatePicker>(html`
+      <gk-date-picker
+        type="year"
+        .isDateDisabled=${(v: string) => v === "2026"}
+      ></gk-date-picker>
+    `);
+    el.open = true;
+    await el.updateComplete;
+    const btn = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-year]",
+      ),
+    ].find((b) => (b as HTMLButtonElement).dataset.year === "2026") as
+      | HTMLButtonElement
+      | undefined;
+    if (btn) {
+      expect(btn.disabled).toBe(true);
+    }
+  });
+});

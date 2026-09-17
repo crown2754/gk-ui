@@ -14,6 +14,11 @@ import {
   toDateTime,
   datePart,
   compareDateTime,
+  isValidYearMonth,
+  isValidYear,
+  todayYearMonth,
+  todayYear,
+  buildYearPage,
 } from "./date-utils.js";
 
 describe("date-utils", () => {
@@ -84,5 +89,17 @@ describe("date-utils", () => {
     expect(formatDisplay("2026-09-17 14:30:05", "yyyy-MM-dd HH:mm:ss")).toBe(
       "2026-09-17 14:30:05",
     );
+  });
+
+  it("validates month and year strings", () => {
+    expect(isValidYearMonth("2026-09")).toBe(true);
+    expect(isValidYearMonth("2026-13")).toBe(false);
+    expect(isValidYear("2026")).toBe(true);
+    expect(isValidYear("26")).toBe(false);
+    expect(formatDisplay("2026-09", "yyyy-MM")).toBe("2026-09");
+    expect(formatDisplay("2026", "yyyy")).toBe("2026");
+    expect(buildYearPage(2020, 12)).toEqual([
+      2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031,
+    ]);
   });
 });
