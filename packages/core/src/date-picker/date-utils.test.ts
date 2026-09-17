@@ -14,6 +14,8 @@ import {
   toDateTime,
   datePart,
   compareDateTime,
+  isValidTime,
+  parseTime,
   isValidYearMonth,
   isValidYear,
   todayYearMonth,
@@ -80,6 +82,22 @@ describe("date-utils", () => {
     expect(isIsoInRange("2026-09-05", "2026-09-01", "2026-09-10")).toBe(true);
     expect(isIsoInRange("2026-09-01", "2026-09-10", "2026-09-01")).toBe(true);
     expect(isIsoInRange("2026-09-11", "2026-09-01", "2026-09-10")).toBe(false);
+  });
+
+  it("validates HH:mm:ss", () => {
+    expect(isValidTime("13:45:15")).toBe(true);
+    expect(isValidTime("00:00:00")).toBe(true);
+    expect(isValidTime("23:59:59")).toBe(true);
+    expect(isValidTime("24:00:00")).toBe(false);
+    expect(isValidTime("12:60:00")).toBe(false);
+    expect(isValidTime("12:00:60")).toBe(false);
+    expect(isValidTime("1:00:00")).toBe(false);
+    expect(isValidTime("")).toBe(false);
+  });
+
+  it("parses HH:mm:ss into parts", () => {
+    expect(parseTime("14:30:05")).toEqual({ h: 14, m: 30, s: 5 });
+    expect(parseTime("24:00:00")).toBeNull();
   });
 
   it("validates and builds datetime strings", () => {

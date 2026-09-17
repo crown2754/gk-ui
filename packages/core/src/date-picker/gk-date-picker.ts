@@ -13,6 +13,7 @@ import {
   compareIso,
   datePart,
   formatDisplay,
+  formatTime,
   isIsoInRange,
   isValidDateTime,
   isValidIsoDate,
@@ -20,6 +21,7 @@ import {
   isValidYearMonth,
   parseDateTime,
   parseIsoDate,
+  parseTime,
   todayDateTime,
   todayIso,
   todayYear,
@@ -218,9 +220,6 @@ export class GkDatePicker extends LitElement {
   private rangeDraftEndDt: string | null = null;
 
   @state()
-  private rangeTimeTarget: "start" | "end" = "start";
-
-  @state()
   private draftDate: string | null = null;
 
   @state()
@@ -295,7 +294,6 @@ export class GkDatePicker extends LitElement {
         changed.has("rangeDraftEnd") ||
         changed.has("rangeDraftStartDt") ||
         changed.has("rangeDraftEndDt") ||
-        changed.has("rangeTimeTarget") ||
         changed.has("draftDate") ||
         changed.has("draftH") ||
         changed.has("draftM") ||
@@ -375,7 +373,6 @@ export class GkDatePicker extends LitElement {
     this.rangeDraftEnd = null;
     this.rangeDraftStartDt = null;
     this.rangeDraftEndDt = null;
-    this.rangeTimeTarget = "start";
     if (this.rangeStash) {
       this.value = this.rangeStash;
       this.rangeStash = null;
@@ -419,48 +416,12 @@ export class GkDatePicker extends LitElement {
     if (isDateTimeRangePair(this.value)) {
       this.rangeDraftStartDt = this.value[0];
       this.rangeDraftEndDt = this.value[1];
-      this.rangeTimeTarget = "end";
-      this.syncDraftTimeFromRangeTarget();
     } else {
       this.rangeDraftStartDt = null;
       this.rangeDraftEndDt = null;
-      this.rangeTimeTarget = "start";
       this.draftH = 0;
       this.draftM = 0;
       this.draftS = 0;
-    }
-  }
-
-  private syncDraftTimeFromRangeTarget() {
-    const active =
-      this.rangeTimeTarget === "start"
-        ? this.rangeDraftStartDt
-        : this.rangeDraftEndDt;
-    const parsed = active ? parseDateTime(active) : null;
-    if (parsed) {
-      this.draftH = parsed.h;
-      this.draftM = parsed.m;
-      this.draftS = parsed.s;
-    } else {
-      this.draftH = 0;
-      this.draftM = 0;
-      this.draftS = 0;
-    }
-  }
-
-  private applyDraftTimeToRangeTarget() {
-    if (this.type !== "datetimerange") return;
-    const active =
-      this.rangeTimeTarget === "start"
-        ? this.rangeDraftStartDt
-        : this.rangeDraftEndDt;
-    if (!active) return;
-    const date = datePart(active);
-    const next = toDateTime(date, this.draftH, this.draftM, this.draftS);
-    if (this.rangeTimeTarget === "start") {
-      this.rangeDraftStartDt = next;
-    } else {
-      this.rangeDraftEndDt = next;
     }
   }
 
@@ -598,10 +559,6 @@ export class GkDatePicker extends LitElement {
         }
         this.rangeDraftEndDt = null;
         this.rangeDraftStartDt = toDateTime(iso, 0, 0, 0);
-        this.rangeTimeTarget = "start";
-        this.draftH = 0;
-        this.draftM = 0;
-        this.draftS = 0;
         return;
       }
       if (!this.rangeDraftStartDt) {
@@ -610,10 +567,6 @@ export class GkDatePicker extends LitElement {
           this.value = null;
         }
         this.rangeDraftStartDt = toDateTime(iso, 0, 0, 0);
-        this.rangeTimeTarget = "start";
-        this.draftH = 0;
-        this.draftM = 0;
-        this.draftS = 0;
         return;
       }
       let startDt = this.rangeDraftStartDt;
@@ -623,8 +576,6 @@ export class GkDatePicker extends LitElement {
       }
       this.rangeDraftStartDt = startDt;
       this.rangeDraftEndDt = endDt;
-      this.rangeTimeTarget = "end";
-      this.syncDraftTimeFromRangeTarget();
       return;
     }
     if (this.type === "datetime") {
@@ -633,20 +584,6 @@ export class GkDatePicker extends LitElement {
     }
     this.emitValue(iso);
     this.setOpen(false);
-  };
-
-  private onTimePick = (kind: "h" | "m" | "s", n: number) => {
-    if (this.type === "datetimerange") {
-      if (kind === "h") this.draftH = n;
-      else if (kind === "m") this.draftM = n;
-      else this.draftS = n;
-      this.applyDraftTimeToRangeTarget();
-      return;
-    }
-    if (this.type !== "datetime") return;
-    if (kind === "h") this.draftH = n;
-    else if (kind === "m") this.draftM = n;
-    else this.draftS = n;
   };
 
   private onPanelConfirm = () => {
@@ -773,6 +710,9 @@ export class GkDatePicker extends LitElement {
     field: "date" | "start-date" | "end-date",
   ): string {
     if (field === "date") {
+      if (this.type === "datetime") {
+        return this.draftDate ?? "";
+      }
       if (typeof this.value === "string" && isValidIsoDate(this.value)) {
         return this.value;
       }
@@ -790,6 +730,23 @@ export class GkDatePicker extends LitElement {
     return this.rangeDraftEnd ?? "";
   }
 
+  private panelTimeFieldValue(
+    field: "time" | "start-time" | "end-time",
+  ): string {
+    if (field === "time") {
+      if (this.type !== "datetime") return "";
+      return formatTime(this.draftH, this.draftM, this.draftS);
+    }
+    if (this.type !== "datetimerange") return "";
+    const dt =
+      field === "start-time" ? this.rangeDraftStartDt : this.rangeDraftEndDt;
+    if (!dt) return formatTime(0, 0, 0);
+    const parsed = parseDateTime(dt);
+    return parsed
+      ? formatTime(parsed.h, parsed.m, parsed.s)
+      : formatTime(0, 0, 0);
+  }
+
   private applyPanelDateField(
     field: "date" | "start-date" | "end-date",
     raw: string,
@@ -798,6 +755,10 @@ export class GkDatePicker extends LitElement {
     if (field === "date") {
       if (!isValidIsoDate(trimmed) || this.isDateDisabled?.(trimmed)) {
         this.renderPanel();
+        return;
+      }
+      if (this.type === "datetime") {
+        this.draftDate = trimmed;
         return;
       }
       this.emitValue(trimmed);
@@ -872,6 +833,60 @@ export class GkDatePicker extends LitElement {
     }
   }
 
+  private applyPanelTimeField(
+    field: "time" | "start-time" | "end-time",
+    raw: string,
+  ) {
+    const trimmed = raw.trim();
+    const parsed = parseTime(trimmed);
+    if (!parsed) {
+      this.renderPanel();
+      return;
+    }
+    if (field === "time") {
+      if (this.type !== "datetime") return;
+      this.draftH = parsed.h;
+      this.draftM = parsed.m;
+      this.draftS = parsed.s;
+      return;
+    }
+    if (this.type !== "datetimerange") return;
+    if (field === "start-time") {
+      const date = this.rangeDraftStartDt
+        ? datePart(this.rangeDraftStartDt)
+        : "";
+      if (!date) {
+        this.renderPanel();
+        return;
+      }
+      this.rangeDraftStartDt = toDateTime(date, parsed.h, parsed.m, parsed.s);
+      if (isDateTimeRangePair(this.value)) {
+        this.rangeStash = this.value;
+        this.value = null;
+      }
+    } else {
+      const date = this.rangeDraftEndDt ? datePart(this.rangeDraftEndDt) : "";
+      if (!date) {
+        this.renderPanel();
+        return;
+      }
+      this.rangeDraftEndDt = toDateTime(date, parsed.h, parsed.m, parsed.s);
+      if (isDateTimeRangePair(this.value)) {
+        this.rangeStash = this.value;
+        this.value = null;
+      }
+    }
+    if (
+      this.rangeDraftStartDt &&
+      this.rangeDraftEndDt &&
+      compareDateTime(this.rangeDraftStartDt, this.rangeDraftEndDt) > 0
+    ) {
+      const tmp = this.rangeDraftStartDt;
+      this.rangeDraftStartDt = this.rangeDraftEndDt;
+      this.rangeDraftEndDt = tmp;
+    }
+  }
+
   private onPanelDateFieldCommit = (
     field: "date" | "start-date" | "end-date",
     e: Event,
@@ -890,6 +905,24 @@ export class GkDatePicker extends LitElement {
     this.applyPanelDateField(field, input.value);
   };
 
+  private onPanelTimeFieldCommit = (
+    field: "time" | "start-time" | "end-time",
+    e: Event,
+  ) => {
+    const input = e.target as HTMLInputElement;
+    this.applyPanelTimeField(field, input.value);
+  };
+
+  private onPanelTimeFieldKeydown = (
+    field: "time" | "start-time" | "end-time",
+    e: KeyboardEvent,
+  ) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const input = e.target as HTMLInputElement;
+    this.applyPanelTimeField(field, input.value);
+  };
+
   private onDateFieldChange = (e: Event) =>
     this.onPanelDateFieldCommit("date", e);
   private onDateFieldKeydown = (e: KeyboardEvent) =>
@@ -902,6 +935,18 @@ export class GkDatePicker extends LitElement {
     this.onPanelDateFieldCommit("end-date", e);
   private onEndDateFieldKeydown = (e: KeyboardEvent) =>
     this.onPanelDateFieldKeydown("end-date", e);
+  private onTimeFieldChange = (e: Event) =>
+    this.onPanelTimeFieldCommit("time", e);
+  private onTimeFieldKeydown = (e: KeyboardEvent) =>
+    this.onPanelTimeFieldKeydown("time", e);
+  private onStartTimeFieldChange = (e: Event) =>
+    this.onPanelTimeFieldCommit("start-time", e);
+  private onStartTimeFieldKeydown = (e: KeyboardEvent) =>
+    this.onPanelTimeFieldKeydown("start-time", e);
+  private onEndTimeFieldChange = (e: Event) =>
+    this.onPanelTimeFieldCommit("end-time", e);
+  private onEndTimeFieldKeydown = (e: KeyboardEvent) =>
+    this.onPanelTimeFieldKeydown("end-time", e);
 
   private onDocumentClick = (e: MouseEvent) => {
     if (!this.open) return;
@@ -1124,58 +1169,6 @@ export class GkDatePicker extends LitElement {
 
     const singleCalendar = renderMonthCalendar(this.viewYear, this.viewMonth);
 
-    const timeColumns = () => {
-      const hours = Array.from({ length: 24 }, (_, i) => i);
-      const mins = Array.from({ length: 60 }, (_, i) => i);
-      const secs = Array.from({ length: 60 }, (_, i) => i);
-      return html`
-        <div part="time" class="gk-dp-time">
-          <div class="gk-dp-time-col">
-            ${hours.map(
-              (h) => html`
-                <button
-                  type="button"
-                  data-h=${h}
-                  class=${classMap({ "is-active": this.draftH === h })}
-                  @click=${() => this.onTimePick("h", h)}
-                >
-                  ${String(h).padStart(2, "0")}
-                </button>
-              `,
-            )}
-          </div>
-          <div class="gk-dp-time-col">
-            ${mins.map(
-              (m) => html`
-                <button
-                  type="button"
-                  data-m=${m}
-                  class=${classMap({ "is-active": this.draftM === m })}
-                  @click=${() => this.onTimePick("m", m)}
-                >
-                  ${String(m).padStart(2, "0")}
-                </button>
-              `,
-            )}
-          </div>
-          <div class="gk-dp-time-col">
-            ${secs.map(
-              (s) => html`
-                <button
-                  type="button"
-                  data-s=${s}
-                  class=${classMap({ "is-active": this.draftS === s })}
-                  @click=${() => this.onTimePick("s", s)}
-                >
-                  ${String(s).padStart(2, "0")}
-                </button>
-              `,
-            )}
-          </div>
-        </div>
-      `;
-    };
-
     if (this.type === "month") {
       const monthLabels = MONTH_NAMES[locale];
       const todayYm = todayYearMonth();
@@ -1308,6 +1301,24 @@ export class GkDatePicker extends LitElement {
     }
 
     if (this.type === "datetime") {
+      const fields = html`
+        <div class="gk-dp-fields" part="panel-fields">
+          <input
+            type="text"
+            data-field="date"
+            .value=${this.panelDateFieldValue("date")}
+            @change=${this.onDateFieldChange}
+            @keydown=${this.onDateFieldKeydown}
+          />
+          <input
+            type="text"
+            data-field="time"
+            .value=${this.panelTimeFieldValue("time")}
+            @change=${this.onTimeFieldChange}
+            @keydown=${this.onTimeFieldKeydown}
+          />
+        </div>
+      `;
       const actions = html`
         <div part="actions">
           <button type="button" data-action="clear" @click=${this.onPanelClear}>
@@ -1331,13 +1342,7 @@ export class GkDatePicker extends LitElement {
           </button>
         </div>
       `;
-      render(
-        [
-          html`<div class="gk-dp-body">${singleCalendar}${timeColumns()}</div>`,
-          actions,
-        ],
-        this.panel,
-      );
+      render([fields, singleCalendar, actions], this.panel);
       return;
     }
 
@@ -1351,6 +1356,13 @@ export class GkDatePicker extends LitElement {
             @change=${this.onStartDateFieldChange}
             @keydown=${this.onStartDateFieldKeydown}
           />
+          <input
+            type="text"
+            data-field="start-time"
+            .value=${this.panelTimeFieldValue("start-time")}
+            @change=${this.onStartTimeFieldChange}
+            @keydown=${this.onStartTimeFieldKeydown}
+          />
           <span class="gk-dp-fields__sep">${this.separator}</span>
           <input
             type="text"
@@ -1358,6 +1370,13 @@ export class GkDatePicker extends LitElement {
             .value=${this.panelDateFieldValue("end-date")}
             @change=${this.onEndDateFieldChange}
             @keydown=${this.onEndDateFieldKeydown}
+          />
+          <input
+            type="text"
+            data-field="end-time"
+            .value=${this.panelTimeFieldValue("end-time")}
+            @change=${this.onEndTimeFieldChange}
+            @keydown=${this.onEndTimeFieldKeydown}
           />
         </div>
       `;
@@ -1376,14 +1395,7 @@ export class GkDatePicker extends LitElement {
           </button>
         </div>
       `;
-      render(
-        [
-          fields,
-          html`<div class="gk-dp-body">${dualCalendars}${timeColumns()}</div>`,
-          actions,
-        ],
-        this.panel,
-      );
+      render([fields, dualCalendars, actions], this.panel);
       return;
     }
 

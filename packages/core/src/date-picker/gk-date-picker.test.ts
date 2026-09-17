@@ -304,6 +304,19 @@ describe("gk-date-picker daterange", () => {
         '.gk-date-picker-panel input[data-field="end-date"]',
       ),
     ).toBeTruthy();
+    expect(
+      document.querySelector(
+        '.gk-date-picker-panel input[data-field="start-time"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      document.querySelector(
+        '.gk-date-picker-panel input[data-field="end-time"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      document.querySelector(".gk-date-picker-panel button[data-h]"),
+    ).toBeNull();
   });
 
   it("clear sets null", async () => {
@@ -553,17 +566,21 @@ describe("gk-date-picker datetime", () => {
     );
     el.open = true;
     await el.updateComplete;
+    expect(
+      document.querySelector(".gk-date-picker-panel button[data-h]"),
+    ).toBeNull();
     const day = document.querySelector(
       ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
     ) as HTMLButtonElement;
     const iso = day.dataset.iso!;
     day.click();
     await el.updateComplete;
-    (
-      document.querySelector(
-        '.gk-date-picker-panel button[data-h="14"]',
-      ) as HTMLButtonElement
-    ).click();
+    const timeInput = document.querySelector(
+      '.gk-date-picker-panel input[data-field="time"]',
+    ) as HTMLInputElement;
+    expect(timeInput).toBeTruthy();
+    timeInput.value = "14:00:00";
+    timeInput.dispatchEvent(new Event("change", { bubbles: true }));
     await el.updateComplete;
     (
       document.querySelector(
@@ -573,6 +590,26 @@ describe("gk-date-picker datetime", () => {
     await el.updateComplete;
     expect(el.value).toBe(`${iso} 14:00:00`);
     expect(el.open).toBe(false);
+  });
+
+  it("datetime panel has date and time fields, no time columns", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetime"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    expect(
+      document.querySelector('.gk-date-picker-panel input[data-field="date"]'),
+    ).toBeTruthy();
+    expect(
+      document.querySelector('.gk-date-picker-panel input[data-field="time"]'),
+    ).toBeTruthy();
+    expect(
+      document.querySelector(".gk-date-picker-panel button[data-h]"),
+    ).toBeNull();
+    expect(
+      document.querySelector(".gk-date-picker-panel .gk-dp-time"),
+    ).toBeNull();
   });
 
   it("trigger Clear wipes draft, closes panel, and Confirm cannot resurrect", async () => {

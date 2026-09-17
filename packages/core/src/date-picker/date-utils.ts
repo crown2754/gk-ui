@@ -63,15 +63,35 @@ export function todayIso(): string {
 }
 
 const DT_RE = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
+const TIME_RE = /^(\d{2}):(\d{2}):(\d{2})$/;
+
+export function isValidTime(value: string): boolean {
+  const m = TIME_RE.exec(value);
+  if (!m) return false;
+  const h = Number(m[1]);
+  const mi = Number(m[2]);
+  const s = Number(m[3]);
+  return h <= 23 && mi <= 59 && s <= 59;
+}
+
+export function parseTime(
+  value: string,
+): { h: number; m: number; s: number } | null {
+  if (!isValidTime(value)) return null;
+  const m = TIME_RE.exec(value)!;
+  return { h: Number(m[1]), m: Number(m[2]), s: Number(m[3]) };
+}
+
+export function formatTime(h: number, m: number, s: number): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
 
 export function isValidDateTime(value: string): boolean {
   const m = DT_RE.exec(value);
   if (!m) return false;
   if (!isValidIsoDate(`${m[1]}-${m[2]}-${m[3]}`)) return false;
-  const h = Number(m[4]);
-  const mi = Number(m[5]);
-  const s = Number(m[6]);
-  return h <= 23 && mi <= 59 && s <= 59;
+  return isValidTime(`${m[4]}:${m[5]}:${m[6]}`);
 }
 
 export function parseDateTime(

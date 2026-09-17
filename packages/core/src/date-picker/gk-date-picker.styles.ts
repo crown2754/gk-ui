@@ -346,26 +346,4 @@ export const datePickerPanelCssText = `
   flex-shrink: 0;
   color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
 }
-.gk-date-picker-panel .gk-dp-time {
-  display: flex;
-  gap: 4px;
-  max-height: 240px;
-}
-.gk-date-picker-panel .gk-dp-time-col {
-  overflow-y: auto;
-  width: 2.5rem;
-  border-left: 1px solid var(--gk-color-outline-variant, #ccc);
-}
-.gk-date-picker-panel .gk-dp-time-col button {
-  display: block;
-  width: 100%;
-  border: 0;
-  background: transparent;
-  padding: 4px 0;
-  cursor: pointer;
-}
-.gk-date-picker-panel .gk-dp-time-col button.is-active {
-  background: var(--gk-color-brand, #3b82f6);
-  color: #fff;
-}
 `;
