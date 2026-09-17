@@ -157,19 +157,17 @@ describe("gk-date-picker daterange", () => {
     expect(el.value).toBeNull();
   });
 
-  it("two-click selection sets ordered pair and emits", async () => {
+  it("two-click selection does not commit until Confirm", async () => {
     const el = await fixture<GkDatePicker>(
       html`<gk-date-picker type="daterange"></gk-date-picker>`,
     );
     el.open = true;
     await el.updateComplete;
-    el.value = null;
-    const days = [
+    const inMonth = [
       ...document.querySelectorAll(
-        ".gk-date-picker-panel button[data-iso]:not([disabled])",
+        ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
       ),
     ] as HTMLButtonElement[];
-    const inMonth = days.filter((b) => !b.classList.contains("is-outside"));
     const a = inMonth[5];
     const b = inMonth[10];
     const isoA = a.dataset.iso!;
@@ -178,9 +176,18 @@ describe("gk-date-picker daterange", () => {
     el.addEventListener("input", onInput);
     a.click();
     await el.updateComplete;
-    expect(el.open).toBe(true); // waiting for end
     b.click();
     await el.updateComplete;
+    expect(el.value).toBeNull();
+    expect(el.open).toBe(true);
+    expect(onInput).not.toHaveBeenCalled();
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="confirm"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(el.value).not.toBeNull();
     const [start, end] = el.value as [string, string];
     expect(start <= end).toBe(true);
     expect([start, end].sort().join()).toBe([isoA, isoB].sort().join());
@@ -208,9 +215,95 @@ describe("gk-date-picker daterange", () => {
     await el.updateComplete;
     earlier.click();
     await el.updateComplete;
+    expect(el.value).toBeNull();
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="confirm"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
     const [start, end] = el.value as [string, string];
     expect(start).toBe(earlier.dataset.iso);
     expect(end).toBe(later.dataset.iso);
+  });
+
+  it("renders dual calendars for daterange", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    expect(
+      document.querySelectorAll(".gk-date-picker-panel .gk-dp-cal").length,
+    ).toBe(2);
+  });
+
+  it("default separator is arrow", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    expect(el.separator).toBe(" → ");
+  });
+
+  it("daterange panel has Confirm", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    expect(
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="confirm"]',
+      ),
+    ).toBeTruthy();
+  });
+
+  it("daterange panel has start and end date fields", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    expect(
+      document.querySelector(
+        '.gk-date-picker-panel input[data-field="start-date"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      document.querySelector(
+        '.gk-date-picker-panel input[data-field="end-date"]',
+      ),
+    ).toBeTruthy();
+  });
+
+  it("date panel has date field", async () => {
+    const el = await fixture<GkDatePicker>(html`<gk-date-picker></gk-date-picker>`);
+    el.open = true;
+    await el.updateComplete;
+    expect(
+      document.querySelector('.gk-date-picker-panel input[data-field="date"]'),
+    ).toBeTruthy();
+  });
+
+  it("renders dual calendars for datetimerange", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetimerange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    expect(
+      document.querySelectorAll(".gk-date-picker-panel .gk-dp-cal").length,
+    ).toBe(2);
+    expect(
+      document.querySelector(
+        '.gk-date-picker-panel input[data-field="start-date"]',
+      ),
+    ).toBeTruthy();
+    expect(
+      document.querySelector(
+        '.gk-date-picker-panel input[data-field="end-date"]',
+      ),
+    ).toBeTruthy();
   });
 
   it("clear sets null", async () => {

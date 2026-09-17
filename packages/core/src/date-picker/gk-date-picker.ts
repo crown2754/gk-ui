@@ -6,6 +6,7 @@ import {
   datePickerPanelCssText,
 } from "./gk-date-picker.styles.js";
 import {
+  addMonths,
   buildMonthGrid,
   buildYearPage,
   compareDateTime,
@@ -159,7 +160,7 @@ export class GkDatePicker extends LitElement {
   format = "yyyy-MM-dd";
 
   @property()
-  separator = " - ";
+  separator = " → ";
 
   @property({ attribute: "start-placeholder" })
   startPlaceholder = "";
@@ -206,6 +207,9 @@ export class GkDatePicker extends LitElement {
 
   @state()
   private rangeDraftStart: string | null = null;
+
+  @state()
+  private rangeDraftEnd: string | null = null;
 
   @state()
   private rangeDraftStartDt: string | null = null;
@@ -270,6 +274,8 @@ export class GkDatePicker extends LitElement {
           this.initDateTimeDraft();
         } else if (this.type === "datetimerange") {
           this.initDateTimeRangeDraft();
+        } else if (this.type === "daterange") {
+          this.initDateRangeDraft();
         }
         this.ensurePanel();
         this.bindDismissListeners();
@@ -286,6 +292,7 @@ export class GkDatePicker extends LitElement {
         changed.has("type") ||
         changed.has("separator") ||
         changed.has("rangeDraftStart") ||
+        changed.has("rangeDraftEnd") ||
         changed.has("rangeDraftStartDt") ||
         changed.has("rangeDraftEndDt") ||
         changed.has("rangeTimeTarget") ||
@@ -359,17 +366,29 @@ export class GkDatePicker extends LitElement {
   private dismissRangeDraft() {
     const hadDraft =
       this.rangeDraftStart ||
+      this.rangeDraftEnd ||
       this.rangeDraftStartDt ||
       this.rangeDraftEndDt ||
       this.rangeStash;
     if (!hadDraft) return;
     this.rangeDraftStart = null;
+    this.rangeDraftEnd = null;
     this.rangeDraftStartDt = null;
     this.rangeDraftEndDt = null;
     this.rangeTimeTarget = "start";
     if (this.rangeStash) {
       this.value = this.rangeStash;
       this.rangeStash = null;
+    }
+  }
+
+  private initDateRangeDraft() {
+    if (isRangePair(this.value)) {
+      this.rangeDraftStart = this.value[0];
+      this.rangeDraftEnd = this.value[1];
+    } else {
+      this.rangeDraftStart = null;
+      this.rangeDraftEnd = null;
     }
   }
 
@@ -526,6 +545,7 @@ export class GkDatePicker extends LitElement {
     e.stopPropagation();
     if (this.disabled) return;
     this.rangeDraftStart = null;
+    this.rangeDraftEnd = null;
     this.rangeDraftStartDt = null;
     this.rangeDraftEndDt = null;
     this.rangeStash = null;
@@ -542,22 +562,32 @@ export class GkDatePicker extends LitElement {
   private onDayClick = (iso: string) => {
     if (this.isDateDisabled?.(iso)) return;
     if (this.type === "daterange") {
+      if (this.rangeDraftStart && this.rangeDraftEnd) {
+        if (isRangePair(this.value)) {
+          this.rangeStash = this.value;
+          this.value = null;
+        }
+        this.rangeDraftEnd = null;
+        this.rangeDraftStart = iso;
+        return;
+      }
       if (!this.rangeDraftStart) {
-        // First click after a complete range starts a new draft (stash for cancel).
         if (isRangePair(this.value)) {
           this.rangeStash = this.value;
           this.value = null;
         }
         this.rangeDraftStart = iso;
+        this.rangeDraftEnd = null;
         return;
       }
       const draft = this.rangeDraftStart;
-      const pair: [string, string] =
-        compareIso(draft, iso) <= 0 ? [draft, iso] : [iso, draft];
-      this.rangeDraftStart = null;
-      this.rangeStash = null;
-      this.emitValue(pair);
-      this.setOpen(false);
+      if (compareIso(draft, iso) <= 0) {
+        this.rangeDraftStart = draft;
+        this.rangeDraftEnd = iso;
+      } else {
+        this.rangeDraftStart = iso;
+        this.rangeDraftEnd = draft;
+      }
       return;
     }
     if (this.type === "datetimerange") {
@@ -620,6 +650,20 @@ export class GkDatePicker extends LitElement {
   };
 
   private onPanelConfirm = () => {
+    if (this.type === "daterange") {
+      if (!this.rangeDraftStart || !this.rangeDraftEnd) return;
+      let start = this.rangeDraftStart;
+      let end = this.rangeDraftEnd;
+      if (compareIso(start, end) > 0) {
+        [start, end] = [end, start];
+      }
+      this.rangeStash = null;
+      this.emitValue([start, end]);
+      this.rangeDraftStart = null;
+      this.rangeDraftEnd = null;
+      this.setOpen(false);
+      return;
+    }
     if (this.type === "datetimerange") {
       if (!this.rangeDraftStartDt || !this.rangeDraftEndDt) return;
       let start = this.rangeDraftStartDt;
@@ -643,6 +687,7 @@ export class GkDatePicker extends LitElement {
 
   private onPanelClear = () => {
     this.rangeDraftStart = null;
+    this.rangeDraftEnd = null;
     this.rangeDraftStartDt = null;
     this.rangeDraftEndDt = null;
     this.rangeStash = null;
@@ -697,6 +742,10 @@ export class GkDatePicker extends LitElement {
     this.viewYear += delta;
   }
 
+  private shiftViewYears(deltaYears: number) {
+    this.viewYear += deltaYears;
+  }
+
   private shiftYearPage(delta: number) {
     this.yearPageStart += delta * 12;
   }
@@ -715,6 +764,144 @@ export class GkDatePicker extends LitElement {
     this.viewYear = y;
     this.viewMonth = m;
   }
+
+  private shiftView(deltaMonths: number) {
+    this.shiftMonth(deltaMonths);
+  }
+
+  private panelDateFieldValue(
+    field: "date" | "start-date" | "end-date",
+  ): string {
+    if (field === "date") {
+      if (typeof this.value === "string" && isValidIsoDate(this.value)) {
+        return this.value;
+      }
+      return "";
+    }
+    if (this.type === "datetimerange") {
+      if (field === "start-date") {
+        return this.rangeDraftStartDt ? datePart(this.rangeDraftStartDt) : "";
+      }
+      return this.rangeDraftEndDt ? datePart(this.rangeDraftEndDt) : "";
+    }
+    if (field === "start-date") {
+      return this.rangeDraftStart ?? "";
+    }
+    return this.rangeDraftEnd ?? "";
+  }
+
+  private applyPanelDateField(
+    field: "date" | "start-date" | "end-date",
+    raw: string,
+  ) {
+    const trimmed = raw.trim();
+    if (field === "date") {
+      if (!isValidIsoDate(trimmed) || this.isDateDisabled?.(trimmed)) {
+        this.renderPanel();
+        return;
+      }
+      this.emitValue(trimmed);
+      return;
+    }
+    if (!isValidIsoDate(trimmed) || this.isDateDisabled?.(trimmed)) {
+      this.renderPanel();
+      return;
+    }
+    if (this.type === "datetimerange") {
+      if (field === "start-date") {
+        const time = this.rangeDraftStartDt
+          ? parseDateTime(this.rangeDraftStartDt)
+          : { h: 0, m: 0, s: 0 };
+        this.rangeDraftStartDt = toDateTime(
+          trimmed,
+          time?.h ?? 0,
+          time?.m ?? 0,
+          time?.s ?? 0,
+        );
+        if (isDateTimeRangePair(this.value)) {
+          this.rangeStash = this.value;
+          this.value = null;
+        }
+      } else {
+        const time = this.rangeDraftEndDt
+          ? parseDateTime(this.rangeDraftEndDt)
+          : { h: 0, m: 0, s: 0 };
+        this.rangeDraftEndDt = toDateTime(
+          trimmed,
+          time?.h ?? 0,
+          time?.m ?? 0,
+          time?.s ?? 0,
+        );
+        if (isDateTimeRangePair(this.value)) {
+          this.rangeStash = this.value;
+          this.value = null;
+        }
+      }
+      if (
+        this.rangeDraftStartDt &&
+        this.rangeDraftEndDt &&
+        compareDateTime(this.rangeDraftStartDt, this.rangeDraftEndDt) > 0
+      ) {
+        const tmp = this.rangeDraftStartDt;
+        this.rangeDraftStartDt = this.rangeDraftEndDt;
+        this.rangeDraftEndDt = tmp;
+      }
+      return;
+    }
+    if (field === "start-date") {
+      this.rangeDraftStart = trimmed;
+      if (isRangePair(this.value)) {
+        this.rangeStash = this.value;
+        this.value = null;
+      }
+    } else {
+      this.rangeDraftEnd = trimmed;
+      if (isRangePair(this.value)) {
+        this.rangeStash = this.value;
+        this.value = null;
+      }
+    }
+    if (
+      this.rangeDraftStart &&
+      this.rangeDraftEnd &&
+      compareIso(this.rangeDraftStart, this.rangeDraftEnd) > 0
+    ) {
+      const tmp = this.rangeDraftStart;
+      this.rangeDraftStart = this.rangeDraftEnd;
+      this.rangeDraftEnd = tmp;
+    }
+  }
+
+  private onPanelDateFieldCommit = (
+    field: "date" | "start-date" | "end-date",
+    e: Event,
+  ) => {
+    const input = e.target as HTMLInputElement;
+    this.applyPanelDateField(field, input.value);
+  };
+
+  private onPanelDateFieldKeydown = (
+    field: "date" | "start-date" | "end-date",
+    e: KeyboardEvent,
+  ) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    const input = e.target as HTMLInputElement;
+    this.applyPanelDateField(field, input.value);
+  };
+
+  private onDateFieldChange = (e: Event) =>
+    this.onPanelDateFieldCommit("date", e);
+  private onDateFieldKeydown = (e: KeyboardEvent) =>
+    this.onPanelDateFieldKeydown("date", e);
+  private onStartDateFieldChange = (e: Event) =>
+    this.onPanelDateFieldCommit("start-date", e);
+  private onStartDateFieldKeydown = (e: KeyboardEvent) =>
+    this.onPanelDateFieldKeydown("start-date", e);
+  private onEndDateFieldChange = (e: Event) =>
+    this.onPanelDateFieldCommit("end-date", e);
+  private onEndDateFieldKeydown = (e: KeyboardEvent) =>
+    this.onPanelDateFieldKeydown("end-date", e);
 
   private onDocumentClick = (e: MouseEvent) => {
     if (!this.open) return;
@@ -788,6 +975,13 @@ export class GkDatePicker extends LitElement {
   } {
     if (this.type === "daterange") {
       if (this.rangeDraftStart) {
+        if (this.rangeDraftEnd) {
+          const start = this.rangeDraftStart;
+          const end = this.rangeDraftEnd;
+          const selected = iso === start || iso === end;
+          const inRange = !selected && isIsoInRange(iso, start, end);
+          return { selected, inRange };
+        }
         return {
           selected: iso === this.rangeDraftStart,
           inRange: false,
@@ -796,8 +990,7 @@ export class GkDatePicker extends LitElement {
       if (isRangePair(this.value)) {
         const [start, end] = this.value;
         const selected = iso === start || iso === end;
-        const inRange =
-          !selected && isIsoInRange(iso, start, end);
+        const inRange = !selected && isIsoInRange(iso, start, end);
         return { selected, inRange };
       }
       return { selected: false, inRange: false };
@@ -847,52 +1040,89 @@ export class GkDatePicker extends LitElement {
     const locale = this.locale === "zh-TW" ? "zh-TW" : "en";
     const weekdays = WEEKDAYS[locale];
     const labels = LABELS[locale];
-    const cells = buildMonthGrid(this.viewYear, this.viewMonth);
     const today = todayIso();
-    const title = `${this.viewYear}-${String(this.viewMonth + 1).padStart(2, "0")}`;
     const nowDisabled = !!this.isDateDisabled?.(today);
-    const isRange = this.type === "daterange";
 
-    const dayButtons = cells.map((cell) => {
-      const disabled = !!this.isDateDisabled?.(cell.iso);
-      const { selected, inRange } = this.daySelectionState(cell.iso);
+    const renderMonthCalendar = (year: number, month: number) => {
+      const cells = buildMonthGrid(year, month);
+      const title = `${year}-${String(month + 1).padStart(2, "0")}`;
+      const dayButtons = cells.map((cell) => {
+        const disabled = !!this.isDateDisabled?.(cell.iso);
+        const { selected, inRange } = this.daySelectionState(cell.iso);
+        return html`
+          <button
+            type="button"
+            data-iso=${cell.iso}
+            class=${classMap({
+              "is-outside": !cell.inMonth,
+              "is-selected": selected,
+              "is-in-range": inRange,
+            })}
+            ?disabled=${disabled}
+            ?data-outside=${!cell.inMonth}
+            ?data-today=${cell.iso === today}
+            ?data-selected=${selected}
+            @click=${() => this.onDayClick(cell.iso)}
+          >
+            ${cell.day}
+          </button>
+        `;
+      });
       return html`
-        <button
-          type="button"
-          data-iso=${cell.iso}
-          class=${classMap({
-            "is-outside": !cell.inMonth,
-            "is-selected": selected,
-            "is-in-range": inRange,
-          })}
-          ?disabled=${disabled}
-          ?data-outside=${!cell.inMonth}
-          ?data-today=${cell.iso === today}
-          ?data-selected=${selected}
-          @click=${() => this.onDayClick(cell.iso)}
-        >
-          ${cell.day}
-        </button>
+        <div class="gk-dp-cal" part="calendar">
+          <div class="gk-date-picker-panel__nav">
+            <button
+              type="button"
+              data-nav="prev-year"
+              aria-label="Previous year"
+              @click=${() => this.shiftViewYears(-1)}
+            >
+              «
+            </button>
+            <button
+              type="button"
+              data-nav="prev-month"
+              aria-label="Previous month"
+              @click=${() => this.shiftView(-1)}
+            >
+              ‹
+            </button>
+            <div class="gk-date-picker-panel__nav-title">${title}</div>
+            <button
+              type="button"
+              data-nav="next-month"
+              aria-label="Next month"
+              @click=${() => this.shiftView(1)}
+            >
+              ›
+            </button>
+            <button
+              type="button"
+              data-nav="next-year"
+              aria-label="Next year"
+              @click=${() => this.shiftViewYears(1)}
+            >
+              »
+            </button>
+          </div>
+          <div class="gk-date-picker-panel__weekdays">
+            ${weekdays.map((d) => html`<span>${d}</span>`)}
+          </div>
+          <div class="gk-date-picker-panel__days">${dayButtons}</div>
+        </div>
       `;
-    });
+    };
 
-    const calendar = html`
-      <div part="calendar">
-        <div class="gk-date-picker-panel__nav">
-          <button type="button" aria-label="Previous month" @click=${() => this.shiftMonth(-1)}>
-            ‹
-          </button>
-          <div class="gk-date-picker-panel__nav-title">${title}</div>
-          <button type="button" aria-label="Next month" @click=${() => this.shiftMonth(1)}>
-            ›
-          </button>
-        </div>
-        <div class="gk-date-picker-panel__weekdays">
-          ${weekdays.map((d) => html`<span>${d}</span>`)}
-        </div>
-        <div class="gk-date-picker-panel__days">${dayButtons}</div>
+    const leftDate = new Date(this.viewYear, this.viewMonth, 1, 12, 0, 0, 0);
+    const rightDate = addMonths(leftDate, 1);
+    const dualCalendars = html`
+      <div class="gk-dp-calendars">
+        ${renderMonthCalendar(this.viewYear, this.viewMonth)}
+        ${renderMonthCalendar(rightDate.getFullYear(), rightDate.getMonth())}
       </div>
     `;
+
+    const singleCalendar = renderMonthCalendar(this.viewYear, this.viewMonth);
 
     const timeColumns = () => {
       const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -1078,102 +1308,153 @@ export class GkDatePicker extends LitElement {
     }
 
     if (this.type === "datetime") {
+      const actions = html`
+        <div part="actions">
+          <button type="button" data-action="clear" @click=${this.onPanelClear}>
+            ${labels.clear}
+          </button>
+          <button
+            type="button"
+            data-action="now"
+            ?disabled=${nowDisabled}
+            @click=${this.onPanelNow}
+          >
+            ${labels.now}
+          </button>
+          <button
+            type="button"
+            part="confirm"
+            data-action="confirm"
+            @click=${this.onPanelConfirm}
+          >
+            ${labels.confirm}
+          </button>
+        </div>
+      `;
       render(
-        html`
-          <div class="gk-dp-body">
-            ${calendar}
-            ${timeColumns()}
-          </div>
-          <div part="actions">
-            <button type="button" data-action="clear" @click=${this.onPanelClear}>
-              ${labels.clear}
-            </button>
-            <button
-              type="button"
-              data-action="now"
-              ?disabled=${nowDisabled}
-              @click=${this.onPanelNow}
-            >
-              ${labels.now}
-            </button>
-            <button
-              type="button"
-              part="confirm"
-              data-action="confirm"
-              @click=${this.onPanelConfirm}
-            >
-              ${labels.confirm}
-            </button>
-          </div>
-        `,
+        [
+          html`<div class="gk-dp-body">${singleCalendar}${timeColumns()}</div>`,
+          actions,
+        ],
         this.panel,
       );
       return;
     }
 
     if (this.type === "datetimerange") {
+      const fields = html`
+        <div class="gk-dp-fields" part="panel-fields">
+          <input
+            type="text"
+            data-field="start-date"
+            .value=${this.panelDateFieldValue("start-date")}
+            @change=${this.onStartDateFieldChange}
+            @keydown=${this.onStartDateFieldKeydown}
+          />
+          <span class="gk-dp-fields__sep">${this.separator}</span>
+          <input
+            type="text"
+            data-field="end-date"
+            .value=${this.panelDateFieldValue("end-date")}
+            @change=${this.onEndDateFieldChange}
+            @keydown=${this.onEndDateFieldKeydown}
+          />
+        </div>
+      `;
+      const actions = html`
+        <div part="actions">
+          <button type="button" data-action="clear" @click=${this.onPanelClear}>
+            ${labels.clear}
+          </button>
+          <button
+            type="button"
+            part="confirm"
+            data-action="confirm"
+            @click=${this.onPanelConfirm}
+          >
+            ${labels.confirm}
+          </button>
+        </div>
+      `;
       render(
-        html`
-          <div class="gk-dp-body">
-            ${calendar}
-            ${timeColumns()}
-          </div>
-          <div part="actions">
-            <button type="button" data-action="clear" @click=${this.onPanelClear}>
-              ${labels.clear}
-            </button>
-            <button
-              type="button"
-              part="confirm"
-              data-action="confirm"
-              @click=${this.onPanelConfirm}
-            >
-              ${labels.confirm}
-            </button>
-          </div>
-        `,
+        [
+          fields,
+          html`<div class="gk-dp-body">${dualCalendars}${timeColumns()}</div>`,
+          actions,
+        ],
         this.panel,
       );
       return;
     }
 
-    render(
-      html`
-        <div part="calendar">
-          <div class="gk-date-picker-panel__nav">
-            <button type="button" aria-label="Previous month" @click=${() => this.shiftMonth(-1)}>
-              ‹
-            </button>
-            <div class="gk-date-picker-panel__nav-title">${title}</div>
-            <button type="button" aria-label="Next month" @click=${() => this.shiftMonth(1)}>
-              ›
-            </button>
-          </div>
-          <div class="gk-date-picker-panel__weekdays">
-            ${weekdays.map((d) => html`<span>${d}</span>`)}
-          </div>
-          <div class="gk-date-picker-panel__days">${dayButtons}</div>
+    if (this.type === "daterange") {
+      const fields = html`
+        <div class="gk-dp-fields" part="panel-fields">
+          <input
+            type="text"
+            data-field="start-date"
+            .value=${this.panelDateFieldValue("start-date")}
+            @change=${this.onStartDateFieldChange}
+            @keydown=${this.onStartDateFieldKeydown}
+          />
+          <span class="gk-dp-fields__sep">${this.separator}</span>
+          <input
+            type="text"
+            data-field="end-date"
+            .value=${this.panelDateFieldValue("end-date")}
+            @change=${this.onEndDateFieldChange}
+            @keydown=${this.onEndDateFieldKeydown}
+          />
         </div>
+      `;
+      const actions = html`
         <div part="actions">
           <button type="button" data-action="clear" @click=${this.onPanelClear}>
             ${labels.clear}
           </button>
-          ${isRange
-            ? nothing
-            : html`
-                <button
-                  type="button"
-                  data-action="now"
-                  ?disabled=${nowDisabled}
-                  @click=${this.onPanelNow}
-                >
-                  ${labels.now}
-                </button>
-              `}
+          <button
+            type="button"
+            part="confirm"
+            data-action="confirm"
+            @click=${this.onPanelConfirm}
+          >
+            ${labels.confirm}
+          </button>
         </div>
-      `,
-      this.panel,
-    );
+      `;
+      render([fields, dualCalendars, actions], this.panel);
+      return;
+    }
+
+    {
+      const fields = html`
+        <div class="gk-dp-fields" part="panel-fields">
+          <input
+            type="text"
+            data-field="date"
+            .value=${this.panelDateFieldValue("date")}
+            @change=${this.onDateFieldChange}
+            @keydown=${this.onDateFieldKeydown}
+          />
+        </div>
+      `;
+      const actions = html`
+        <div part="actions">
+          <button type="button" data-action="clear" @click=${this.onPanelClear}>
+            ${labels.clear}
+          </button>
+          <button
+            type="button"
+            data-action="now"
+            ?disabled=${nowDisabled}
+            @click=${this.onPanelNow}
+          >
+            ${labels.now}
+          </button>
+        </div>
+      `;
+      render([fields, singleCalendar, actions], this.panel);
+    }
   }
 
   private get showClearButton() {

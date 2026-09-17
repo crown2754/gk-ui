@@ -307,6 +307,45 @@ export const datePickerPanelCssText = `
   display: flex;
   gap: 8px;
 }
+.gk-date-picker-panel .gk-dp-calendars {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.gk-date-picker-panel .gk-dp-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 252px;
+  flex: 1;
+}
+.gk-date-picker-panel .gk-dp-fields {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.gk-date-picker-panel .gk-dp-fields input {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--gk-color-border, rgb(224, 224, 230));
+  border-radius: var(--gk-radius-sm, 0.375rem);
+  background: var(--gk-color-surface, #fff);
+  color: inherit;
+  font: inherit;
+}
+.gk-date-picker-panel .gk-dp-fields input:focus {
+  outline: 2px solid var(--gk-color-focus-ring, rgb(242, 206, 94));
+  outline-offset: 1px;
+  border-color: var(--gk-color-focus-ring, rgb(242, 206, 94));
+}
+.gk-date-picker-panel .gk-dp-fields__sep {
+  flex-shrink: 0;
+  color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
+}
 .gk-date-picker-panel .gk-dp-time {
   display: flex;
   gap: 4px;
