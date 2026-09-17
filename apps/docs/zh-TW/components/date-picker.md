@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 const value = ref("2026-09-17");
 const clearableValue = ref("2026-09-17");
+const range = ref<[string, string] | null>(["2026-09-01", "2026-09-17"]);
 
 function onInput(e: CustomEvent<{ value: string }>) {
   value.value = e.detail.value;
@@ -10,6 +11,10 @@ function onInput(e: CustomEvent<{ value: string }>) {
 
 function onClearableInput(e: CustomEvent<{ value: string }>) {
   clearableValue.value = e.detail.value;
+}
+
+function onRangeInput(e: CustomEvent<{ value: [string, string] | null }>) {
+  range.value = e.detail.value;
 }
 
 /** 停用週末（僅 JS 屬性；非 HTML attribute）。 */
@@ -22,6 +27,17 @@ const codes = {
   basic: `<!-- host: const value = ref("2026-09-17"); function onInput(e: CustomEvent<{ value: string }>) { value.value = e.detail.value } -->
 <gk-date-picker locale="zh-TW" :value="value" @input="onInput" clearable></gk-date-picker>
 <p>值：{{ value }}</p>`,
+  range: `<!-- host: const range = ref<[string, string] | null>(["2026-09-01", "2026-09-17"]); function onRangeInput(e: CustomEvent<{ value: [string, string] | null }>) { range.value = e.detail.value } -->
+<gk-date-picker
+  locale="zh-TW"
+  type="daterange"
+  clearable
+  :value="range"
+  start-placeholder="開始"
+  end-placeholder="結束"
+  @input="onRangeInput"
+></gk-date-picker>
+<p>{{ range }}</p>`,
   size: `<gk-date-picker locale="zh-TW" size="sm" placeholder="小"></gk-date-picker>
 <gk-date-picker locale="zh-TW" size="md" placeholder="中"></gk-date-picker>
 <gk-date-picker locale="zh-TW" size="lg" placeholder="大"></gk-date-picker>`,
@@ -50,9 +66,9 @@ const codes = {
 
 # Date Picker 日期選擇
 
-日期選擇器用來挑選單一曆日。觸發器外觀對齊 Input；面板會 portal 到 `document.body`，並提供月份導覽與 **清除**／**現在**。
+日期選擇器用來挑選單一曆日**或**日期範圍（`type="daterange"`）。觸發器外觀對齊 Input；面板會 portal 到 `document.body`，並提供月份導覽。單一日期面板提供 **清除**／**現在**；範圍面板僅提供 **清除**。
 
-第一階段僅支援單一日期；範圍、日期時間、月份／年份稍後提供。
+路線圖：日期時間、月份／年份稍後提供。
 
 ## 示範
 
@@ -63,6 +79,24 @@ const codes = {
   <div style="display:grid;gap:0.75rem;max-width:20rem">
     <gk-date-picker locale="zh-TW" :value="value" @input="onInput" clearable></gk-date-picker>
     <p style="margin:0;font-size:0.875rem;opacity:0.8">值：{{ value || "（空）" }}</p>
+  </div>
+</DemoCard>
+
+<DemoCard title="範圍" :code="codes.range">
+  <template #description>
+    設定 <code>type="daterange"</code>，並以 <code>:value</code> 綁定 <code>[start, end] | null</code>。兩次點擊分別選開始與結束（順序會正規化）。面板僅顯示 <strong>清除</strong>（無「現在」）。
+  </template>
+  <div style="display:grid;gap:0.75rem;max-width:24rem">
+    <gk-date-picker
+      locale="zh-TW"
+      type="daterange"
+      clearable
+      :value="range"
+      start-placeholder="開始"
+      end-placeholder="結束"
+      @input="onRangeInput"
+    ></gk-date-picker>
+    <p style="margin:0;font-size:0.875rem;opacity:0.8">{{ range ?? "null" }}</p>
   </div>
 </DemoCard>
 
@@ -79,7 +113,7 @@ const codes = {
 
 <DemoCard title="可清除" :code="codes.clearable">
   <template #description>
-    <code>clearable</code> 在有值且可互動時於觸發器顯示清除按鈕。面板也提供清除／現在。
+    <code>clearable</code> 在有值且可互動時於觸發器顯示清除按鈕。面板也提供清除／現在（範圍僅清除）。
   </template>
   <div style="max-width:20rem">
     <gk-date-picker
@@ -126,9 +160,12 @@ const codes = {
 
 | Prop | Type | Default |
 |------|------|---------|
-| `type` | `'date'` | `'date'` |
-| `value` | `string` | `''` |
+| `type` | `'date' \| 'daterange'` | `'date'` |
+| `value` | `string` \| `[string, string] \| null` | `''` / `null` |
 | `format` | `string` | `'yyyy-MM-dd'` |
+| `separator` | `string` | `' - '` |
+| `start-placeholder` | `string` | `''` |
+| `end-placeholder` | `string` | `''` |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |
 | `placeholder` | `string` | `''` |
 | `disabled` | `boolean` | `false` |
@@ -139,14 +176,14 @@ const codes = {
 | `locale` | `'en' \| 'zh-TW'` | `'en'` |
 | `isDateDisabled` | `(iso: string) => boolean` | — |
 
-`value` 為 ISO `YYYY-MM-DD` 或空字串。`format` 僅影響觸發器顯示（`yyyy` `MM` `dd`）。`isDateDisabled` 僅為 JS 屬性（非 HTML attribute）。
+`type="date"` 時，`value` 為 ISO `YYYY-MM-DD` 或空字串。`type="daterange"` 時，`value` 為 `[start, end] | null`（建議用 `:value` 屬性綁定；attribute 可為 JSON 陣列）。`format` 僅影響觸發器顯示（`yyyy` `MM` `dd`）。`separator` 與 `start-placeholder`／`end-placeholder` 用於範圍顯示（佔位為空時回退到 `placeholder`）。`isDateDisabled` 僅為 JS 屬性（非 HTML attribute）。範圍面板僅顯示 **清除**（無「現在」）。
 
 ### Date Picker Events
 
 | Name | Description |
 |------|-------------|
-| `input` | 值變更（選擇／清除／現在）；bubbles；`composed: true`；`detail: { value: string }` |
-| `change` | 與 `input` 相同的提交時機；bubbles；`composed: true`；`detail: { value: string }` |
+| `input` | 值變更（選擇／清除／現在）；bubbles；`composed: true`；`detail.value` 在 `date` 為 `string`，在 `daterange` 為 `[string, string] \| null` |
+| `change` | 與 `input` 相同的提交時機；bubbles；`composed: true`；`detail.value` 與 `input` 一致 |
 | `gk-open-change` | 面板開關狀態變更；bubbles；`composed: true`；`detail: { open: boolean }` |
 
 ### CSS Parts
@@ -161,4 +198,4 @@ const codes = {
 | `clear` | 觸發器清除按鈕（`::part`） |
 | `panel` | Portal 彈出層根節點 — 以 `.gk-date-picker-panel` 樣式化 |
 | `calendar` | 月份格線區 — 位於 `.gk-date-picker-panel` 下 |
-| `actions` | 清除／現在列 — 位於 `.gk-date-picker-panel` 下 |
+| `actions` | 清除／現在列（範圍僅清除）— 位於 `.gk-date-picker-panel` 下 |

@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 const value = ref("2026-09-17");
 const clearableValue = ref("2026-09-17");
+const range = ref<[string, string] | null>(["2026-09-01", "2026-09-17"]);
 
 function onInput(e: CustomEvent<{ value: string }>) {
   value.value = e.detail.value;
@@ -10,6 +11,10 @@ function onInput(e: CustomEvent<{ value: string }>) {
 
 function onClearableInput(e: CustomEvent<{ value: string }>) {
   clearableValue.value = e.detail.value;
+}
+
+function onRangeInput(e: CustomEvent<{ value: [string, string] | null }>) {
+  range.value = e.detail.value;
 }
 
 /** Disable weekends (property-only; not an HTML attribute). */
@@ -22,6 +27,16 @@ const codes = {
   basic: `<!-- host: const value = ref("2026-09-17"); function onInput(e: CustomEvent<{ value: string }>) { value.value = e.detail.value } -->
 <gk-date-picker :value="value" @input="onInput" clearable></gk-date-picker>
 <p>Value: {{ value }}</p>`,
+  range: `<!-- host: const range = ref<[string, string] | null>(["2026-09-01", "2026-09-17"]); function onRangeInput(e: CustomEvent<{ value: [string, string] | null }>) { range.value = e.detail.value } -->
+<gk-date-picker
+  type="daterange"
+  clearable
+  :value="range"
+  start-placeholder="Start"
+  end-placeholder="End"
+  @input="onRangeInput"
+></gk-date-picker>
+<p>{{ range }}</p>`,
   size: `<gk-date-picker size="sm" placeholder="Small"></gk-date-picker>
 <gk-date-picker size="md" placeholder="Medium"></gk-date-picker>
 <gk-date-picker size="lg" placeholder="Large"></gk-date-picker>`,
@@ -48,9 +63,9 @@ const codes = {
 
 # Date Picker
 
-Date Picker selects a single calendar day. The trigger matches Input sizing and chrome; the panel portals to `document.body` with month navigation plus **Clear** / **Now**.
+Date Picker selects a single calendar day **or** a date range (`type="daterange"`). The trigger matches Input sizing and chrome; the panel portals to `document.body` with month navigation. Single-date panels expose **Clear** / **Now**; range panels expose **Clear** only.
 
-Phase 1 supports single date only; range / datetime / month / year come later.
+Roadmap: datetime / month / year come later.
 
 ## Demos
 
@@ -61,6 +76,23 @@ Phase 1 supports single date only; range / datetime / month / year come later.
   <div style="display:grid;gap:0.75rem;max-width:20rem">
     <gk-date-picker :value="value" @input="onInput" clearable></gk-date-picker>
     <p style="margin:0;font-size:0.875rem;opacity:0.8">Value: {{ value || "(empty)" }}</p>
+  </div>
+</DemoCard>
+
+<DemoCard title="Range" :code="codes.range">
+  <template #description>
+    Set <code>type="daterange"</code> and bind <code>:value</code> to <code>[start, end] | null</code>. Two clicks pick start then end (order is normalized). The panel shows <strong>Clear</strong> only (no Now).
+  </template>
+  <div style="display:grid;gap:0.75rem;max-width:24rem">
+    <gk-date-picker
+      type="daterange"
+      clearable
+      :value="range"
+      start-placeholder="Start"
+      end-placeholder="End"
+      @input="onRangeInput"
+    ></gk-date-picker>
+    <p style="margin:0;font-size:0.875rem;opacity:0.8">{{ range ?? "null" }}</p>
   </div>
 </DemoCard>
 
@@ -77,7 +109,7 @@ Phase 1 supports single date only; range / datetime / month / year come later.
 
 <DemoCard title="Clearable" :code="codes.clearable">
   <template #description>
-    <code>clearable</code> shows a clear control on the trigger when the value is non-empty and the field is interactive. The panel also exposes Clear / Now.
+    <code>clearable</code> shows a clear control on the trigger when the value is non-empty and the field is interactive. The panel also exposes Clear / Now (Clear only for range).
   </template>
   <div style="max-width:20rem">
     <gk-date-picker
@@ -122,9 +154,12 @@ Phase 1 supports single date only; range / datetime / month / year come later.
 
 | Prop | Type | Default |
 |------|------|---------|
-| `type` | `'date'` | `'date'` |
-| `value` | `string` | `''` |
+| `type` | `'date' \| 'daterange'` | `'date'` |
+| `value` | `string` \| `[string, string] \| null` | `''` / `null` |
 | `format` | `string` | `'yyyy-MM-dd'` |
+| `separator` | `string` | `' - '` |
+| `start-placeholder` | `string` | `''` |
+| `end-placeholder` | `string` | `''` |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |
 | `placeholder` | `string` | `''` |
 | `disabled` | `boolean` | `false` |
@@ -135,14 +170,14 @@ Phase 1 supports single date only; range / datetime / month / year come later.
 | `locale` | `'en' \| 'zh-TW'` | `'en'` |
 | `isDateDisabled` | `(iso: string) => boolean` | — |
 
-`value` is ISO `YYYY-MM-DD` or empty. `format` only affects trigger display (`yyyy` `MM` `dd`). `isDateDisabled` is property-only (not an HTML attribute).
+For `type="date"`, `value` is ISO `YYYY-MM-DD` or empty string. For `type="daterange"`, `value` is `[start, end] | null` (prefer `:value` property binding; attribute may be a JSON array). `format` only affects trigger display (`yyyy` `MM` `dd`). `separator` and `start-placeholder` / `end-placeholder` apply to range display (placeholders fall back to `placeholder` when empty). `isDateDisabled` is property-only (not an HTML attribute). Range panels show **Clear** only (no Now).
 
 ### Date Picker Events
 
 | Name | Description |
 |------|-------------|
-| `input` | Value changed (select / clear / now); bubbles; `composed: true`; `detail: { value: string }` |
-| `change` | Same commits as `input`; bubbles; `composed: true`; `detail: { value: string }` |
+| `input` | Value changed (select / clear / now); bubbles; `composed: true`; `detail.value` is `string` for `date`, `[string, string] \| null` for `daterange` |
+| `change` | Same commits as `input`; bubbles; `composed: true`; `detail.value` matches `input` |
 | `gk-open-change` | Panel open state changed; bubbles; `composed: true`; `detail: { open: boolean }` |
 
 ### CSS Parts
@@ -157,4 +192,4 @@ Trigger parts are exposable via `gk-date-picker::part(...)`. The panel is portal
 | `clear` | Trigger clear button (`::part`) |
 | `panel` | Portaled popup root — style via `.gk-date-picker-panel` |
 | `calendar` | Month grid region — under `.gk-date-picker-panel` |
-| `actions` | Clear / Now row — under `.gk-date-picker-panel` |
+| `actions` | Clear / Now row (Clear only for range) — under `.gk-date-picker-panel` |
