@@ -6,6 +6,7 @@ import "./button/gk-button-group.js";
 import "./avatar/gk-avatar.js";
 import "./avatar/gk-avatar-group.js";
 import "./card/gk-card.js";
+import "./input/gk-input.js";
 export { GkButton } from "./button/gk-button.js";
 export type { GkButtonVariant, GkButtonSize, GkButtonType } from "./button/gk-button.js";
 export { GkButtonGroup } from "./button/gk-button-group.js";
@@ -28,3 +29,9 @@ export type {
   GkMessageReactive,
 } from "./message/gk-message-provider.js";
 export { gkMessage } from "./message/gk-message-api.js";
+export { GkInput } from "./input/gk-input.js";
+export type {
+  GkInputType,
+  GkInputSize,
+  GkInputStatus,
+} from "./input/gk-input.js";
