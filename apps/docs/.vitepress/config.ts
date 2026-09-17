@@ -48,8 +48,12 @@ export default defineConfig({
           },
           {
             text: "General",
+            items: [{ text: "Button", link: "/components/button" }],
+          },
+          {
+            text: "Data Entry",
             items: [
-              { text: "Button", link: "/components/button" },
+              { text: "Date Picker", link: "/components/date-picker" },
               { text: "Input", link: "/components/input" },
             ],
           },
@@ -100,8 +104,12 @@ export default defineConfig({
           },
           {
             text: "通用",
+            items: [{ text: "Button 按鈕", link: "/zh-TW/components/button" }],
+          },
+          {
+            text: "資料輸入",
             items: [
-              { text: "Button 按鈕", link: "/zh-TW/components/button" },
+              { text: "Date Picker 日期選擇", link: "/zh-TW/components/date-picker" },
               { text: "Input 輸入", link: "/zh-TW/components/input" },
             ],
           },
