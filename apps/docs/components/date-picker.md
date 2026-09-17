@@ -9,6 +9,8 @@ const dateTimeRange = ref<[string, string] | null>([
   "2026-09-01 09:00:00",
   "2026-09-17 18:00:00",
 ]);
+const monthValue = ref("2026-09");
+const yearValue = ref("2026");
 
 function onInput(e: CustomEvent<{ value: string }>) {
   value.value = e.detail.value;
@@ -28,6 +30,14 @@ function onDatetimeInput(e: CustomEvent<{ value: string }>) {
 
 function onDateTimeRangeInput(e: CustomEvent<{ value: [string, string] | null }>) {
   dateTimeRange.value = e.detail.value;
+}
+
+function onMonthInput(e: CustomEvent<{ value: string }>) {
+  monthValue.value = e.detail.value;
+}
+
+function onYearInput(e: CustomEvent<{ value: string }>) {
+  yearValue.value = e.detail.value;
 }
 
 /** Disable weekends (property-only; not an HTML attribute). */
@@ -68,6 +78,22 @@ const codes = {
   @input="onDateTimeRangeInput"
 ></gk-date-picker>
 <p>{{ dateTimeRange }}</p>`,
+  month: `<!-- host: const monthValue = ref("2026-09"); function onMonthInput(e: CustomEvent<{ value: string }>) { monthValue.value = e.detail.value } -->
+<gk-date-picker
+  type="month"
+  clearable
+  :value="monthValue"
+  @input="onMonthInput"
+></gk-date-picker>
+<p>Value: {{ monthValue }}</p>`,
+  year: `<!-- host: const yearValue = ref("2026"); function onYearInput(e: CustomEvent<{ value: string }>) { yearValue.value = e.detail.value } -->
+<gk-date-picker
+  type="year"
+  clearable
+  :value="yearValue"
+  @input="onYearInput"
+></gk-date-picker>
+<p>Value: {{ yearValue }}</p>`,
   size: `<gk-date-picker size="sm" placeholder="Small"></gk-date-picker>
 <gk-date-picker size="md" placeholder="Medium"></gk-date-picker>
 <gk-date-picker size="lg" placeholder="Large"></gk-date-picker>`,
@@ -94,9 +120,7 @@ const codes = {
 
 # Date Picker
 
-Date Picker selects a single calendar day, a date range (`type="daterange"`), a date-time (`type="datetime"`), or a date-time range (`type="datetimerange"`). The trigger matches Input sizing and chrome; the panel portals to `document.body` with month navigation and optional hour/minute/second columns. Date panels expose **Clear** / **Now**; date-time panels add **Confirm** (draft until confirmed). Range panels expose **Clear** only; date-time range panels expose **Clear** / **Confirm** (no Now).
-
-Roadmap: month / year pickers come later.
+Date Picker selects a single calendar day, a date range (`type="daterange"`), a date-time (`type="datetime"`), a date-time range (`type="datetimerange"`), a calendar month (`type="month"`), or a calendar year (`type="year"`). The trigger matches Input sizing and chrome; the panel portals to `document.body` with month navigation and optional hour/minute/second columns (day types), or month/year grids (month and year types). Date, month, and year panels expose **Clear** / **Now** and commit immediately when you pick a cell; date-time panels add **Confirm** (draft until confirmed). Range panels expose **Clear** only; date-time range panels expose **Clear** / **Confirm** (no Now).
 
 ## Demos
 
@@ -159,6 +183,36 @@ Roadmap: month / year pickers come later.
   </div>
 </DemoCard>
 
+<DemoCard title="Month" :code="codes.month">
+  <template #description>
+    Set <code>type="month"</code> and bind <code>value</code> as <code>YYYY-MM</code> (or empty). The panel shows a 12-month grid with year navigation; picking a month commits and closes. Default display <code>format</code> is <code>yyyy-MM</code>. Panel actions: <strong>Clear</strong> / <strong>Now</strong> (no Confirm).
+  </template>
+  <div style="display:grid;gap:0.75rem;max-width:20rem">
+    <gk-date-picker
+      type="month"
+      clearable
+      :value="monthValue"
+      @input="onMonthInput"
+    ></gk-date-picker>
+    <p style="margin:0;font-size:0.875rem;opacity:0.8">Value: {{ monthValue || "(empty)" }}</p>
+  </div>
+</DemoCard>
+
+<DemoCard title="Year" :code="codes.year">
+  <template #description>
+    Set <code>type="year"</code> and bind <code>value</code> as four-digit <code>YYYY</code> (or empty). The panel shows a page of years with prev/next page controls; picking a year commits and closes. Default <code>format</code> is <code>yyyy</code>. Panel actions: <strong>Clear</strong> / <strong>Now</strong>.
+  </template>
+  <div style="display:grid;gap:0.75rem;max-width:20rem">
+    <gk-date-picker
+      type="year"
+      clearable
+      :value="yearValue"
+      @input="onYearInput"
+    ></gk-date-picker>
+    <p style="margin:0;font-size:0.875rem;opacity:0.8">Value: {{ yearValue || "(empty)" }}</p>
+  </div>
+</DemoCard>
+
 <DemoCard title="Size" :code="codes.size">
   <template #description>
     Sizes match Input / Button: <code>sm</code>, <code>md</code>, and <code>lg</code>.
@@ -217,9 +271,9 @@ Roadmap: month / year pickers come later.
 
 | Prop | Type | Default |
 |------|------|---------|
-| `type` | `'date' \| 'daterange' \| 'datetime' \| 'datetimerange'` | `'date'` |
+| `type` | `'date' \| 'daterange' \| 'datetime' \| 'datetimerange' \| 'month' \| 'year'` | `'date'` |
 | `value` | `string` \| `[string, string] \| null` | `''` / `null` |
-| `format` | `string` | `'yyyy-MM-dd'` or `'yyyy-MM-dd HH:mm:ss'` (datetime types) |
+| `format` | `string` | `'yyyy-MM-dd'`, `'yyyy-MM-dd HH:mm:ss'` (datetime types), `'yyyy-MM'` (`month`), or `'yyyy'` (`year`) |
 | `separator` | `string` | `' - '` |
 | `start-placeholder` | `string` | `''` |
 | `end-placeholder` | `string` | `''` |
@@ -233,13 +287,13 @@ Roadmap: month / year pickers come later.
 | `locale` | `'en' \| 'zh-TW'` | `'en'` |
 | `isDateDisabled` | `(iso: string) => boolean` | — |
 
-For `type="date"`, `value` is ISO `YYYY-MM-DD` or empty string. For `type="daterange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD`). For `type="datetime"`, `value` is local `YYYY-MM-DD HH:mm:ss` or empty string. For `type="datetimerange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD HH:mm:ss`). Prefer `:value` property binding; range attributes may be a JSON array. `format` only affects trigger display: date types use `yyyy` `MM` `dd`; datetime types also support `HH` `mm` `ss`. Default `format` switches to `yyyy-MM-dd HH:mm:ss` when `type` is `datetime` or `datetimerange`. `separator` and `start-placeholder` / `end-placeholder` apply to range display (placeholders fall back to `placeholder` when empty). `isDateDisabled` is property-only (not an HTML attribute) and applies to the calendar day (`YYYY-MM-DD`) only. Date range panels show **Clear** only (no Now). Datetime panels show **Clear** / **Now** / **Confirm**; datetimerange shows **Clear** / **Confirm** only. **Confirm** commits the panel draft; **Now** and **Clear** commit immediately.
+For `type="date"`, `value` is ISO `YYYY-MM-DD` or empty string. For `type="daterange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD`). For `type="datetime"`, `value` is local `YYYY-MM-DD HH:mm:ss` or empty string. For `type="datetimerange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD HH:mm:ss`). For `type="month"`, `value` is `YYYY-MM` or empty string. For `type="year"`, `value` is four-digit `YYYY` or empty string. Prefer `:value` property binding; range attributes may be a JSON array. `format` only affects trigger display: date types use `yyyy` `MM` `dd`; datetime types also support `HH` `mm` `ss`; month uses `yyyy` `MM`; year uses `yyyy`. Default `format` is coerced when `type` changes: `yyyy-MM-dd HH:mm:ss` for `datetime` / `datetimerange`, `yyyy-MM` for `month`, `yyyy` for `year` (from the date default `yyyy-MM-dd`). `separator` and `start-placeholder` / `end-placeholder` apply to range display (placeholders fall back to `placeholder` when empty). `isDateDisabled` is property-only (not an HTML attribute): for day types it receives `YYYY-MM-DD`; for `month`, `YYYY-MM`; for `year`, `YYYY`. Date range panels show **Clear** only (no Now). Date, month, and year panels show **Clear** / **Now** (immediate commit on cell click). Datetime panels show **Clear** / **Now** / **Confirm**; datetimerange shows **Clear** / **Confirm** only. **Confirm** commits the panel draft; **Now** and **Clear** commit immediately.
 
 ### Date Picker Events
 
 | Name | Description |
 |------|-------------|
-| `input` | Value changed (select / clear / now / confirm); bubbles; `composed: true`; `detail.value` is `string` for `date` and `datetime`, `[string, string] \| null` for `daterange` and `datetimerange` |
+| `input` | Value changed (select / clear / now / confirm); bubbles; `composed: true`; `detail.value` is `string` for `date`, `datetime`, `month`, and `year`, `[string, string] \| null` for `daterange` and `datetimerange` |
 | `change` | Same commits as `input`; bubbles; `composed: true`; `detail.value` matches `input` |
 | `gk-open-change` | Panel open state changed; bubbles; `composed: true`; `detail: { open: boolean }` |
 

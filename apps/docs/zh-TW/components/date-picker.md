@@ -9,6 +9,8 @@ const dateTimeRange = ref<[string, string] | null>([
   "2026-09-01 09:00:00",
   "2026-09-17 18:00:00",
 ]);
+const monthValue = ref("2026-09");
+const yearValue = ref("2026");
 
 function onInput(e: CustomEvent<{ value: string }>) {
   value.value = e.detail.value;
@@ -28,6 +30,14 @@ function onDatetimeInput(e: CustomEvent<{ value: string }>) {
 
 function onDateTimeRangeInput(e: CustomEvent<{ value: [string, string] | null }>) {
   dateTimeRange.value = e.detail.value;
+}
+
+function onMonthInput(e: CustomEvent<{ value: string }>) {
+  monthValue.value = e.detail.value;
+}
+
+function onYearInput(e: CustomEvent<{ value: string }>) {
+  yearValue.value = e.detail.value;
 }
 
 /** 停用週末（僅 JS 屬性；非 HTML attribute）。 */
@@ -71,6 +81,24 @@ const codes = {
   @input="onDateTimeRangeInput"
 ></gk-date-picker>
 <p>{{ dateTimeRange }}</p>`,
+  month: `<!-- host: const monthValue = ref("2026-09"); function onMonthInput(e: CustomEvent<{ value: string }>) { monthValue.value = e.detail.value } -->
+<gk-date-picker
+  locale="zh-TW"
+  type="month"
+  clearable
+  :value="monthValue"
+  @input="onMonthInput"
+></gk-date-picker>
+<p>值：{{ monthValue }}</p>`,
+  year: `<!-- host: const yearValue = ref("2026"); function onYearInput(e: CustomEvent<{ value: string }>) { yearValue.value = e.detail.value } -->
+<gk-date-picker
+  locale="zh-TW"
+  type="year"
+  clearable
+  :value="yearValue"
+  @input="onYearInput"
+></gk-date-picker>
+<p>值：{{ yearValue }}</p>`,
   size: `<gk-date-picker locale="zh-TW" size="sm" placeholder="小"></gk-date-picker>
 <gk-date-picker locale="zh-TW" size="md" placeholder="中"></gk-date-picker>
 <gk-date-picker locale="zh-TW" size="lg" placeholder="大"></gk-date-picker>`,
@@ -99,9 +127,7 @@ const codes = {
 
 # Date Picker 日期選擇
 
-日期選擇器用來挑選單一曆日、日期範圍（`type="daterange"`）、日期時間（`type="datetime"`）或日期時間範圍（`type="datetimerange"`）。觸發器外觀對齊 Input；面板會 portal 到 `document.body`，並提供月份導覽與可選的時／分／秒欄。日期面板提供 **清除**／**現在**；日期時間面板另含 **確認**（草稿須確認後才提交）。範圍面板僅 **清除**；日期時間範圍面板為 **清除**／**確認**（無「現在」）。
-
-路線圖：月份／年份選擇稍後提供。
+日期選擇器用來挑選單一曆日、日期範圍（`type="daterange"`）、日期時間（`type="datetime"`）、日期時間範圍（`type="datetimerange"`）、曆月（`type="month"`）或曆年（`type="year"`）。觸發器外觀對齊 Input；面板會 portal 到 `document.body`，日類型提供月份導覽與可選的時／分／秒欄，月份／年份類型則為對應格線。日期、月份與年份面板提供 **清除**／**現在**，點選格線即提交；日期時間面板另含 **確認**（草稿須確認後才提交）。範圍面板僅 **清除**；日期時間範圍面板為 **清除**／**確認**（無「現在」）。
 
 ## 示範
 
@@ -167,6 +193,38 @@ const codes = {
   </div>
 </DemoCard>
 
+<DemoCard title="月份" :code="codes.month">
+  <template #description>
+    設定 <code>type="month"</code>，並以 <code>YYYY-MM</code>（或空）綁定 <code>value</code>。面板為 12 個月份格線並可切換年份；點選月份即提交並關閉。預設顯示 <code>format</code> 為 <code>yyyy-MM</code>。面板操作：<strong>清除</strong>／<strong>現在</strong>（無「確認」）。
+  </template>
+  <div style="display:grid;gap:0.75rem;max-width:20rem">
+    <gk-date-picker
+      locale="zh-TW"
+      type="month"
+      clearable
+      :value="monthValue"
+      @input="onMonthInput"
+    ></gk-date-picker>
+    <p style="margin:0;font-size:0.875rem;opacity:0.8">值：{{ monthValue || "（空）" }}</p>
+  </div>
+</DemoCard>
+
+<DemoCard title="年份" :code="codes.year">
+  <template #description>
+    設定 <code>type="year"</code>，並以四位數 <code>YYYY</code>（或空）綁定 <code>value</code>。面板顯示一頁年份並可前後翻頁；點選年份即提交並關閉。預設 <code>format</code> 為 <code>yyyy</code>。面板操作：<strong>清除</strong>／<strong>現在</strong>。
+  </template>
+  <div style="display:grid;gap:0.75rem;max-width:20rem">
+    <gk-date-picker
+      locale="zh-TW"
+      type="year"
+      clearable
+      :value="yearValue"
+      @input="onYearInput"
+    ></gk-date-picker>
+    <p style="margin:0;font-size:0.875rem;opacity:0.8">值：{{ yearValue || "（空）" }}</p>
+  </div>
+</DemoCard>
+
 <DemoCard title="尺寸" :code="codes.size">
   <template #description>
     尺寸與 Input／Button 一致：<code>sm</code>、<code>md</code>、<code>lg</code>。
@@ -227,9 +285,9 @@ const codes = {
 
 | Prop | Type | Default |
 |------|------|---------|
-| `type` | `'date' \| 'daterange' \| 'datetime' \| 'datetimerange'` | `'date'` |
+| `type` | `'date' \| 'daterange' \| 'datetime' \| 'datetimerange' \| 'month' \| 'year'` | `'date'` |
 | `value` | `string` \| `[string, string] \| null` | `''` / `null` |
-| `format` | `string` | `'yyyy-MM-dd'` 或 `'yyyy-MM-dd HH:mm:ss'`（日期時間類型） |
+| `format` | `string` | `'yyyy-MM-dd'`、`'yyyy-MM-dd HH:mm:ss'`（日期時間）、`'yyyy-MM'`（`month`）或 `'yyyy'`（`year`） |
 | `separator` | `string` | `' - '` |
 | `start-placeholder` | `string` | `''` |
 | `end-placeholder` | `string` | `''` |
@@ -243,13 +301,13 @@ const codes = {
 | `locale` | `'en' \| 'zh-TW'` | `'en'` |
 | `isDateDisabled` | `(iso: string) => boolean` | — |
 
-`type="date"` 時，`value` 為 ISO `YYYY-MM-DD` 或空字串。`type="daterange"` 時，`value` 為 `[start, end] | null`（各為 `YYYY-MM-DD`）。`type="datetime"` 時，`value` 為本地 `YYYY-MM-DD HH:mm:ss` 或空字串。`type="datetimerange"` 時，`value` 為 `[start, end] | null`（各為 `YYYY-MM-DD HH:mm:ss`）。建議用 `:value` 屬性綁定；範圍 attribute 可為 JSON 陣列。`format` 僅影響觸發器顯示：日期類型用 `yyyy` `MM` `dd`；日期時間類型另支援 `HH` `mm` `ss`。`type` 為 `datetime` 或 `datetimerange` 時，預設 `format` 為 `yyyy-MM-dd HH:mm:ss`。`separator` 與 `start-placeholder`／`end-placeholder` 用於範圍顯示（佔位為空時回退到 `placeholder`）。`isDateDisabled` 僅為 JS 屬性（非 HTML attribute），僅作用於日曆日（`YYYY-MM-DD`）。日期範圍面板僅 **清除**（無「現在」）。日期時間面板為 **清除**／**現在**／**確認**；日期時間範圍為 **清除**／**確認**。**確認** 提交面板草稿；**現在** 與 **清除** 立即提交。
+`type="date"` 時，`value` 為 ISO `YYYY-MM-DD` 或空字串。`type="daterange"` 時，`value` 為 `[start, end] | null`（各為 `YYYY-MM-DD`）。`type="datetime"` 時，`value` 為本地 `YYYY-MM-DD HH:mm:ss` 或空字串。`type="datetimerange"` 時，`value` 為 `[start, end] | null`（各為 `YYYY-MM-DD HH:mm:ss`）。`type="month"` 時，`value` 為 `YYYY-MM` 或空字串。`type="year"` 時，`value` 為四位數 `YYYY` 或空字串。建議用 `:value` 屬性綁定；範圍 attribute 可為 JSON 陣列。`format` 僅影響觸發器顯示：日期類型用 `yyyy` `MM` `dd`；日期時間類型另支援 `HH` `mm` `ss`；月份用 `yyyy` `MM`；年份用 `yyyy`。變更 `type` 時會調整預設 `format`：`datetime`／`datetimerange` 為 `yyyy-MM-dd HH:mm:ss`，`month` 為 `yyyy-MM`，`year` 為 `yyyy`（自日期預設 `yyyy-MM-dd` 轉換）。`separator` 與 `start-placeholder`／`end-placeholder` 用於範圍顯示（佔位為空時回退到 `placeholder`）。`isDateDisabled` 僅為 JS 屬性（非 HTML attribute）：日類型傳入 `YYYY-MM-DD`；`month` 為 `YYYY-MM`；`year` 為 `YYYY`。日期範圍面板僅 **清除**（無「現在」）。日期、月份與年份面板為 **清除**／**現在**（點格線即提交）。日期時間面板為 **清除**／**現在**／**確認**；日期時間範圍為 **清除**／**確認**。**確認** 提交面板草稿；**現在** 與 **清除** 立即提交。
 
 ### Date Picker Events
 
 | Name | Description |
 |------|-------------|
-| `input` | 值變更（選擇／清除／現在／確認）；bubbles；`composed: true`；`detail.value` 在 `date` 與 `datetime` 為 `string`，在 `daterange` 與 `datetimerange` 為 `[string, string] \| null` |
+| `input` | 值變更（選擇／清除／現在／確認）；bubbles；`composed: true`；`detail.value` 在 `date`、`datetime`、`month`、`year` 為 `string`，在 `daterange` 與 `datetimerange` 為 `[string, string] \| null` |
 | `change` | 與 `input` 相同的提交時機；bubbles；`composed: true`；`detail.value` 與 `input` 一致 |
 | `gk-open-change` | 面板開關狀態變更；bubbles；`composed: true`；`detail: { open: boolean }` |
 
