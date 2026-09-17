@@ -85,12 +85,15 @@ export const inputStyles = css`
   }
 
   :host([status="success"]) [part="base"]:focus-within {
+    border-color: var(--gk-color-success, #18a058);
     outline-color: var(--gk-color-success, #18a058);
   }
   :host([status="warning"]) [part="base"]:focus-within {
+    border-color: var(--gk-color-warning, #f0a020);
     outline-color: var(--gk-color-warning, #f0a020);
   }
   :host([status="error"]) [part="base"]:focus-within {
+    border-color: var(--gk-color-danger, #d03050);
     outline-color: var(--gk-color-danger, #d03050);
   }
 

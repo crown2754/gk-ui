@@ -46,6 +46,43 @@ export class GkInput extends LitElement {
   @state()
   private passwordVisible = false;
 
+  @state()
+  private hasPrefixSlot = false;
+
+  @state()
+  private hasSuffixSlot = false;
+
+  private onPrefixSlotChange = (e: Event) => {
+    const slot = e.target as HTMLSlotElement;
+    this.hasPrefixSlot = slot.assignedNodes({ flatten: true }).length > 0;
+  };
+
+  private onSuffixSlotChange = (e: Event) => {
+    const slot = e.target as HTMLSlotElement;
+    this.hasSuffixSlot = slot.assignedNodes({ flatten: true }).length > 0;
+  };
+
+  private syncSlotState() {
+    const prefixSlot = this.shadowRoot?.querySelector(
+      'slot[name="prefix"]',
+    ) as HTMLSlotElement | null;
+    const suffixSlot = this.shadowRoot?.querySelector(
+      'slot[name="suffix"]',
+    ) as HTMLSlotElement | null;
+    if (prefixSlot) {
+      this.hasPrefixSlot =
+        prefixSlot.assignedNodes({ flatten: true }).length > 0;
+    }
+    if (suffixSlot) {
+      this.hasSuffixSlot =
+        suffixSlot.assignedNodes({ flatten: true }).length > 0;
+    }
+  }
+
+  protected firstUpdated() {
+    this.syncSlotState();
+  }
+
   private emit(name: "input" | "change") {
     this.dispatchEvent(
       new CustomEvent(name, {
@@ -89,6 +126,12 @@ export class GkInput extends LitElement {
 
   private get showPasswordToggle() {
     return this.type === "password" && !this.disabled;
+  }
+
+  private get showSuffixWrapper() {
+    return (
+      this.hasSuffixSlot || this.showClearButton || this.showPasswordToggle
+    );
   }
 
   private nativeType(): string {
@@ -156,10 +199,12 @@ export class GkInput extends LitElement {
 
     return html`
       <div part="base">
-        <span part="prefix"><slot name="prefix"></slot></span>
+        <span part="prefix" ?hidden=${!this.hasPrefixSlot}>
+          <slot name="prefix" @slotchange=${this.onPrefixSlotChange}></slot>
+        </span>
         ${control}
-        <span part="suffix">
-          <slot name="suffix"></slot>
+        <span part="suffix" ?hidden=${!this.showSuffixWrapper}>
+          <slot name="suffix" @slotchange=${this.onSuffixSlotChange}></slot>
           ${this.showClearButton
             ? html`<button
                 type="button"
