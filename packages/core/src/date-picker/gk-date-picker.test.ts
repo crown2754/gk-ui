@@ -2,7 +2,12 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { fixture, html } from "@open-wc/testing";
 import "./gk-date-picker.js";
 import type { GkDatePicker } from "./gk-date-picker.js";
-import { datePart, todayIso } from "./date-utils.js";
+import {
+  datePart,
+  todayIso,
+  todayYear,
+  todayYearMonth,
+} from "./date-utils.js";
 
 describe("gk-date-picker", () => {
   afterEach(() => {
@@ -703,6 +708,43 @@ describe("gk-date-picker month", () => {
     expect(el.value).toMatch(/^\d{4}-\d{2}$/);
     expect(el.open).toBe(false);
   });
+
+  it("isDateDisabled blocks month cell", async () => {
+    const el = await fixture<GkDatePicker>(html`
+      <gk-date-picker
+        type="month"
+        value="2026-09"
+        .isDateDisabled=${(v: string) => v === "2026-09"}
+      ></gk-date-picker>
+    `);
+    el.open = true;
+    await el.updateComplete;
+    const btn = document.querySelector(
+      '.gk-date-picker-panel button[data-month="2026-09"]',
+    ) as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(btn.disabled).toBe(true);
+  });
+
+  it("Now respects isDateDisabled for month", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="month"></gk-date-picker>`,
+    );
+    const ym = todayYearMonth();
+    el.isDateDisabled = (v) => v === ym;
+    el.open = true;
+    await el.updateComplete;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="now"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(el.value).toBe("");
+    expect(onInput).not.toHaveBeenCalled();
+  });
 });
 
 describe("gk-date-picker year", () => {
@@ -738,20 +780,36 @@ describe("gk-date-picker year", () => {
     const el = await fixture<GkDatePicker>(html`
       <gk-date-picker
         type="year"
+        value="2026"
         .isDateDisabled=${(v: string) => v === "2026"}
       ></gk-date-picker>
     `);
     el.open = true;
     await el.updateComplete;
-    const btn = [
-      ...document.querySelectorAll(
-        ".gk-date-picker-panel button[data-year]",
-      ),
-    ].find((b) => (b as HTMLButtonElement).dataset.year === "2026") as
-      | HTMLButtonElement
-      | undefined;
-    if (btn) {
-      expect(btn.disabled).toBe(true);
-    }
+    const btn = document.querySelector(
+      '.gk-date-picker-panel button[data-year="2026"]',
+    ) as HTMLButtonElement;
+    expect(btn).toBeTruthy();
+    expect(btn.disabled).toBe(true);
+  });
+
+  it("Now respects isDateDisabled for year", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="year"></gk-date-picker>`,
+    );
+    const y = todayYear();
+    el.isDateDisabled = (v) => v === y;
+    el.open = true;
+    await el.updateComplete;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="now"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(el.value).toBe("");
+    expect(onInput).not.toHaveBeenCalled();
   });
 });

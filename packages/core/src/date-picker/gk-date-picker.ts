@@ -191,7 +191,7 @@ export class GkDatePicker extends LitElement {
   @property({ reflect: true })
   locale: GkDatePickerLocale = "en";
 
-  /** Property-only: return true to disable a calendar day (ISO `YYYY-MM-DD`). */
+  /** Property-only: return true to disable a value (`YYYY-MM-DD` | `YYYY-MM` | `YYYY` by type). */
   @property({ attribute: false })
   isDateDisabled?: (iso: string) => boolean;
 

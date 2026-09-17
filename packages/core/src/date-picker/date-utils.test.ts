@@ -62,6 +62,14 @@ describe("date-utils", () => {
     expect(todayIso()).toBe(`${y}-${m}-${d}`);
   });
 
+  it("todayYearMonth and todayYear match local calendar", () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    expect(todayYearMonth()).toBe(`${y}-${m}`);
+    expect(todayYear()).toBe(String(y));
+  });
+
   it("compareIso orders ISO dates", () => {
     expect(compareIso("2026-09-01", "2026-09-10")).toBe(-1);
     expect(compareIso("2026-09-10", "2026-09-01")).toBe(1);
