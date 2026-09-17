@@ -445,9 +445,14 @@ export class GkDatePicker extends LitElement {
     this.rangeDraftStartDt = null;
     this.rangeDraftEndDt = null;
     this.rangeStash = null;
+    this.draftDate = null;
+    this.draftH = 0;
+    this.draftM = 0;
+    this.draftS = 0;
     this.emitValue(
       this.type === "daterange" || this.type === "datetimerange" ? null : "",
     );
+    this.setOpen(false);
   };
 
   private onDayClick = (iso: string) => {
@@ -557,6 +562,10 @@ export class GkDatePicker extends LitElement {
     this.rangeDraftStartDt = null;
     this.rangeDraftEndDt = null;
     this.rangeStash = null;
+    this.draftDate = null;
+    this.draftH = 0;
+    this.draftM = 0;
+    this.draftS = 0;
     this.emitValue(
       this.type === "daterange" || this.type === "datetimerange" ? null : "",
     );

@@ -129,7 +129,7 @@ Roadmap: month / year pickers come later.
 
 <DemoCard title="Datetime" :code="codes.datetime">
   <template #description>
-    Set <code>type="datetime"</code> and bind <code>value</code> as local <code>YYYY-MM-DD HH:mm:ss</code> (or empty). Calendar and time columns edit a draft until you click <strong>Confirm</strong> (**Clear** / **Now** commit immediately).
+    Set <code>type="datetime"</code> and bind <code>value</code> as local <code>YYYY-MM-DD HH:mm:ss</code> (or empty). Calendar and time columns edit a draft until you click <strong>Confirm</strong> (<strong>Clear</strong> / <strong>Now</strong> commit immediately).
   </template>
   <div style="display:grid;gap:0.75rem;max-width:20rem">
     <gk-date-picker

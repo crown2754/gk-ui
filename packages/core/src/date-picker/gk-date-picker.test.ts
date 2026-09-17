@@ -476,6 +476,36 @@ describe("gk-date-picker datetime", () => {
     expect(el.value).toBe(`${iso} 14:00:00`);
     expect(el.open).toBe(false);
   });
+
+  it("trigger Clear wipes draft, closes panel, and Confirm cannot resurrect", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker
+        type="datetime"
+        clearable
+        value="2026-09-17 08:00:00"
+      ></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    (el.shadowRoot?.querySelector("button[part='clear']") as HTMLButtonElement).click();
+    await el.updateComplete;
+    expect(el.value).toBe("");
+    expect(el.open).toBe(false);
+    expect((onInput.mock.calls[0][0] as CustomEvent).detail).toEqual({ value: "" });
+
+    el.open = true;
+    await el.updateComplete;
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="confirm"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(el.value).toBe("");
+    expect(el.open).toBe(true);
+  });
 });
 
 describe("gk-date-picker datetimerange", () => {
@@ -551,5 +581,65 @@ describe("gk-date-picker datetimerange", () => {
     ).click();
     await el.updateComplete;
     expect(el.value).toBeNull();
+  });
+
+  it("reverse day order + Confirm yields swapped ordered pair", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetimerange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const inMonth = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+      ),
+    ] as HTMLButtonElement[];
+    const later = inMonth[10];
+    const earlier = inMonth[5];
+    const isoLater = later.dataset.iso!;
+    const isoEarlier = earlier.dataset.iso!;
+    expect(isoLater > isoEarlier).toBe(true);
+    later.click();
+    await el.updateComplete;
+    earlier.click();
+    await el.updateComplete;
+    expect(el.value).toBeNull();
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="confirm"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    const pair = el.value as [string, string];
+    expect(datePart(pair[0])).toBe(isoEarlier);
+    expect(datePart(pair[1])).toBe(isoLater);
+    expect(pair[0] <= pair[1]).toBe(true);
+    expect(el.open).toBe(false);
+  });
+
+  it("restart then Escape restores previous committed pair", async () => {
+    const prev: [string, string] = ["2026-09-01 00:00:00", "2026-09-10 12:00:00"];
+    const el = await fixture<GkDatePicker>(html`
+      <gk-date-picker type="datetimerange" .value=${prev}></gk-date-picker>
+    `);
+    el.open = true;
+    await el.updateComplete;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    const inMonth = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+      ),
+    ] as HTMLButtonElement[];
+    inMonth[5].click();
+    await el.updateComplete;
+    expect(el.value).toBeNull();
+    expect(onInput).not.toHaveBeenCalled();
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await el.updateComplete;
+    expect(el.open).toBe(false);
+    expect(el.value).toEqual(prev);
+    expect(onInput).not.toHaveBeenCalled();
   });
 });
