@@ -49,7 +49,7 @@ describe("gk-input", () => {
       "[part='input']",
     ) as HTMLInputElement;
     input.value = "hi";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
     await el.updateComplete;
     expect(el.value).toBe("hi");
     expect(spy).toHaveBeenCalled();
@@ -57,6 +57,23 @@ describe("gk-input", () => {
     expect(ev.bubbles).toBe(true);
     expect(ev.composed).toBe(true);
     expect(ev.detail).toEqual({ value: "hi" });
+  });
+
+  it("exposes only CustomEvent input to the host (not native InputEvent)", async () => {
+    const el = await fixture<GkInput>(html`<gk-input></gk-input>`);
+    const spy = vi.fn();
+    el.addEventListener("input", spy);
+    const input = el.shadowRoot?.querySelector(
+      "[part='input']",
+    ) as HTMLInputElement;
+    input.value = "a";
+    input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+    await el.updateComplete;
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy.mock.calls[0][0]).toBeInstanceOf(CustomEvent);
+    expect((spy.mock.calls[0][0] as CustomEvent).detail).toEqual({
+      value: "a",
+    });
   });
 
   it("clear empties value and dispatches input and change", async () => {

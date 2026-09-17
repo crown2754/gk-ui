@@ -94,12 +94,17 @@ export class GkInput extends LitElement {
   }
 
   private onNativeInput = (e: Event) => {
+    // Stop the native composed InputEvent so light-DOM listeners (e.g. Vue @input)
+    // only see our CustomEvent with detail.value — otherwise e.detail is 0 and
+    // controlled bindings reset the field.
+    e.stopPropagation();
     const t = e.target as HTMLInputElement | HTMLTextAreaElement;
     this.value = t.value;
     this.emit("input");
   };
 
-  private onNativeChange = () => {
+  private onNativeChange = (e: Event) => {
+    e.stopPropagation();
     this.emit("change");
   };
 
