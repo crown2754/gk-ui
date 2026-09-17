@@ -340,3 +340,93 @@ describe("gk-date-picker daterange", () => {
     expect(el.value).toBeNull();
   });
 });
+
+describe("gk-date-picker datetime", () => {
+  afterEach(() => {
+    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+  });
+
+  it("defaults empty string and format with time", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetime"></gk-date-picker>`,
+    );
+    expect(el.value).toBe("");
+    expect(el.format).toBe("yyyy-MM-dd HH:mm:ss");
+  });
+
+  it("does not commit until Confirm", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetime"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const day = document.querySelector(
+      ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+    ) as HTMLButtonElement;
+    const iso = day.dataset.iso!;
+    day.click();
+    await el.updateComplete;
+    expect(el.value).toBe("");
+    expect(el.open).toBe(true);
+    const confirm = document.querySelector(
+      '.gk-date-picker-panel button[data-action="confirm"]',
+    ) as HTMLButtonElement;
+    confirm.click();
+    await el.updateComplete;
+    expect(el.value).toBe(`${iso} 00:00:00`);
+    expect(el.open).toBe(false);
+  });
+
+  it("Now commits immediately", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetime"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="now"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(typeof el.value).toBe("string");
+    expect(el.value as string).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+    expect(el.open).toBe(false);
+    expect(onInput).toHaveBeenCalled();
+  });
+
+  it("Escape discards draft", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetime" value="2026-09-17 08:00:00"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const day = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+      ),
+    ].find((b) => (b as HTMLButtonElement).dataset.iso !== "2026-09-17") as
+      | HTMLButtonElement
+      | undefined;
+    day?.click();
+    await el.updateComplete;
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await el.updateComplete;
+    expect(el.value).toBe("2026-09-17 08:00:00");
+    expect(el.open).toBe(false);
+  });
+
+  it("panel has Clear, Now, Confirm", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetime"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const panel = document.querySelector(".gk-date-picker-panel")!;
+    expect(panel.querySelector('[data-action="clear"]')).toBeTruthy();
+    expect(panel.querySelector('[data-action="now"]')).toBeTruthy();
+    expect(panel.querySelector('[data-action="confirm"]')).toBeTruthy();
+  });
+});

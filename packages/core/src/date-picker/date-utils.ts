@@ -36,10 +36,77 @@ export function todayIso(): string {
   return toIsoDate(new Date());
 }
 
-export function formatDisplay(iso: string, format: string): string {
-  if (!isValidIsoDate(iso)) return "";
-  const [yyyy, MM, dd] = iso.split("-");
-  return format.replace(/yyyy/g, yyyy).replace(/MM/g, MM).replace(/dd/g, dd);
+const DT_RE = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/;
+
+export function isValidDateTime(value: string): boolean {
+  const m = DT_RE.exec(value);
+  if (!m) return false;
+  if (!isValidIsoDate(`${m[1]}-${m[2]}-${m[3]}`)) return false;
+  const h = Number(m[4]);
+  const mi = Number(m[5]);
+  const s = Number(m[6]);
+  return h <= 23 && mi <= 59 && s <= 59;
+}
+
+export function parseDateTime(
+  value: string,
+): { date: string; h: number; m: number; s: number } | null {
+  if (!isValidDateTime(value)) return null;
+  const m = DT_RE.exec(value)!;
+  return {
+    date: `${m[1]}-${m[2]}-${m[3]}`,
+    h: Number(m[4]),
+    m: Number(m[5]),
+    s: Number(m[6]),
+  };
+}
+
+export function toDateTime(
+  dateIso: string,
+  h: number,
+  m: number,
+  s: number,
+): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${dateIso} ${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+export function todayDateTime(): string {
+  const n = new Date();
+  return toDateTime(toIsoDate(n), n.getHours(), n.getMinutes(), n.getSeconds());
+}
+
+export function datePart(value: string): string {
+  if (isValidIsoDate(value)) return value;
+  const dt = parseDateTime(value);
+  return dt ? dt.date : "";
+}
+
+export function compareDateTime(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+export function formatDisplay(value: string, format: string): string {
+  const dt = parseDateTime(value);
+  if (dt) {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return format
+      .replace(/yyyy/g, dt.date.slice(0, 4))
+      .replace(/MM/g, dt.date.slice(5, 7))
+      .replace(/dd/g, dt.date.slice(8, 10))
+      .replace(/HH/g, pad(dt.h))
+      .replace(/mm/g, pad(dt.m))
+      .replace(/ss/g, pad(dt.s));
+  }
+  if (!isValidIsoDate(value)) return "";
+  const [yyyy, MM, dd] = value.split("-");
+  return format
+    .replace(/yyyy/g, yyyy)
+    .replace(/MM/g, MM)
+    .replace(/dd/g, dd)
+    .replace(/HH/g, "00")
+    .replace(/mm/g, "00")
+    .replace(/ss/g, "00");
 }
 
 export function compareIso(a: string, b: string): number {

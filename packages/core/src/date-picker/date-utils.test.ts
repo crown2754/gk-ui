@@ -9,6 +9,11 @@ import {
   todayIso,
   compareIso,
   isIsoInRange,
+  isValidDateTime,
+  parseDateTime,
+  toDateTime,
+  datePart,
+  compareDateTime,
 } from "./date-utils.js";
 
 describe("date-utils", () => {
@@ -62,5 +67,22 @@ describe("date-utils", () => {
     expect(isIsoInRange("2026-09-05", "2026-09-01", "2026-09-10")).toBe(true);
     expect(isIsoInRange("2026-09-01", "2026-09-10", "2026-09-01")).toBe(true);
     expect(isIsoInRange("2026-09-11", "2026-09-01", "2026-09-10")).toBe(false);
+  });
+
+  it("validates and builds datetime strings", () => {
+    expect(isValidDateTime("2026-09-17 14:30:00")).toBe(true);
+    expect(isValidDateTime("2026-09-17")).toBe(false);
+    expect(toDateTime("2026-09-17", 14, 30, 5)).toBe("2026-09-17 14:30:05");
+    expect(parseDateTime("2026-09-17 14:30:05")).toEqual({
+      date: "2026-09-17",
+      h: 14,
+      m: 30,
+      s: 5,
+    });
+    expect(datePart("2026-09-17 14:30:00")).toBe("2026-09-17");
+    expect(compareDateTime("2026-09-17 10:00:00", "2026-09-17 09:00:00")).toBe(1);
+    expect(formatDisplay("2026-09-17 14:30:05", "yyyy-MM-dd HH:mm:ss")).toBe(
+      "2026-09-17 14:30:05",
+    );
   });
 });
