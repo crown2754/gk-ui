@@ -237,4 +237,80 @@ describe("gk-date-picker daterange", () => {
       document.querySelector(".gk-date-picker-panel [data-action='now']"),
     ).toBeNull();
   });
+
+  it("dismiss mid-draft clears draft and closes without stale open", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const inMonth = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+      ),
+    ] as HTMLButtonElement[];
+    inMonth[5].click();
+    await el.updateComplete;
+    expect(el.open).toBe(true);
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await el.updateComplete;
+    expect(el.open).toBe(false);
+    expect(el.value).toBeNull();
+    expect(document.querySelector(".gk-date-picker-panel")).toBeNull();
+
+    // Draft must be cleared: first click after reopen starts a new draft (stays open).
+    el.open = true;
+    await el.updateComplete;
+    const again = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+      ),
+    ] as HTMLButtonElement[];
+    again[8].click();
+    await el.updateComplete;
+    expect(el.open).toBe(true);
+    expect(el.value).toBeNull();
+  });
+
+  it("restart then Escape restores previous pair without emit", async () => {
+    const prev: [string, string] = ["2026-09-01", "2026-09-10"];
+    const el = await fixture<GkDatePicker>(html`
+      <gk-date-picker type="daterange" .value=${prev}></gk-date-picker>
+    `);
+    el.open = true;
+    await el.updateComplete;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    const inMonth = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+      ),
+    ] as HTMLButtonElement[];
+    inMonth[5].click();
+    await el.updateComplete;
+    expect(el.value).toBeNull(); // local draft; no emit yet
+    expect(onInput).not.toHaveBeenCalled();
+
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await el.updateComplete;
+    expect(el.open).toBe(false);
+    expect(el.value).toEqual(prev);
+    expect(onInput).not.toHaveBeenCalled();
+  });
+
+  it("coerceValueForType maps non-pair daterange values to null", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.value = "" as unknown as null;
+    await el.updateComplete;
+    expect(el.value).toBeNull();
+    el.value = "2026-09-01" as unknown as null;
+    await el.updateComplete;
+    expect(el.value).toBeNull();
+    el.value = ["2026-09-01"] as unknown as null;
+    await el.updateComplete;
+    expect(el.value).toBeNull();
+  });
 });

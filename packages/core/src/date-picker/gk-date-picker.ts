@@ -137,6 +137,9 @@ export class GkDatePicker extends LitElement {
   @state()
   private rangeDraftStart: string | null = null;
 
+  /** Previous complete pair while picking a replacement; restored on dismiss. */
+  private rangeStash: [string, string] | null = null;
+
   private panel: HTMLDivElement | null = null;
   private listenersBound = false;
 
@@ -171,6 +174,7 @@ export class GkDatePicker extends LitElement {
         this.ensurePanel();
         this.bindDismissListeners();
       } else {
+        this.dismissRangeDraft();
         this.unbindDismissListeners();
         this.teardownPanel();
       }
@@ -193,11 +197,21 @@ export class GkDatePicker extends LitElement {
 
   private coerceValueForType() {
     if (this.type === "daterange") {
-      if (this.value === "" || this.value === undefined) {
+      if (!isRangePair(this.value)) {
         this.value = null;
       }
     } else if (this.value === null || Array.isArray(this.value)) {
       this.value = "";
+    }
+  }
+
+  /** Clear in-progress range pick; restore stashed pair if restart was cancelled. */
+  private dismissRangeDraft() {
+    if (!this.rangeDraftStart && !this.rangeStash) return;
+    this.rangeDraftStart = null;
+    if (this.rangeStash) {
+      this.value = this.rangeStash;
+      this.rangeStash = null;
     }
   }
 
@@ -217,6 +231,9 @@ export class GkDatePicker extends LitElement {
 
   private setOpen(next: boolean) {
     if (this.open === next) return;
+    if (!next) {
+      this.dismissRangeDraft();
+    }
     this.open = next;
     this.dispatchEvent(
       new CustomEvent("gk-open-change", {
@@ -256,6 +273,7 @@ export class GkDatePicker extends LitElement {
     e.stopPropagation();
     if (this.disabled) return;
     this.rangeDraftStart = null;
+    this.rangeStash = null;
     this.emitValue(this.type === "daterange" ? null : "");
   };
 
@@ -263,17 +281,19 @@ export class GkDatePicker extends LitElement {
     if (this.isDateDisabled?.(iso)) return;
     if (this.type === "daterange") {
       if (!this.rangeDraftStart) {
-        // First click after a complete range starts a new draft.
-        this.rangeDraftStart = iso;
+        // First click after a complete range starts a new draft (stash for cancel).
         if (isRangePair(this.value)) {
+          this.rangeStash = this.value;
           this.value = null;
         }
+        this.rangeDraftStart = iso;
         return;
       }
       const draft = this.rangeDraftStart;
       const pair: [string, string] =
         compareIso(draft, iso) <= 0 ? [draft, iso] : [iso, draft];
       this.rangeDraftStart = null;
+      this.rangeStash = null;
       this.emitValue(pair);
       this.setOpen(false);
       return;
@@ -284,6 +304,7 @@ export class GkDatePicker extends LitElement {
 
   private onPanelClear = () => {
     this.rangeDraftStart = null;
+    this.rangeStash = null;
     this.emitValue(this.type === "daterange" ? null : "");
     this.setOpen(false);
   };
