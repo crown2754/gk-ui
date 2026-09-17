@@ -147,12 +147,14 @@ Phase 1 supports single date only; range / datetime / month / year come later.
 
 ### CSS Parts
 
+Trigger parts are exposable via `gk-date-picker::part(...)`. The panel is portaled to `document.body`, so `panel` / `calendar` / `actions` are **not** reachable as `gk-date-picker::part(panel)` (etc.). Style the popup with `.gk-date-picker-panel` and its descendants (those nodes may still carry `part` attributes for targeting under that class).
+
 | Part | Description |
 |------|-------------|
-| `base` | Trigger surface |
-| `input` | Readonly display text |
-| `suffix` | Clear + calendar icon area |
-| `clear` | Trigger clear button |
-| `panel` | Portaled popup root |
-| `calendar` | Month grid region |
-| `actions` | Clear / Now row |
+| `base` | Trigger surface (`::part`) |
+| `input` | Readonly display text (`::part`) |
+| `suffix` | Clear + calendar icon area (`::part`) |
+| `clear` | Trigger clear button (`::part`) |
+| `panel` | Portaled popup root — style via `.gk-date-picker-panel` |
+| `calendar` | Month grid region — under `.gk-date-picker-panel` |
+| `actions` | Clear / Now row — under `.gk-date-picker-panel` |

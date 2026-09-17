@@ -2,6 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { fixture, html } from "@open-wc/testing";
 import "./gk-date-picker.js";
 import type { GkDatePicker } from "./gk-date-picker.js";
+import { todayIso } from "./date-utils.js";
 
 describe("gk-date-picker", () => {
   afterEach(() => {
@@ -88,15 +89,53 @@ describe("gk-date-picker", () => {
   });
 
   it("isDateDisabled blocks selection and Now", async () => {
-    const el = await fixture<GkDatePicker>(html`<gk-date-picker></gk-date-picker>`);
-    el.isDateDisabled = (iso) => iso === "2026-09-17";
-    el.open = true;
-    el.value = "2026-09-01";
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker value="2026-09-01"></gk-date-picker>`,
+    );
+    const today = todayIso();
+    el.isDateDisabled = (iso) => iso === "2026-09-17" || iso === today;
     el.open = true;
     await el.updateComplete;
     const btn = document.querySelector(
       '.gk-date-picker-panel button[data-iso="2026-09-17"]',
     ) as HTMLButtonElement;
     expect(btn.disabled).toBe(true);
+    const nowBtn = document.querySelector(
+      ".gk-date-picker-panel [data-action='now']",
+    ) as HTMLButtonElement;
+    expect(nowBtn.disabled).toBe(true);
+  });
+
+  it("Escape closes panel without changing value", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker value="2026-09-17"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const spy = vi.fn();
+    el.addEventListener("input", spy);
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await el.updateComplete;
+    expect(el.open).toBe(false);
+    expect(el.value).toBe("2026-09-17");
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("outside click closes panel without changing value", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker value="2026-09-17"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const spy = vi.fn();
+    el.addEventListener("input", spy);
+    const outside = document.createElement("div");
+    document.body.appendChild(outside);
+    outside.click();
+    outside.remove();
+    await el.updateComplete;
+    expect(el.open).toBe(false);
+    expect(el.value).toBe("2026-09-17");
+    expect(spy).not.toHaveBeenCalled();
   });
 });

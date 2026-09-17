@@ -151,12 +151,14 @@ const codes = {
 
 ### CSS Parts
 
+觸發器 parts 可用 `gk-date-picker::part(...)`。面板會 portal 到 `document.body`，因此 `panel`／`calendar`／`actions` **無法**以 `gk-date-picker::part(panel)`（等）選取。請以 `.gk-date-picker-panel` 及其子孫樣式化彈出層（這些節點仍可能帶有 `part` 屬性，供在該 class 下定位）。
+
 | Part | Description |
 |------|-------------|
-| `base` | 觸發器表面 |
-| `input` | 唯讀顯示文字 |
-| `suffix` | 清除與日曆圖示區 |
-| `clear` | 觸發器清除按鈕 |
-| `panel` | Portal 彈出層根節點 |
-| `calendar` | 月份格線區 |
-| `actions` | 清除／現在列 |
+| `base` | 觸發器表面（`::part`） |
+| `input` | 唯讀顯示文字（`::part`） |
+| `suffix` | 清除與日曆圖示區（`::part`） |
+| `clear` | 觸發器清除按鈕（`::part`） |
+| `panel` | Portal 彈出層根節點 — 以 `.gk-date-picker-panel` 樣式化 |
+| `calendar` | 月份格線區 — 位於 `.gk-date-picker-panel` 下 |
+| `actions` | 清除／現在列 — 位於 `.gk-date-picker-panel` 下 |
