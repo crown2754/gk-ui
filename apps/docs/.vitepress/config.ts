@@ -48,7 +48,10 @@ export default defineConfig({
           },
           {
             text: "General",
-            items: [{ text: "Button", link: "/components/button" }],
+            items: [
+              { text: "Button", link: "/components/button" },
+              { text: "Input", link: "/components/input" },
+            ],
           },
           {
             text: "Data Display",
@@ -97,7 +100,10 @@ export default defineConfig({
           },
           {
             text: "通用",
-            items: [{ text: "Button 按鈕", link: "/zh-TW/components/button" }],
+            items: [
+              { text: "Button 按鈕", link: "/zh-TW/components/button" },
+              { text: "Input 輸入", link: "/zh-TW/components/input" },
+            ],
           },
           {
             text: "資料展示",
