@@ -42,6 +42,15 @@ export function formatDisplay(iso: string, format: string): string {
   return format.replace(/yyyy/g, yyyy).replace(/MM/g, MM).replace(/dd/g, dd);
 }
 
+export function compareIso(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+export function isIsoInRange(iso: string, start: string, end: string): boolean {
+  const [s, e] = compareIso(start, end) <= 0 ? [start, end] : [end, start];
+  return iso >= s && iso <= e;
+}
+
 export function startOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1, 12, 0, 0, 0);
 }

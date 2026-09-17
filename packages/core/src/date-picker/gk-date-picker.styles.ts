@@ -223,10 +223,15 @@ export const datePickerPanelCssText = `
   outline: 1px solid var(--gk-color-brand, rgb(242, 206, 94));
   outline-offset: -1px;
 }
-.gk-date-picker-panel .gk-date-picker-panel__days button[data-selected] {
+.gk-date-picker-panel .gk-date-picker-panel__days button[data-selected],
+.gk-date-picker-panel .gk-date-picker-panel__days button.is-selected {
   background: var(--gk-color-brand, rgb(242, 206, 94));
   color: var(--gk-color-brand-on, rgb(31, 34, 37));
   outline: none;
+}
+.gk-date-picker-panel .gk-date-picker-panel__days button.is-in-range {
+  background: color-mix(in srgb, var(--gk-color-brand, rgb(242, 206, 94)) 22%, transparent);
+  border-radius: 0;
 }
 .gk-date-picker-panel .gk-date-picker-panel__days button:disabled {
   opacity: 0.4;

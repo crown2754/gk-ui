@@ -41,4 +41,5 @@ export type {
   GkDatePickerLocale,
   GkDatePickerSize,
   GkDatePickerStatus,
+  GkDatePickerType,
 } from "./date-picker/gk-date-picker.js";

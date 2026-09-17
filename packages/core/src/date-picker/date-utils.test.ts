@@ -7,6 +7,8 @@ import {
   addMonths,
   buildMonthGrid,
   todayIso,
+  compareIso,
+  isIsoInRange,
 } from "./date-utils.js";
 
 describe("date-utils", () => {
@@ -48,5 +50,17 @@ describe("date-utils", () => {
     const m = String(now.getMonth() + 1).padStart(2, "0");
     const d = String(now.getDate()).padStart(2, "0");
     expect(todayIso()).toBe(`${y}-${m}-${d}`);
+  });
+
+  it("compareIso orders ISO dates", () => {
+    expect(compareIso("2026-09-01", "2026-09-10")).toBe(-1);
+    expect(compareIso("2026-09-10", "2026-09-01")).toBe(1);
+    expect(compareIso("2026-09-01", "2026-09-01")).toBe(0);
+  });
+
+  it("isIsoInRange includes endpoints and normalizes order", () => {
+    expect(isIsoInRange("2026-09-05", "2026-09-01", "2026-09-10")).toBe(true);
+    expect(isIsoInRange("2026-09-01", "2026-09-10", "2026-09-01")).toBe(true);
+    expect(isIsoInRange("2026-09-11", "2026-09-01", "2026-09-10")).toBe(false);
   });
 });

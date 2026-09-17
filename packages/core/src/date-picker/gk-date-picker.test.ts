@@ -139,3 +139,102 @@ describe("gk-date-picker", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 });
+
+describe("gk-date-picker daterange", () => {
+  afterEach(() => {
+    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+  });
+
+  it("defaults value null for daterange", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    expect(el.value).toBeNull();
+  });
+
+  it("two-click selection sets ordered pair and emits", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    el.value = null;
+    const days = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-iso]:not([disabled])",
+      ),
+    ] as HTMLButtonElement[];
+    const inMonth = days.filter((b) => !b.classList.contains("is-outside"));
+    const a = inMonth[5];
+    const b = inMonth[10];
+    const isoA = a.dataset.iso!;
+    const isoB = b.dataset.iso!;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    a.click();
+    await el.updateComplete;
+    expect(el.open).toBe(true); // waiting for end
+    b.click();
+    await el.updateComplete;
+    const [start, end] = el.value as [string, string];
+    expect(start <= end).toBe(true);
+    expect([start, end].sort().join()).toBe([isoA, isoB].sort().join());
+    expect(el.open).toBe(false);
+    expect((onInput.mock.calls[0][0] as CustomEvent).detail.value).toEqual([
+      start,
+      end,
+    ]);
+  });
+
+  it("swaps when second click is before first", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const inMonth = [
+      ...document.querySelectorAll(
+        ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+      ),
+    ] as HTMLButtonElement[];
+    const later = inMonth[12];
+    const earlier = inMonth[3];
+    later.click();
+    await el.updateComplete;
+    earlier.click();
+    await el.updateComplete;
+    const [start, end] = el.value as [string, string];
+    expect(start).toBe(earlier.dataset.iso);
+    expect(end).toBe(later.dataset.iso);
+  });
+
+  it("clear sets null", async () => {
+    const el = await fixture<GkDatePicker>(html`
+      <gk-date-picker
+        type="daterange"
+        clearable
+        .value=${["2026-09-01", "2026-09-10"]}
+      ></gk-date-picker>
+    `);
+    const spy = vi.fn();
+    el.addEventListener("input", spy);
+    (el.shadowRoot?.querySelector("button[part='clear']") as HTMLButtonElement).click();
+    await el.updateComplete;
+    expect(el.value).toBeNull();
+    expect((spy.mock.calls[0][0] as CustomEvent).detail.value).toBeNull();
+  });
+
+  it("range panel has Clear but not Now", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    expect(
+      document.querySelector(".gk-date-picker-panel [data-action='clear']"),
+    ).not.toBeNull();
+    expect(
+      document.querySelector(".gk-date-picker-panel [data-action='now']"),
+    ).toBeNull();
+  });
+});

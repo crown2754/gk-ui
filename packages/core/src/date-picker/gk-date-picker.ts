@@ -1,21 +1,28 @@
 import { LitElement, html, nothing, svg, render } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 import {
   datePickerStyles,
   datePickerPanelCssText,
 } from "./gk-date-picker.styles.js";
 import {
   buildMonthGrid,
+  compareIso,
   formatDisplay,
+  isIsoInRange,
   isValidIsoDate,
   parseIsoDate,
   todayIso,
 } from "./date-utils.js";
 
-export type GkDatePickerType = "date";
+export type GkDatePickerType = "date" | "daterange";
 export type GkDatePickerSize = "sm" | "md" | "lg";
 export type GkDatePickerStatus = "success" | "warning" | "error" | "";
 export type GkDatePickerLocale = "en" | "zh-TW";
+
+type DateValue = string;
+type RangeValue = [string, string] | null;
+type DatePickerValue = DateValue | RangeValue;
 
 const WEEKDAYS: Record<GkDatePickerLocale, string[]> = {
   en: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
@@ -29,6 +36,35 @@ const LABELS: Record<GkDatePickerLocale, { clear: string; now: string }> = {
 
 const PANEL_STYLE_ID = "gk-date-picker-panel-style";
 
+function parseRangeAttr(raw: string | null): RangeValue {
+  if (!raw) return null;
+  try {
+    const v = JSON.parse(raw);
+    if (
+      Array.isArray(v) &&
+      v.length === 2 &&
+      typeof v[0] === "string" &&
+      typeof v[1] === "string" &&
+      isValidIsoDate(v[0]) &&
+      isValidIsoDate(v[1])
+    ) {
+      return [v[0], v[1]];
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function isRangePair(value: DatePickerValue): value is [string, string] {
+  return (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    typeof value[0] === "string" &&
+    typeof value[1] === "string"
+  );
+}
+
 @customElement("gk-date-picker")
 export class GkDatePicker extends LitElement {
   static styles = datePickerStyles;
@@ -36,11 +72,33 @@ export class GkDatePicker extends LitElement {
   @property({ reflect: true })
   type: GkDatePickerType = "date";
 
-  @property()
-  value = "";
+  @property({
+    converter: {
+      fromAttribute(value: string | null): DatePickerValue {
+        if (value == null || value === "") return "";
+        if (value.trim().startsWith("[")) return parseRangeAttr(value);
+        return value;
+      },
+      toAttribute(value: DatePickerValue): string | null {
+        if (value == null) return null;
+        if (Array.isArray(value)) return JSON.stringify(value);
+        return value || null;
+      },
+    },
+  })
+  value: DatePickerValue = "";
 
   @property()
   format = "yyyy-MM-dd";
+
+  @property()
+  separator = " - ";
+
+  @property({ attribute: "start-placeholder" })
+  startPlaceholder = "";
+
+  @property({ attribute: "end-placeholder" })
+  endPlaceholder = "";
 
   @property({ reflect: true })
   size: GkDatePickerSize = "md";
@@ -76,11 +134,15 @@ export class GkDatePicker extends LitElement {
   @state()
   private viewMonth = new Date().getMonth();
 
+  @state()
+  private rangeDraftStart: string | null = null;
+
   private panel: HTMLDivElement | null = null;
   private listenersBound = false;
 
   connectedCallback() {
     super.connectedCallback();
+    this.coerceValueForType();
     this.syncViewFromValue();
     if (this.open) {
       this.ensurePanel();
@@ -95,7 +157,10 @@ export class GkDatePicker extends LitElement {
   }
 
   protected willUpdate(changed: Map<string, unknown>) {
-    if (changed.has("value")) {
+    if (changed.has("type") || changed.has("value")) {
+      this.coerceValueForType();
+    }
+    if (changed.has("value") || changed.has("type")) {
       this.syncViewFromValue();
     }
   }
@@ -113,6 +178,9 @@ export class GkDatePicker extends LitElement {
     if (
       this.open &&
       (changed.has("value") ||
+        changed.has("type") ||
+        changed.has("separator") ||
+        changed.has("rangeDraftStart") ||
         changed.has("locale") ||
         changed.has("isDateDisabled") ||
         changed.has("viewYear") ||
@@ -123,8 +191,24 @@ export class GkDatePicker extends LitElement {
     }
   }
 
+  private coerceValueForType() {
+    if (this.type === "daterange") {
+      if (this.value === "" || this.value === undefined) {
+        this.value = null;
+      }
+    } else if (this.value === null || Array.isArray(this.value)) {
+      this.value = "";
+    }
+  }
+
   private syncViewFromValue() {
-    const d = parseIsoDate(this.value);
+    let iso = "";
+    if (this.type === "daterange" && isRangePair(this.value)) {
+      iso = this.value[0];
+    } else if (typeof this.value === "string") {
+      iso = this.value;
+    }
+    const d = parseIsoDate(iso);
     if (d) {
       this.viewYear = d.getFullYear();
       this.viewMonth = d.getMonth();
@@ -143,7 +227,7 @@ export class GkDatePicker extends LitElement {
     );
   }
 
-  private emitValue(next: string) {
+  private emitValue(next: DatePickerValue) {
     this.value = next;
     this.dispatchEvent(
       new CustomEvent("input", {
@@ -171,17 +255,36 @@ export class GkDatePicker extends LitElement {
   private onClearClick = (e: Event) => {
     e.stopPropagation();
     if (this.disabled) return;
-    this.emitValue("");
+    this.rangeDraftStart = null;
+    this.emitValue(this.type === "daterange" ? null : "");
   };
 
   private onDayClick = (iso: string) => {
     if (this.isDateDisabled?.(iso)) return;
+    if (this.type === "daterange") {
+      if (!this.rangeDraftStart) {
+        // First click after a complete range starts a new draft.
+        this.rangeDraftStart = iso;
+        if (isRangePair(this.value)) {
+          this.value = null;
+        }
+        return;
+      }
+      const draft = this.rangeDraftStart;
+      const pair: [string, string] =
+        compareIso(draft, iso) <= 0 ? [draft, iso] : [iso, draft];
+      this.rangeDraftStart = null;
+      this.emitValue(pair);
+      this.setOpen(false);
+      return;
+    }
     this.emitValue(iso);
     this.setOpen(false);
   };
 
   private onPanelClear = () => {
-    this.emitValue("");
+    this.rangeDraftStart = null;
+    this.emitValue(this.type === "daterange" ? null : "");
     this.setOpen(false);
   };
 
@@ -273,6 +376,33 @@ export class GkDatePicker extends LitElement {
     this.panel.style.left = `${rect.left}px`;
   }
 
+  private daySelectionState(iso: string): {
+    selected: boolean;
+    inRange: boolean;
+  } {
+    if (this.type === "daterange") {
+      if (this.rangeDraftStart) {
+        return {
+          selected: iso === this.rangeDraftStart,
+          inRange: false,
+        };
+      }
+      if (isRangePair(this.value)) {
+        const [start, end] = this.value;
+        const selected = iso === start || iso === end;
+        const inRange =
+          !selected && isIsoInRange(iso, start, end);
+        return { selected, inRange };
+      }
+      return { selected: false, inRange: false };
+    }
+    const selected =
+      typeof this.value === "string" &&
+      isValidIsoDate(this.value) &&
+      iso === this.value;
+    return { selected, inRange: false };
+  }
+
   private renderPanel() {
     if (!this.panel) return;
     const locale = this.locale === "zh-TW" ? "zh-TW" : "en";
@@ -280,9 +410,9 @@ export class GkDatePicker extends LitElement {
     const labels = LABELS[locale];
     const cells = buildMonthGrid(this.viewYear, this.viewMonth);
     const today = todayIso();
-    const selected = isValidIsoDate(this.value) ? this.value : "";
     const title = `${this.viewYear}-${String(this.viewMonth + 1).padStart(2, "0")}`;
     const nowDisabled = !!this.isDateDisabled?.(today);
+    const isRange = this.type === "daterange";
 
     render(
       html`
@@ -302,14 +432,20 @@ export class GkDatePicker extends LitElement {
           <div class="gk-date-picker-panel__days">
             ${cells.map((cell) => {
               const disabled = !!this.isDateDisabled?.(cell.iso);
+              const { selected, inRange } = this.daySelectionState(cell.iso);
               return html`
                 <button
                   type="button"
                   data-iso=${cell.iso}
+                  class=${classMap({
+                    "is-outside": !cell.inMonth,
+                    "is-selected": selected,
+                    "is-in-range": inRange,
+                  })}
                   ?disabled=${disabled}
                   ?data-outside=${!cell.inMonth}
                   ?data-today=${cell.iso === today}
-                  ?data-selected=${cell.iso === selected}
+                  ?data-selected=${selected}
                   @click=${() => this.onDayClick(cell.iso)}
                 >
                   ${cell.day}
@@ -322,14 +458,18 @@ export class GkDatePicker extends LitElement {
           <button type="button" data-action="clear" @click=${this.onPanelClear}>
             ${labels.clear}
           </button>
-          <button
-            type="button"
-            data-action="now"
-            ?disabled=${nowDisabled}
-            @click=${this.onPanelNow}
-          >
-            ${labels.now}
-          </button>
+          ${isRange
+            ? nothing
+            : html`
+                <button
+                  type="button"
+                  data-action="now"
+                  ?disabled=${nowDisabled}
+                  @click=${this.onPanelNow}
+                >
+                  ${labels.now}
+                </button>
+              `}
         </div>
       `,
       this.panel,
@@ -337,14 +477,41 @@ export class GkDatePicker extends LitElement {
   }
 
   private get showClearButton() {
-    return this.clearable && !this.disabled && this.value.length > 0;
+    if (!this.clearable || this.disabled) return false;
+    if (this.type === "daterange") {
+      return isRangePair(this.value);
+    }
+    return typeof this.value === "string" && this.value.length > 0;
   }
 
   private displayText() {
-    if (this.value && isValidIsoDate(this.value)) {
+    if (this.type === "daterange") {
+      if (isRangePair(this.value)) {
+        const [start, end] = this.value;
+        return (
+          formatDisplay(start, this.format) +
+          this.separator +
+          formatDisplay(end, this.format)
+        );
+      }
+      const startHint = this.startPlaceholder || this.placeholder;
+      const endHint = this.endPlaceholder || this.placeholder;
+      if (startHint || endHint) {
+        return `${startHint}${this.separator}${endHint}`;
+      }
+      return this.placeholder;
+    }
+    if (typeof this.value === "string" && isValidIsoDate(this.value)) {
       return formatDisplay(this.value, this.format);
     }
     return this.placeholder;
+  }
+
+  private isEmptyDisplay() {
+    if (this.type === "daterange") {
+      return !isRangePair(this.value);
+    }
+    return !(typeof this.value === "string" && isValidIsoDate(this.value));
   }
 
   private clearIcon() {
@@ -369,7 +536,7 @@ export class GkDatePicker extends LitElement {
 
   render() {
     const text = this.displayText();
-    const empty = !(this.value && isValidIsoDate(this.value));
+    const empty = this.isEmptyDisplay();
 
     return html`
       <div
