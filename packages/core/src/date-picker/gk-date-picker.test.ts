@@ -429,4 +429,51 @@ describe("gk-date-picker datetime", () => {
     expect(panel.querySelector('[data-action="now"]')).toBeTruthy();
     expect(panel.querySelector('[data-action="confirm"]')).toBeTruthy();
   });
+
+  it("panel Clear empties value, closes panel, and emits input", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetime" value="2026-09-17 08:00:00"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const onInput = vi.fn();
+    el.addEventListener("input", onInput);
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="clear"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(el.value).toBe("");
+    expect(el.open).toBe(false);
+    expect((onInput.mock.calls[0][0] as CustomEvent).detail).toEqual({ value: "" });
+  });
+
+  it("Confirm commits selected day and time draft", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="datetime"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const day = document.querySelector(
+      ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
+    ) as HTMLButtonElement;
+    const iso = day.dataset.iso!;
+    day.click();
+    await el.updateComplete;
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-h="14"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-action="confirm"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(el.value).toBe(`${iso} 14:00:00`);
+    expect(el.open).toBe(false);
+  });
 });
