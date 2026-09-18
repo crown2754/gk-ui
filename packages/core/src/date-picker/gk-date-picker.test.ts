@@ -11,21 +11,45 @@ import {
 
 const originalMatchMedia = window.matchMedia;
 
+type MockMqlState = {
+  matches: boolean;
+  listeners: Array<(e: Event) => void>;
+};
+
+let mockMqlState: MockMqlState = { matches: false, listeners: [] };
+
 function mockMatchMedia(matches: boolean) {
+  mockMqlState = { matches, listeners: [] };
   Object.defineProperty(window, "matchMedia", {
     writable: true,
     configurable: true,
     value: (query: string) => ({
-      matches,
+      get matches() {
+        return mockMqlState.matches;
+      },
       media: query,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
+      addEventListener(_type: string, fn: (e: Event) => void) {
+        mockMqlState.listeners.push(fn);
+      },
+      removeEventListener(_type: string, fn: (e: Event) => void) {
+        mockMqlState.listeners = mockMqlState.listeners.filter((l) => l !== fn);
+      },
+      addListener(fn: (e: Event) => void) {
+        mockMqlState.listeners.push(fn);
+      },
+      removeListener(fn: (e: Event) => void) {
+        mockMqlState.listeners = mockMqlState.listeners.filter((l) => l !== fn);
+      },
       dispatchEvent: () => false,
       onchange: null,
     }),
   });
+}
+
+function emitMatchMediaChange(matches: boolean) {
+  mockMqlState.matches = matches;
+  const e = new Event("change");
+  mockMqlState.listeners.forEach((fn) => fn(e));
 }
 
 function restoreMatchMedia() {
@@ -279,6 +303,22 @@ describe("gk-date-picker daterange", () => {
     el.open = true;
     await el.updateComplete;
     const panel = document.querySelector(".gk-date-picker-panel")!;
+    expect(panel.classList.contains("is-sheet")).toBe(true);
+    expect(document.querySelector(".gk-date-picker-backdrop")).toBeTruthy();
+  });
+
+  it("syncs sheet when compact media changes while open", async () => {
+    mockMatchMedia(false);
+    const el = await fixture<GkDatePicker>(html`<gk-date-picker></gk-date-picker>`);
+    el.open = true;
+    await el.updateComplete;
+    const panel = document.querySelector(".gk-date-picker-panel")!;
+    expect(panel.classList.contains("is-sheet")).toBe(false);
+    expect(document.querySelector(".gk-date-picker-backdrop")).toBeNull();
+
+    emitMatchMediaChange(true);
+    await el.updateComplete;
+
     expect(panel.classList.contains("is-sheet")).toBe(true);
     expect(document.querySelector(".gk-date-picker-backdrop")).toBeTruthy();
   });

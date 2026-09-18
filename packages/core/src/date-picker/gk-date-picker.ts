@@ -316,6 +316,9 @@ export class GkDatePicker extends LitElement {
         changed.has("open"))
     ) {
       this.renderPanel();
+      if (changed.has("isCompact")) {
+        this.positionPanel();
+      }
     }
   }
 
