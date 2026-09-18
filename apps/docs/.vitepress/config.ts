@@ -56,6 +56,9 @@ export default defineConfig({
               { text: "Date Picker", link: "/components/date-picker" },
               { text: "Input", link: "/components/input" },
               { text: "Switch", link: "/components/switch" },
+              { text: "Checkbox", link: "/components/checkbox" },
+              { text: "Radio", link: "/components/radio" },
+              { text: "Select", link: "/components/select" },
             ],
           },
           {
@@ -113,6 +116,9 @@ export default defineConfig({
               { text: "Date Picker 日期選擇", link: "/zh-TW/components/date-picker" },
               { text: "Input 輸入", link: "/zh-TW/components/input" },
               { text: "Switch 開關", link: "/zh-TW/components/switch" },
+              { text: "Checkbox 核取方塊", link: "/zh-TW/components/checkbox" },
+              { text: "Radio 單選", link: "/zh-TW/components/radio" },
+              { text: "Select 選擇器", link: "/zh-TW/components/select" },
             ],
           },
           {
