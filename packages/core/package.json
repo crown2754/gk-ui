@@ -25,7 +25,8 @@
     "./src/message/gk-message.ts",
     "./src/message/gk-message-provider.ts",
     "./src/input/gk-input.ts",
-    "./src/date-picker/gk-date-picker.ts"
+    "./src/date-picker/gk-date-picker.ts",
+    "./src/switch/gk-switch.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",

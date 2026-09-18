@@ -55,6 +55,7 @@ export default defineConfig({
             items: [
               { text: "Date Picker", link: "/components/date-picker" },
               { text: "Input", link: "/components/input" },
+              { text: "Switch", link: "/components/switch" },
             ],
           },
           {
@@ -111,6 +112,7 @@ export default defineConfig({
             items: [
               { text: "Date Picker 日期選擇", link: "/zh-TW/components/date-picker" },
               { text: "Input 輸入", link: "/zh-TW/components/input" },
+              { text: "Switch 開關", link: "/zh-TW/components/switch" },
             ],
           },
           {
