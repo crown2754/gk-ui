@@ -25,7 +25,14 @@
     "./src/message/gk-message.ts",
     "./src/message/gk-message-provider.ts",
     "./src/input/gk-input.ts",
-    "./src/date-picker/gk-date-picker.ts"
+    "./src/date-picker/gk-date-picker.ts",
+    "./src/switch/gk-switch.ts",
+    "./src/checkbox/gk-checkbox.ts",
+    "./src/checkbox/gk-checkbox-group.ts",
+    "./src/radio/gk-radio.ts",
+    "./src/radio/gk-radio-group.ts",
+    "./src/select/gk-option.ts",
+    "./src/select/gk-select.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
