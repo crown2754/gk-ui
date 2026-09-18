@@ -43,14 +43,6 @@ export class GkSwitch extends LitElement {
     this.toggle();
   };
 
-  private onKeyDown = (event: KeyboardEvent) => {
-    if (this.disabled) return;
-    if (event.key === " " || event.key === "Enter") {
-      event.preventDefault();
-      this.toggle();
-    }
-  };
-
   private toggle() {
     if (this.disabled) return;
     this.checked = !this.checked;
@@ -96,7 +88,6 @@ export class GkSwitch extends LitElement {
         aria-label=${hostLabel || nothing}
         aria-labelledby=${labelledBy}
         ?disabled=${this.disabled}
-        @keydown=${this.onKeyDown}
       >
         <span part="thumb"></span>
       </button>

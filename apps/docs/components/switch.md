@@ -36,7 +36,8 @@ const codes = {
   disabled: `<gk-switch disabled aria-label="Disabled off"></gk-switch>
 <gk-switch disabled checked aria-label="Disabled on"></gk-switch>`,
   label: `<!-- host: const labelOn = ref(false); function onLabelChange(e: CustomEvent<{ checked: boolean }>) { labelOn.value = e.detail.checked } -->
-<gk-switch :checked="labelOn" @change="onLabelChange">Email alerts</gk-switch>`,
+<gk-switch :checked="labelOn" @change="onLabelChange">Email alerts</gk-switch>
+<gk-switch checked :round="false">Squared</gk-switch>`,
 };
 </script>
 

@@ -92,18 +92,27 @@ describe("gk-switch", () => {
     expect(track(el)?.getAttribute("aria-checked")).toBe("true");
   });
 
-  it("Space and Enter toggle when the switch is focused", async () => {
+  it("inner button click toggles once and emits a single change", async () => {
     const el = await fixture<GkSwitch>(html`<gk-switch></gk-switch>`);
-    const btn = track(el)!;
-    btn.dispatchEvent(
-      new KeyboardEvent("keydown", { key: " ", bubbles: true }),
-    );
+    const spy = vi.fn();
+    el.addEventListener("change", spy);
+    track(el)!.click();
     await el.updateComplete;
     expect(el.checked).toBe(true);
-    btn.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
-    );
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect((spy.mock.calls[0][0] as CustomEvent).detail).toEqual({
+      checked: true,
+    });
+  });
+
+  it("round false drops the pill class", async () => {
+    const el = await fixture<GkSwitch>(html`<gk-switch></gk-switch>`);
+    expect(el.round).toBe(true);
+    expect(track(el)?.classList.contains("round")).toBe(true);
+    el.round = false;
     await el.updateComplete;
-    expect(el.checked).toBe(false);
+    expect(el.round).toBe(false);
+    expect(el.hasAttribute("round")).toBe(false);
+    expect(track(el)?.classList.contains("round")).toBe(false);
   });
 });

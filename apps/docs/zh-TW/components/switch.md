@@ -36,7 +36,8 @@ const codes = {
   disabled: `<gk-switch disabled aria-label="停用（關）"></gk-switch>
 <gk-switch disabled checked aria-label="停用（開）"></gk-switch>`,
   label: `<!-- host: const labelOn = ref(false); function onLabelChange(e: CustomEvent<{ checked: boolean }>) { labelOn.value = e.detail.checked } -->
-<gk-switch :checked="labelOn" @change="onLabelChange">電子郵件提醒</gk-switch>`,
+<gk-switch :checked="labelOn" @change="onLabelChange">電子郵件提醒</gk-switch>
+<gk-switch checked :round="false">方角</gk-switch>`,
 };
 </script>
 
