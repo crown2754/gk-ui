@@ -9,9 +9,42 @@ import {
   todayYearMonth,
 } from "./date-utils.js";
 
+const originalMatchMedia = window.matchMedia;
+
+function mockMatchMedia(matches: boolean) {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    configurable: true,
+    value: (query: string) => ({
+      matches,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+      onchange: null,
+    }),
+  });
+}
+
+function restoreMatchMedia() {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    configurable: true,
+    value: originalMatchMedia,
+  });
+}
+
+function cleanupPortals() {
+  document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+  document.querySelectorAll(".gk-date-picker-backdrop").forEach((n) => n.remove());
+}
+
 describe("gk-date-picker", () => {
   afterEach(() => {
-    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+    restoreMatchMedia();
+    cleanupPortals();
   });
 
   it("defaults type date, empty value, size md, locale en", async () => {
@@ -147,7 +180,8 @@ describe("gk-date-picker", () => {
 
 describe("gk-date-picker daterange", () => {
   afterEach(() => {
-    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+    restoreMatchMedia();
+    cleanupPortals();
   });
 
   it("defaults value null for daterange", async () => {
@@ -228,6 +262,7 @@ describe("gk-date-picker daterange", () => {
   });
 
   it("renders dual calendars for daterange", async () => {
+    mockMatchMedia(false);
     const el = await fixture<GkDatePicker>(
       html`<gk-date-picker type="daterange"></gk-date-picker>`,
     );
@@ -236,6 +271,36 @@ describe("gk-date-picker daterange", () => {
     expect(
       document.querySelectorAll(".gk-date-picker-panel .gk-dp-cal").length,
     ).toBe(2);
+  });
+
+  it("uses sheet + backdrop when compact", async () => {
+    mockMatchMedia(true);
+    const el = await fixture<GkDatePicker>(html`<gk-date-picker></gk-date-picker>`);
+    el.open = true;
+    await el.updateComplete;
+    const panel = document.querySelector(".gk-date-picker-panel")!;
+    expect(panel.classList.contains("is-sheet")).toBe(true);
+    expect(document.querySelector(".gk-date-picker-backdrop")).toBeTruthy();
+  });
+
+  it("daterange shows one calendar when compact", async () => {
+    mockMatchMedia(true);
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    expect(document.querySelectorAll(".gk-date-picker-panel .gk-dp-cal").length).toBe(1);
+  });
+
+  it("daterange shows two calendars when not compact", async () => {
+    mockMatchMedia(false);
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    expect(document.querySelectorAll(".gk-date-picker-panel .gk-dp-cal").length).toBe(2);
   });
 
   it("default separator is arrow", async () => {
@@ -286,6 +351,7 @@ describe("gk-date-picker daterange", () => {
   });
 
   it("renders dual calendars for datetimerange", async () => {
+    mockMatchMedia(false);
     const el = await fixture<GkDatePicker>(
       html`<gk-date-picker type="datetimerange"></gk-date-picker>`,
     );
@@ -454,7 +520,8 @@ describe("gk-date-picker daterange", () => {
 
 describe("gk-date-picker datetime", () => {
   afterEach(() => {
-    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+    restoreMatchMedia();
+    cleanupPortals();
   });
 
   it("defaults empty string and format with time", async () => {
@@ -645,7 +712,8 @@ describe("gk-date-picker datetime", () => {
 
 describe("gk-date-picker datetimerange", () => {
   afterEach(() => {
-    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+    restoreMatchMedia();
+    cleanupPortals();
   });
 
   it("defaults value null", async () => {
@@ -781,7 +849,8 @@ describe("gk-date-picker datetimerange", () => {
 
 describe("gk-date-picker month", () => {
   afterEach(() => {
-    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+    restoreMatchMedia();
+    cleanupPortals();
   });
 
   it("defaults empty and format yyyy-MM", async () => {
@@ -879,7 +948,8 @@ describe("gk-date-picker month", () => {
 
 describe("gk-date-picker year", () => {
   afterEach(() => {
-    document.querySelectorAll(".gk-date-picker-panel").forEach((n) => n.remove());
+    restoreMatchMedia();
+    cleanupPortals();
   });
 
   it("defaults empty and format yyyy", async () => {

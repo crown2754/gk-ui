@@ -346,4 +346,23 @@ export const datePickerPanelCssText = `
   flex-shrink: 0;
   color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
 }
+.gk-date-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3990;
+  background: color-mix(in srgb, #000 40%, transparent);
+}
+.gk-date-picker-panel.is-sheet {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  max-height: 85vh;
+  overflow: auto;
+  border-radius: var(--gk-radius-lg, 0.75rem) var(--gk-radius-lg, 0.75rem) 0 0;
+  box-shadow: 0 -4px 24px color-mix(in srgb, #000 16%, transparent);
+}
 `;

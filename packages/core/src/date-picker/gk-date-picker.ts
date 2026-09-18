@@ -232,18 +232,24 @@ export class GkDatePicker extends LitElement {
   @state()
   private draftS = 0;
 
+  @state()
+  private isCompact = false;
+
   /** Previous complete pair while picking a replacement; restored on dismiss. */
   private rangeStash: [string, string] | null = null;
 
   private panel: HTMLDivElement | null = null;
+  private backdrop: HTMLDivElement | null = null;
   private listenersBound = false;
   private positionListenersBound = false;
+  private compactMql: MediaQueryList | null = null;
 
   connectedCallback() {
     super.connectedCallback();
     this.syncDefaultFormat();
     this.coerceValueForType();
     this.syncViewFromValue();
+    this.bindCompactMedia();
     if (this.open) {
       this.ensurePanel();
       this.bindDismissListeners();
@@ -251,6 +257,7 @@ export class GkDatePicker extends LitElement {
   }
 
   disconnectedCallback() {
+    this.unbindCompactMedia();
     this.unbindDismissListeners();
     this.teardownPanel();
     super.disconnectedCallback();
@@ -305,6 +312,7 @@ export class GkDatePicker extends LitElement {
         changed.has("viewYear") ||
         changed.has("viewMonth") ||
         changed.has("yearPageStart") ||
+        changed.has("isCompact") ||
         changed.has("open"))
     ) {
       this.renderPanel();
@@ -970,6 +978,37 @@ export class GkDatePicker extends LitElement {
     if (this.open) this.positionPanel();
   };
 
+  private onCompactMediaChange = () => {
+    this.syncCompactFromMedia();
+  };
+
+  private syncCompactFromMedia() {
+    const next = !!this.compactMql?.matches;
+    if (this.isCompact === next) return;
+    this.isCompact = next;
+  }
+
+  private bindCompactMedia() {
+    if (this.compactMql || typeof window.matchMedia !== "function") return;
+    this.compactMql = window.matchMedia("(max-width: 640px)");
+    this.isCompact = this.compactMql.matches;
+    if (typeof this.compactMql.addEventListener === "function") {
+      this.compactMql.addEventListener("change", this.onCompactMediaChange);
+    } else {
+      this.compactMql.addListener(this.onCompactMediaChange);
+    }
+  }
+
+  private unbindCompactMedia() {
+    if (!this.compactMql) return;
+    if (typeof this.compactMql.removeEventListener === "function") {
+      this.compactMql.removeEventListener("change", this.onCompactMediaChange);
+    } else {
+      this.compactMql.removeListener(this.onCompactMediaChange);
+    }
+    this.compactMql = null;
+  }
+
   private bindDismissListeners() {
     if (this.listenersBound) return;
     document.addEventListener("click", this.onDocumentClick, true);
@@ -998,6 +1037,25 @@ export class GkDatePicker extends LitElement {
     this.positionListenersBound = false;
   }
 
+  private ensureBackdrop() {
+    if (this.backdrop) return;
+    this.backdrop = document.createElement("div");
+    this.backdrop.className = "gk-date-picker-backdrop";
+    this.backdrop.addEventListener("click", this.onBackdropClick);
+    document.body.appendChild(this.backdrop);
+  }
+
+  private teardownBackdrop() {
+    if (!this.backdrop) return;
+    this.backdrop.removeEventListener("click", this.onBackdropClick);
+    this.backdrop.remove();
+    this.backdrop = null;
+  }
+
+  private onBackdropClick = () => {
+    this.setOpen(false);
+  };
+
   private ensurePanel() {
     if (!document.getElementById(PANEL_STYLE_ID)) {
       const styleEl = document.createElement("style");
@@ -1018,6 +1076,7 @@ export class GkDatePicker extends LitElement {
 
   private teardownPanel() {
     this.unbindPositionListeners();
+    this.teardownBackdrop();
     if (this.panel) {
       render(nothing, this.panel);
       this.panel.remove();
@@ -1030,6 +1089,16 @@ export class GkDatePicker extends LitElement {
 
   private positionPanel() {
     if (!this.panel) return;
+    if (this.isCompact) {
+      this.panel.classList.add("is-sheet");
+      this.panel.style.top = "";
+      this.panel.style.left = "";
+      delete this.panel.dataset.placement;
+      this.ensureBackdrop();
+      return;
+    }
+    this.panel.classList.remove("is-sheet");
+    this.teardownBackdrop();
     const base = this.shadowRoot?.querySelector(
       "[part='base']",
     ) as HTMLElement | null;
@@ -1196,7 +1265,9 @@ export class GkDatePicker extends LitElement {
     const dualCalendars = html`
       <div class="gk-dp-calendars">
         ${renderMonthCalendar(this.viewYear, this.viewMonth)}
-        ${renderMonthCalendar(rightDate.getFullYear(), rightDate.getMonth())}
+        ${!this.isCompact
+          ? renderMonthCalendar(rightDate.getFullYear(), rightDate.getMonth())
+          : nothing}
       </div>
     `;
 
