@@ -33,19 +33,19 @@ export const radioStyles = css`
   }
 
   :host([size="sm"]) [part="control"] {
-    width: 14px;
-    height: 14px;
-  }
-
-  :host([size="md"]) [part="control"],
-  :host(:not([size])) [part="control"] {
     width: 16px;
     height: 16px;
   }
 
+  :host([size="md"]) [part="control"],
+  :host(:not([size])) [part="control"] {
+    width: 18px;
+    height: 18px;
+  }
+
   :host([size="lg"]) [part="control"] {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
   }
 
   /* Selected: white fill + deep-gold ring + deep-gold center (never solid yellow). */
@@ -56,8 +56,8 @@ export const radioStyles = css`
 
   [part="dot"] {
     display: block;
-    width: 50%;
-    height: 50%;
+    width: 38%;
+    height: 38%;
     border-radius: 50%;
     background: var(--gk-color-brand-pressed, rgb(201, 168, 58));
     transform: scale(0);
