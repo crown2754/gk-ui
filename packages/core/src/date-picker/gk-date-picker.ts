@@ -11,6 +11,7 @@ import {
   buildYearPage,
   compareDateTime,
   compareIso,
+  computeFixedPanelPosition,
   datePart,
   formatDisplay,
   formatTime,
@@ -236,6 +237,7 @@ export class GkDatePicker extends LitElement {
 
   private panel: HTMLDivElement | null = null;
   private listenersBound = false;
+  private positionListenersBound = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -964,6 +966,10 @@ export class GkDatePicker extends LitElement {
     }
   };
 
+  private onViewportChange = () => {
+    if (this.open) this.positionPanel();
+  };
+
   private bindDismissListeners() {
     if (this.listenersBound) return;
     document.addEventListener("click", this.onDocumentClick, true);
@@ -976,6 +982,20 @@ export class GkDatePicker extends LitElement {
     document.removeEventListener("click", this.onDocumentClick, true);
     document.removeEventListener("keydown", this.onDocumentKeydown, true);
     this.listenersBound = false;
+  }
+
+  private bindPositionListeners() {
+    if (this.positionListenersBound) return;
+    window.addEventListener("scroll", this.onViewportChange, true);
+    window.addEventListener("resize", this.onViewportChange);
+    this.positionListenersBound = true;
+  }
+
+  private unbindPositionListeners() {
+    if (!this.positionListenersBound) return;
+    window.removeEventListener("scroll", this.onViewportChange, true);
+    window.removeEventListener("resize", this.onViewportChange);
+    this.positionListenersBound = false;
   }
 
   private ensurePanel() {
@@ -991,11 +1011,13 @@ export class GkDatePicker extends LitElement {
       this.panel.setAttribute("part", "panel");
       document.body.appendChild(this.panel);
     }
-    this.positionPanel();
     this.renderPanel();
+    this.positionPanel();
+    this.bindPositionListeners();
   }
 
   private teardownPanel() {
+    this.unbindPositionListeners();
     if (this.panel) {
       render(nothing, this.panel);
       this.panel.remove();
@@ -1008,10 +1030,21 @@ export class GkDatePicker extends LitElement {
 
   private positionPanel() {
     if (!this.panel) return;
-    const base = this.shadowRoot?.querySelector("[part='base']") as HTMLElement | null;
-    const rect = (base ?? this).getBoundingClientRect();
-    this.panel.style.top = `${rect.bottom + 4}px`;
-    this.panel.style.left = `${rect.left}px`;
+    const base = this.shadowRoot?.querySelector(
+      "[part='base']",
+    ) as HTMLElement | null;
+    const trigger = (base ?? this).getBoundingClientRect();
+    const panelRect = this.panel.getBoundingClientRect();
+    const { top, left, placement } = computeFixedPanelPosition({
+      trigger,
+      panelWidth: panelRect.width || this.panel.offsetWidth,
+      panelHeight: panelRect.height || this.panel.offsetHeight,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+    });
+    this.panel.style.top = `${top}px`;
+    this.panel.style.left = `${left}px`;
+    this.panel.dataset.placement = placement;
   }
 
   private daySelectionState(iso: string): {
@@ -1231,6 +1264,7 @@ export class GkDatePicker extends LitElement {
         `,
         this.panel,
       );
+      this.positionPanel();
       return;
     }
 
@@ -1297,6 +1331,7 @@ export class GkDatePicker extends LitElement {
         `,
         this.panel,
       );
+      this.positionPanel();
       return;
     }
 
@@ -1343,6 +1378,7 @@ export class GkDatePicker extends LitElement {
         </div>
       `;
       render([fields, singleCalendar, actions], this.panel);
+      this.positionPanel();
       return;
     }
 
@@ -1396,6 +1432,7 @@ export class GkDatePicker extends LitElement {
         </div>
       `;
       render([fields, dualCalendars, actions], this.panel);
+      this.positionPanel();
       return;
     }
 
@@ -1435,6 +1472,7 @@ export class GkDatePicker extends LitElement {
         </div>
       `;
       render([fields, dualCalendars, actions], this.panel);
+      this.positionPanel();
       return;
     }
 
@@ -1466,6 +1504,7 @@ export class GkDatePicker extends LitElement {
         </div>
       `;
       render([fields, singleCalendar, actions], this.panel);
+      this.positionPanel();
     }
   }
 

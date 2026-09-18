@@ -207,3 +207,49 @@ export function buildMonthGrid(year: number, month: number): CalendarCell[] {
   }
   return cells;
 }
+
+export type RectLike = {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+  width?: number;
+  height?: number;
+};
+
+/** Place a fixed panel near a trigger, flipping above when space below is insufficient. */
+export function computeFixedPanelPosition(opts: {
+  trigger: RectLike;
+  panelWidth: number;
+  panelHeight: number;
+  viewportWidth: number;
+  viewportHeight: number;
+  gap?: number;
+}): { top: number; left: number; placement: "below" | "above" } {
+  const gap = opts.gap ?? 4;
+  const spaceBelow = opts.viewportHeight - opts.trigger.bottom - gap;
+  const spaceAbove = opts.trigger.top - gap;
+  let placement: "below" | "above" = "below";
+  let top = opts.trigger.bottom + gap;
+
+  if (
+    opts.panelHeight > spaceBelow &&
+    spaceAbove > spaceBelow
+  ) {
+    placement = "above";
+    top = opts.trigger.top - gap - opts.panelHeight;
+  }
+
+  if (top + opts.panelHeight > opts.viewportHeight - gap) {
+    top = Math.max(gap, opts.viewportHeight - opts.panelHeight - gap);
+  }
+  if (top < gap) top = gap;
+
+  let left = opts.trigger.left;
+  if (left + opts.panelWidth > opts.viewportWidth - gap) {
+    left = Math.max(gap, opts.viewportWidth - opts.panelWidth - gap);
+  }
+  if (left < gap) left = gap;
+
+  return { top, left, placement };
+}

@@ -21,6 +21,7 @@ import {
   todayYearMonth,
   todayYear,
   buildYearPage,
+  computeFixedPanelPosition,
 } from "./date-utils.js";
 
 describe("date-utils", () => {
@@ -127,5 +128,40 @@ describe("date-utils", () => {
     expect(buildYearPage(2020, 12)).toEqual([
       2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031,
     ]);
+  });
+  it("places panel below when there is room", () => {
+    const pos = computeFixedPanelPosition({
+      trigger: { top: 100, bottom: 140, left: 50, right: 250 },
+      panelWidth: 280,
+      panelHeight: 300,
+      viewportWidth: 800,
+      viewportHeight: 800,
+    });
+    expect(pos.placement).toBe("below");
+    expect(pos.top).toBe(144);
+    expect(pos.left).toBe(50);
+  });
+
+  it("flips panel above when space below is insufficient", () => {
+    const pos = computeFixedPanelPosition({
+      trigger: { top: 500, bottom: 540, left: 50, right: 250 },
+      panelWidth: 280,
+      panelHeight: 320,
+      viewportWidth: 800,
+      viewportHeight: 600,
+    });
+    expect(pos.placement).toBe("above");
+    expect(pos.top).toBe(500 - 4 - 320);
+  });
+
+  it("clamps horizontal overflow", () => {
+    const pos = computeFixedPanelPosition({
+      trigger: { top: 40, bottom: 80, left: 700, right: 900 },
+      panelWidth: 280,
+      panelHeight: 200,
+      viewportWidth: 800,
+      viewportHeight: 800,
+    });
+    expect(pos.left).toBe(800 - 280 - 4);
   });
 });
