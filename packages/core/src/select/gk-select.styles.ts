@@ -12,6 +12,10 @@ export const selectStyles = css`
     display: none;
   }
 
+  ::slotted(gk-option-group) {
+    display: none;
+  }
+
   [part="base"] {
     box-sizing: border-box;
     display: inline-flex;
@@ -93,6 +97,29 @@ export const selectStyles = css`
     pointer-events: none;
   }
 
+  :host([multiple]) [part="value"] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    white-space: normal;
+  }
+
+  [part="tag"] {
+    display: inline-flex;
+    max-width: 100%;
+    padding: 1px 6px;
+    border-radius: var(--gk-radius-sm, 0.375rem);
+    background: color-mix(
+      in srgb,
+      var(--gk-color-brand, rgb(242, 206, 94)) 24%,
+      transparent
+    );
+    color: var(--gk-color-brand-on, rgb(31, 34, 37));
+    font-size: 0.875em;
+    line-height: 1.4;
+  }
+
   [part="value"][data-empty] {
     color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
   }
@@ -152,6 +179,21 @@ export const selectListboxCssText = `
   max-height: 16rem;
   overflow: auto;
 }
+.gk-select-listbox input[data-filter] {
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 4px;
+  padding: 6px 8px;
+  border: 1px solid var(--gk-color-border, rgb(224, 224, 230));
+  border-radius: var(--gk-radius-sm, 0.375rem);
+  background: var(--gk-color-surface, #fff);
+  color: inherit;
+  font: inherit;
+}
+.gk-select-listbox input[data-filter]:focus {
+  outline: 2px solid var(--gk-color-focus-ring, rgb(242, 206, 94));
+  outline-offset: 1px;
+}
 .gk-select-listbox [role="option"] {
   box-sizing: border-box;
   padding: 6px 10px;
@@ -171,5 +213,37 @@ export const selectListboxCssText = `
 .gk-select-listbox [role="option"][aria-disabled="true"] {
   opacity: 0.45;
   cursor: not-allowed;
+}
+.gk-select-listbox__checkbox {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--gk-color-border, rgb(190, 194, 198));
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1;
+  vertical-align: -3px;
+}
+.gk-select-listbox [role="option"][aria-selected="true"] .gk-select-listbox__checkbox {
+  border-color: var(--gk-color-brand, rgb(242, 206, 94));
+  background: var(--gk-color-brand, rgb(242, 206, 94));
+  color: var(--gk-color-brand-on, rgb(31, 34, 37));
+}
+.gk-select-listbox__group {
+  padding: 6px 10px 4px;
+  color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
+  font-size: 12px;
+  font-weight: 600;
+}
+.gk-select-listbox__empty {
+  padding: 8px 10px;
+  color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
+}
+.gk-select-listbox__loading {
+  padding: 8px 10px;
+  color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
 }
 `;

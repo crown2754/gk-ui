@@ -14,8 +14,22 @@ export class GkOption extends LitElement {
   }
 }
 
+@customElement("gk-option-group")
+export class GkOptionGroup extends LitElement {
+  @property()
+  label = "";
+
+  @property({ type: Boolean, reflect: true })
+  disabled = false;
+
+  render() {
+    return html`<slot></slot>`;
+  }
+}
+
 declare global {
   interface HTMLElementTagNameMap {
     "gk-option": GkOption;
+    "gk-option-group": GkOptionGroup;
   }
 }

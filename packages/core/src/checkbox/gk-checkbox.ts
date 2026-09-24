@@ -84,7 +84,7 @@ export class GkCheckbox extends LitElement {
     });
   };
 
-  private ariaChecked(): "true" | "false" | "mixed" {
+  private getAriaChecked(): "true" | "false" | "mixed" {
     if (this.indeterminate) return "mixed";
     return this.checked ? "true" : "false";
   }
@@ -114,7 +114,7 @@ export class GkCheckbox extends LitElement {
         type="button"
         part="box"
         role="checkbox"
-        aria-checked=${this.ariaChecked()}
+        aria-checked=${this.getAriaChecked()}
         aria-label=${hostLabel || nothing}
         ?disabled=${this.disabled}
       >

@@ -1,6 +1,5 @@
 import { LitElement, html, nothing, render, svg } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { classMap } from "lit/directives/class-map.js";
 import { computeFixedPanelPosition } from "../date-picker/date-utils.js";
 import type { GkOption } from "./gk-option.js";
 import {
@@ -12,7 +11,12 @@ import {
 export type GkSelectSize = "sm" | "md" | "lg";
 export type GkSelectStatus = "success" | "warning" | "error" | "";
 
-type OptionRecord = { value: string; label: string; disabled: boolean };
+type OptionRecord = {
+  value: string;
+  label: string;
+  disabled: boolean;
+  groupLabel?: string;
+};
 
 let uid = 0;
 
@@ -21,7 +25,7 @@ export class GkSelect extends LitElement {
   static styles = selectStyles;
 
   @property()
-  value = "";
+  value: string | string[] = "";
 
   @property()
   placeholder = "";
@@ -35,8 +39,38 @@ export class GkSelect extends LitElement {
   @property({ type: Boolean, reflect: true })
   clearable = false;
 
+  @property({ type: Boolean, reflect: true })
+  filterable = false;
+
+  @property({ type: Boolean, reflect: true })
+  multiple = false;
+
+  @property({ type: Boolean, reflect: true })
+  virtual = false;
+
+  @property({ type: Number, attribute: "item-height" })
+  itemHeight = 34;
+
+  @property({ type: Number })
+  max = 0;
+
+  @property({ type: Boolean, reflect: true })
+  loading = false;
+
+  @property({ type: Boolean, reflect: true })
+  remote = false;
+
+  @property({ type: Number, attribute: "remote-debounce" })
+  remoteDebounce = 300;
+
   @property({ reflect: true })
   status: GkSelectStatus = "";
+
+  @property({ reflect: true })
+  name = "";
+
+  @property({ type: Boolean, reflect: true })
+  required = false;
 
   @property({ type: Boolean, reflect: true })
   open = false;
@@ -44,25 +78,60 @@ export class GkSelect extends LitElement {
   @state()
   private activeIndex = 0;
 
+  @state()
+  private filterText = "";
+
   private listbox: HTMLDivElement | null = null;
   private listenersBound = false;
   private positionListenersBound = false;
+  private remoteRequestId = 0;
   private readonly instanceId = `gk-select-${++uid}`;
+  private readonly internals =
+    typeof ElementInternals === "undefined"
+      ? undefined
+      : this.createInternals();
+  private formElement: HTMLFormElement | null = null;
+
+  static formAssociated = true;
+
+  private createInternals() {
+    const element = this as unknown as HTMLElement & {
+      attachInternals?: () => ElementInternals;
+    };
+    return element.attachInternals?.();
+  }
 
   connectedCallback() {
     super.connectedCallback();
+    this.formElement = this.closest("form");
+    this.formElement?.addEventListener("reset", this.onFormReset);
     if (this.open) this.ensureListbox();
   }
 
   disconnectedCallback() {
+    this.formElement?.removeEventListener("reset", this.onFormReset);
+    this.cancelRemoteSearch();
     this.teardownListbox();
     super.disconnectedCallback();
   }
 
   protected updated(changed: Map<string, unknown>) {
+    if (
+      changed.has("value") ||
+      changed.has("name") ||
+      changed.has("required") ||
+      changed.has("disabled")
+    ) {
+      this.syncFormState();
+    }
     if (changed.has("open")) {
       if (this.open) this.ensureListbox();
-      else this.teardownListbox();
+      else {
+        this.teardownListbox();
+        if (changed.get("open") !== undefined) {
+          this.shadowRoot?.querySelector<HTMLElement>("[part='base']")?.focus();
+        }
+      }
     } else if (this.open) {
       this.renderListbox();
       this.positionListbox();
@@ -70,33 +139,42 @@ export class GkSelect extends LitElement {
   }
 
   private options(): OptionRecord[] {
-    const slotted = (
-      this.shadowRoot?.querySelector("slot") as HTMLSlotElement | null
-    )?.assignedElements({ flatten: true });
-    const nodes = (
-      slotted?.length
-        ? slotted
-        : [...this.querySelectorAll("gk-option")]
-    ) as Element[];
-    return nodes
-      .filter((el) => el.tagName === "GK-OPTION")
-      .map((el) => {
+    const nodes = [...this.querySelectorAll("gk-option")];
+    return nodes.map((el) => {
         const opt = el as GkOption;
+        const group = el.closest("gk-option-group");
         return {
           value: opt.value || el.getAttribute("value") || "",
           label: (el.textContent ?? "").trim(),
-          disabled: opt.disabled,
+          disabled:
+            opt.disabled ||
+            group?.hasAttribute("disabled") === true,
+          groupLabel: group?.getAttribute("label") || undefined,
         };
       });
   }
 
+  private customStateContent(name: "loading" | "empty") {
+    const source = this.querySelector<HTMLElement>(`[slot="${name}"]`);
+    return source?.cloneNode(true) as HTMLElement | undefined;
+  }
+
   private selectedLabel() {
-    const opt = this.options().find((o) => o.value === this.value);
+    const opt = this.options().find((o) => o.value === this.selectedValues[0]);
     return opt?.label ?? "";
   }
 
+  private get selectedValues(): string[] {
+    return Array.isArray(this.value) ? this.value : this.value ? [this.value] : [];
+  }
+
+  private selectedLabels() {
+    const selected = new Set(this.selectedValues);
+    return this.options().filter((option) => selected.has(option.value));
+  }
+
   private get showClearButton() {
-    return this.clearable && !this.disabled && this.value.length > 0;
+    return this.clearable && !this.disabled && this.selectedValues.length > 0;
   }
 
   private setOpen(next: boolean) {
@@ -104,15 +182,21 @@ export class GkSelect extends LitElement {
     this.open = next;
     if (next) {
       const opts = this.options();
-      const i = opts.findIndex((o) => o.value === this.value);
-      this.activeIndex = i >= 0 ? i : 0;
+      const selected = new Set(this.selectedValues);
+      const i = opts.findIndex((o) => selected.has(o.value));
+      this.activeIndex =
+        i >= 0 && !opts[i].disabled ? i : this.nextEnabledIndex(-1, 1);
+      this.filterText = "";
       this.bindDismissListeners();
     } else {
       this.unbindDismissListeners();
+      this.cancelRemoteSearch();
+      this.remoteRequestId++;
+      this.shadowRoot?.querySelector<HTMLElement>("[part='base']")?.focus();
     }
   }
 
-  private emitValue(next: string) {
+  private emitValue(next: string | string[]) {
     this.value = next;
     this.dispatchEvent(
       new CustomEvent("change", {
@@ -123,9 +207,61 @@ export class GkSelect extends LitElement {
     );
   }
 
+  private syncFormState() {
+    const internals = this.internals;
+    if (!internals) return;
+    const values = this.selectedValues;
+    const formValue = this.multiple ? values.join(",") : values[0] ?? "";
+    internals.setFormValue(this.disabled || !this.name ? null : formValue);
+    if (this.required && values.length === 0 && !this.disabled) {
+      const base = this.shadowRoot?.querySelector("[part='base']") as HTMLElement | null;
+      internals.setValidity(
+        { valueMissing: true },
+        "Please select an option.",
+        base ?? undefined,
+      );
+    } else {
+      internals.setValidity({});
+    }
+  }
+
+  formResetCallback() {
+    this.value = this.multiple ? [] : "";
+    this.filterText = "";
+    this.open = false;
+  }
+
+  private onFormReset = () => {
+    this.formResetCallback();
+  };
+
+  checkValidity() {
+    return !this.required || this.disabled || this.selectedValues.length > 0;
+  }
+
+  reportValidity() {
+    const valid = this.checkValidity();
+    if (!valid) {
+      this.dispatchEvent(new Event("invalid", { bubbles: false, cancelable: true }));
+    }
+    return valid;
+  }
+
   private pick(value: string) {
+    if (this.loading) return;
     const opt = this.options().find((o) => o.value === value);
     if (!opt || opt.disabled) return;
+    if (this.multiple) {
+      const selected = new Set(this.selectedValues);
+      if (selected.has(value)) selected.delete(value);
+      else {
+        if (this.max > 0 && selected.size >= this.max) return;
+        selected.add(value);
+      }
+      this.emitValue([...selected]);
+      this.renderListbox();
+      return;
+    }
     this.emitValue(value);
     this.setOpen(false);
   }
@@ -140,7 +276,7 @@ export class GkSelect extends LitElement {
   private onClearClick = (event: Event) => {
     event.stopPropagation();
     if (this.disabled) return;
-    this.emitValue("");
+    this.emitValue(this.multiple ? [] : "");
     this.setOpen(false);
   };
 
@@ -164,6 +300,17 @@ export class GkSelect extends LitElement {
         return;
       }
       this.moveActive(event.key === "ArrowDown" ? 1 : -1);
+      return;
+    }
+    if (event.key === "Home" || event.key === "End") {
+      if (!this.open) return;
+      event.preventDefault();
+      const direction = event.key === "Home" ? 1 : -1;
+      this.activeIndex =
+        direction === 1
+          ? this.nextEnabledIndex(-1, 1)
+          : this.nextEnabledIndex(this.options().length, -1);
+      this.renderListbox();
     }
     if (event.key === "Escape" && this.open) {
       event.preventDefault();
@@ -172,18 +319,102 @@ export class GkSelect extends LitElement {
   };
 
   private moveActive(dir: number) {
-    const opts = this.options();
-    if (!opts.length) return;
-    let i = this.activeIndex;
-    for (let n = 0; n < opts.length; n++) {
-      i = (i + dir + opts.length) % opts.length;
-      if (!opts[i].disabled) {
-        this.activeIndex = i;
-        this.renderListbox();
-        return;
-      }
-    }
+    if (!this.visibleOptions().length) return;
+    this.activeIndex = this.nextEnabledIndex(
+      this.activeIndex,
+      dir === 1 ? 1 : -1,
+    );
+    this.renderListbox();
   }
+
+  private nextEnabledIndex(start: number, dir: 1 | -1) {
+    const visible = this.visibleOptions();
+    for (let n = 1; n <= visible.length; n++) {
+      const index = (start + dir * n + this.options().length * 2) % this.options().length;
+      const option = visible.find((item) => item.index === index);
+      if (option && !option.option.disabled) return index;
+    }
+    return 0;
+  }
+
+  private visibleOptions() {
+    const query = this.remote ? "" : this.filterText.trim().toLocaleLowerCase();
+    return this.options()
+      .map((option, index) => ({ option, index }))
+      .filter(
+        ({ option }) =>
+          !query ||
+          option.label.toLocaleLowerCase().includes(query) ||
+          option.value.toLocaleLowerCase().includes(query),
+      );
+  }
+
+  private onFilterInput = (event: Event) => {
+    this.filterText = (event.target as HTMLInputElement).value;
+    if (this.remote) {
+      this.scheduleRemoteSearch();
+    }
+    const first = this.visibleOptions().find(({ option }) => !option.disabled);
+    this.activeIndex = first?.index ?? 0;
+    this.renderListbox();
+    this.positionListbox();
+    this.listbox?.querySelector<HTMLInputElement>("[data-filter]")?.focus();
+  };
+
+  private remoteSearchTimer: ReturnType<typeof setTimeout> | undefined;
+
+  private cancelRemoteSearch() {
+    if (this.remoteSearchTimer === undefined) return;
+    clearTimeout(this.remoteSearchTimer);
+    this.remoteSearchTimer = undefined;
+  }
+
+  private scheduleRemoteSearch() {
+    this.cancelRemoteSearch();
+    const requestId = ++this.remoteRequestId;
+    const emitSearch = () => {
+      this.remoteSearchTimer = undefined;
+      this.dispatchEvent(
+        new CustomEvent("search", {
+          detail: { query: this.filterText, requestId },
+          bubbles: true,
+          composed: true,
+        }),
+      );
+    };
+    if (this.remoteDebounce <= 0) {
+      emitSearch();
+      return;
+    }
+    this.remoteSearchTimer = setTimeout(emitSearch, this.remoteDebounce);
+  }
+
+  private onListboxKeydown = (event: KeyboardEvent) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      this.moveActive(event.key === "ArrowDown" ? 1 : -1);
+      return;
+    }
+    if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      this.activeIndex =
+        event.key === "Home"
+          ? this.nextEnabledIndex(-1, 1)
+          : this.nextEnabledIndex(this.options().length, -1);
+      this.renderListbox();
+      return;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      const option = this.options()[this.activeIndex];
+      if (option) this.pick(option.value);
+      return;
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      this.setOpen(false);
+    }
+  };
 
   private onDocumentClick = (event: MouseEvent) => {
     if (!this.open) return;
@@ -242,10 +473,14 @@ export class GkSelect extends LitElement {
       this.listbox = document.createElement("div");
       this.listbox.className = "gk-select-listbox";
       this.listbox.id = `${this.instanceId}-listbox`;
+      this.listbox.addEventListener("scroll", this.onListboxScroll);
       document.body.appendChild(this.listbox);
     }
     this.renderListbox();
     this.positionListbox();
+    if (this.filterable || this.remote) {
+      this.listbox.querySelector<HTMLInputElement>("[data-filter]")?.focus();
+    }
     this.bindPositionListeners();
     this.bindDismissListeners();
   }
@@ -254,40 +489,132 @@ export class GkSelect extends LitElement {
     this.unbindPositionListeners();
     this.unbindDismissListeners();
     if (this.listbox) {
+      this.listbox.removeEventListener("scroll", this.onListboxScroll);
       render(nothing, this.listbox);
       this.listbox.remove();
       this.listbox = null;
     }
+
     if (!document.querySelector(".gk-select-listbox")) {
       document.getElementById(SELECT_LISTBOX_STYLE_ID)?.remove();
     }
   }
 
+  private onListboxScroll = () => {
+    if (this.virtual) this.renderListbox();
+  };
+
   private renderListbox() {
     if (!this.listbox) return;
-    const opts = this.options();
-    render(
-      html`
-        <div class="gk-select-listbox__items">
-          ${opts.map(
-            (opt, i) => html`
-              <div
-                role="option"
-                id=${`${this.instanceId}-opt-${i}`}
-                data-value=${opt.value}
-                class=${classMap({ "is-active": i === this.activeIndex })}
-                aria-selected=${opt.value === this.value ? "true" : "false"}
-                aria-disabled=${opt.disabled ? "true" : "false"}
-                @click=${() => this.pick(opt.value)}
-              >
-                ${opt.label}
-              </div>
-            `,
-          )}
-        </div>
-      `,
-      this.listbox,
+    const visible = this.visibleOptions();
+    const items = document.createElement("div");
+    items.className = "gk-select-listbox__items";
+    const existingFilter = this.listbox.querySelector<HTMLInputElement>(
+      "[data-filter]",
     );
+    let filterInput = existingFilter;
+    if (this.filterable || this.remote) {
+      if (!filterInput) {
+        filterInput = document.createElement("input");
+        filterInput.type = "search";
+        filterInput.placeholder = "Search options";
+        filterInput.setAttribute("data-filter", "");
+        filterInput.setAttribute("aria-label", "Filter options");
+        filterInput.addEventListener("input", this.onFilterInput);
+        filterInput.addEventListener("keydown", this.onListboxKeydown);
+      }
+      filterInput.value = this.filterText;
+    }
+    if (this.loading) {
+      const loading = document.createElement("div");
+      loading.className = "gk-select-listbox__loading";
+      loading.setAttribute("role", "status");
+      loading.append(this.customStateContent("loading") ?? "Loading...");
+      items.append(loading);
+    } else if (visible.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "gk-select-listbox__empty";
+      empty.setAttribute("role", "status");
+      empty.append(this.customStateContent("empty") ?? "No options");
+      items.append(empty);
+    } else {
+      const virtualStart = this.virtual
+        ? Math.max(
+            0,
+            Math.floor((this.listbox?.scrollTop ?? 0) / this.itemHeight) - 3,
+          )
+        : 0;
+      const virtualEnd = this.virtual
+        ? Math.min(
+            visible.length,
+            virtualStart +
+              Math.ceil((this.listbox?.clientHeight || 256) / this.itemHeight) +
+              6,
+          )
+        : visible.length;
+      const rendered = this.virtual
+        ? visible.slice(virtualStart, virtualEnd)
+        : visible;
+      if (this.virtual) {
+        items.style.position = "relative";
+        items.style.height = `${visible.length * this.itemHeight}px`;
+      }
+      let lastGroup: string | undefined;
+      rendered.forEach(({ option: opt, index: i }, renderedIndex) => {
+        if (opt.groupLabel && opt.groupLabel !== lastGroup) {
+          const group = document.createElement("div");
+          group.className = "gk-select-listbox__group";
+          group.setAttribute("role", "presentation");
+          group.textContent = opt.groupLabel;
+          items.append(group);
+        }
+        lastGroup = opt.groupLabel;
+        const option = document.createElement("div");
+        option.id = `${this.instanceId}-opt-${i}`;
+        option.dataset.value = opt.value;
+        option.setAttribute("role", "option");
+        option.setAttribute(
+          "aria-selected",
+          String(this.selectedValues.includes(opt.value)),
+        );
+        if (this.multiple) {
+          option.setAttribute(
+            "aria-checked",
+            String(this.selectedValues.includes(opt.value)),
+          );
+        }
+        option.setAttribute("aria-disabled", String(opt.disabled));
+        option.classList.toggle("is-active", i === this.activeIndex);
+        if (this.virtual) {
+          option.style.position = "absolute";
+          option.style.top = `${(virtualStart + renderedIndex) * this.itemHeight}px`;
+          option.style.left = "0";
+          option.style.right = "0";
+        }
+        if (this.multiple) {
+          const checkbox = document.createElement("span");
+          checkbox.className = "gk-select-listbox__checkbox";
+          checkbox.setAttribute("aria-hidden", "true");
+          checkbox.textContent = this.selectedValues.includes(opt.value)
+            ? "✓"
+            : "";
+          option.append(checkbox, opt.label);
+        } else {
+          option.textContent = opt.label;
+        }
+        option.addEventListener("click", () => this.pick(opt.value));
+        items.append(option);
+      });
+    }
+    this.listbox.querySelector(".gk-select-listbox__items")?.remove();
+    if (filterInput) {
+      if (filterInput.parentElement !== this.listbox) {
+        this.listbox.append(filterInput);
+      }
+      this.listbox.append(items);
+    } else {
+      this.listbox.replaceChildren(items);
+    }
     this.listbox.setAttribute("role", "listbox");
   }
 
@@ -330,8 +657,9 @@ export class GkSelect extends LitElement {
   }
 
   render() {
+    const selected = this.selectedLabels();
     const label = this.selectedLabel();
-    const empty = !label;
+    const empty = selected.length === 0;
     const activeId = `${this.instanceId}-opt-${this.activeIndex}`;
     return html`
       <div
@@ -343,12 +671,24 @@ export class GkSelect extends LitElement {
         aria-controls=${this.open ? `${this.instanceId}-listbox` : nothing}
         aria-activedescendant=${this.open ? activeId : nothing}
         aria-disabled=${this.disabled ? "true" : "false"}
+        aria-required=${this.required ? "true" : "false"}
+        aria-invalid=${this.internals?.validity.valid === false ? "true" : "false"}
+        aria-busy=${this.loading ? "true" : "false"}
         @click=${this.onTriggerClick}
         @keydown=${this.onTriggerKeydown}
       >
-        <span part="value" ?data-empty=${empty}
-          >${label || this.placeholder || "\u00a0"}</span
-        >
+        <span part="value" ?data-empty=${empty}>
+          ${this.multiple
+            ? selected.length
+              ? selected.map(
+                  (option) =>
+                    html`<span part="tag" data-value=${option.value}>
+                      ${option.label}
+                    </span>`,
+                )
+              : this.placeholder || "\u00a0"
+            : label || this.placeholder || "\u00a0"}
+        </span>
         <span part="suffix">
           ${this.showClearButton
             ? html`<button
@@ -363,6 +703,8 @@ export class GkSelect extends LitElement {
           ${this.chevronIcon()}
         </span>
       </div>
+      <slot name="loading" hidden></slot>
+      <slot name="empty" hidden></slot>
       <slot></slot>
     `;
   }

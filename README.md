@@ -14,6 +14,7 @@ pnpm install
 pnpm test
 pnpm build
 pnpm docs:dev
+corepack pnpm docs:dev
 ```
 
 Docs languages: English (`/`) and 繁體中文 (`/zh-TW/`). Switch from the nav language menu.

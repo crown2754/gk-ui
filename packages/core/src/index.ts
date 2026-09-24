@@ -58,6 +58,6 @@ export { GkCheckboxGroup } from "./checkbox/gk-checkbox-group.js";
 export { GkRadio } from "./radio/gk-radio.js";
 export type { GkRadioSize } from "./radio/gk-radio.js";
 export { GkRadioGroup } from "./radio/gk-radio-group.js";
-export { GkOption } from "./select/gk-option.js";
+export { GkOption, GkOptionGroup } from "./select/gk-option.js";
 export { GkSelect } from "./select/gk-select.js";
 export type { GkSelectSize, GkSelectStatus } from "./select/gk-select.js";
