@@ -77,9 +77,25 @@ export const radioStyles = css`
     font-size: 15px;
   }
 
-  :host([disabled]) {
-    opacity: 0.5;
+  :host([disabled]),
+  :host([data-gk-group-disabled]) {
     cursor: not-allowed;
     pointer-events: none;
+  }
+
+  /* Unchecked stays subdued. Checked keeps the white + deep-gold mark. */
+  :host([disabled]:not([checked])),
+  :host([data-gk-group-disabled]:not([checked])) {
+    opacity: 0.5;
+  }
+
+  :host([disabled]) [part="control"],
+  :host([data-gk-group-disabled]) [part="control"] {
+    opacity: 1;
+  }
+
+  :host([disabled][checked]) [part="label"],
+  :host([data-gk-group-disabled][checked]) [part="label"] {
+    color: var(--gk-color-text-muted, rgb(118, 124, 130));
   }
 `;

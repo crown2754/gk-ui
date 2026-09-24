@@ -72,7 +72,7 @@ const codes = {
 
 <DemoCard title="停用" :code="codes.disabled">
   <template #description>
-    <code>disabled</code> 會阻擋切換（透明度 0.4）。
+    <code>disabled</code> 會阻擋切換。關閉時維持較淡；開啟時軌道仍可清楚辨認。
   </template>
   <gk-switch disabled aria-label="停用（關）"></gk-switch>
   <gk-switch disabled checked aria-label="停用（開）"></gk-switch>

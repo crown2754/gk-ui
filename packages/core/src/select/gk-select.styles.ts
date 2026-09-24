@@ -49,11 +49,12 @@ export const selectStyles = css`
     font-size: 15px;
   }
 
+  /* One softer ring. Recoloring the border the same yellow stacks a second stroke. */
   [part="base"]:focus-visible,
   :host([open]) [part="base"] {
-    outline: 2px solid var(--gk-color-focus-ring, rgb(242, 206, 94));
+    outline: 2px solid
+      color-mix(in srgb, var(--gk-color-focus-ring, rgb(242, 206, 94)) 70%, transparent);
     outline-offset: 2px;
-    border-color: var(--gk-color-focus-ring, rgb(242, 206, 94));
   }
 
   :host([status="success"]) [part="base"] {
@@ -68,15 +69,15 @@ export const selectStyles = css`
 
   :host([status="success"][open]) [part="base"],
   :host([status="success"]) [part="base"]:focus-visible {
-    outline-color: var(--gk-color-success, #18a058);
+    outline-color: color-mix(in srgb, var(--gk-color-success, #18a058) 70%, transparent);
   }
   :host([status="warning"][open]) [part="base"],
   :host([status="warning"]) [part="base"]:focus-visible {
-    outline-color: var(--gk-color-warning, #f0a020);
+    outline-color: color-mix(in srgb, var(--gk-color-warning, #f0a020) 70%, transparent);
   }
   :host([status="error"][open]) [part="base"],
   :host([status="error"]) [part="base"]:focus-visible {
-    outline-color: var(--gk-color-danger, #d03050);
+    outline-color: color-mix(in srgb, var(--gk-color-danger, #d03050) 70%, transparent);
   }
 
   :host([disabled]) [part="base"] {

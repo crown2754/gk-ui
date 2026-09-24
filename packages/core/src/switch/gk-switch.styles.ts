@@ -111,12 +111,21 @@ export const switchStyles = css`
   }
 
   :host([disabled]) {
-    opacity: 0.4;
     cursor: not-allowed;
     pointer-events: none;
   }
 
+  /* Off stays subdued. On keeps the brand track so the state stays readable. */
+  :host([disabled]:not([checked])) {
+    opacity: 0.4;
+  }
+
   :host([disabled]) [part="track"] {
+    opacity: 1;
     cursor: not-allowed;
+  }
+
+  :host([disabled][checked]) [part="label"] {
+    color: var(--gk-color-text-muted, rgb(118, 124, 130));
   }
 `;

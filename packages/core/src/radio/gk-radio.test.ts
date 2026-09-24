@@ -4,6 +4,8 @@ import "./gk-radio.js";
 import "./gk-radio-group.js";
 import type { GkRadio } from "./gk-radio.js";
 import type { GkRadioGroup } from "./gk-radio-group.js";
+import { radioStyles } from "./gk-radio.styles.js";
+import { radioGroupStyles } from "./gk-radio-group.styles.js";
 
 function control(el: GkRadio) {
   return el.shadowRoot?.querySelector(
@@ -40,6 +42,27 @@ describe("gk-radio", () => {
     el.click();
     await el.updateComplete;
     expect(el.checked).toBe(true);
+  });
+
+  it("keeps the selected mark and only fades an unchecked disabled radio", () => {
+    const css = radioStyles.cssText;
+    expect(css).toMatch(
+      /:host\(\[checked\]\) \[part="control"\]\s*\{[^}]*background:\s*#fff/,
+    );
+    expect(css).toMatch(
+      /:host\(\[checked\]\) \[part="control"\]\s*\{[^}]*--gk-color-brand-pressed/,
+    );
+    expect(css).toMatch(/\[part="dot"\]\s*\{[^}]*--gk-color-brand-pressed/);
+    expect(css).toMatch(
+      /:host\(\[disabled\]:not\(\[checked\]\)\)(?:\s*,[^{]*)?\s*\{[^}]*opacity:\s*0\.5/,
+    );
+    expect(css).toMatch(
+      /:host\(\[data-gk-group-disabled\]:not\(\[checked\]\)\)(?:\s*,[^{]*)?\s*\{[^}]*opacity:\s*0\.5/,
+    );
+    expect(css).not.toMatch(/:host\(\[disabled\]\)\s*\{[^}]*opacity:/);
+    expect(css).toMatch(
+      /:host\(\[disabled\]\[checked\]\) \[part="label"\][\s\S]*--gk-color-text-muted/,
+    );
   });
 
   it("disabled blocks select", async () => {
@@ -104,6 +127,25 @@ describe("gk-radio-group", () => {
     el.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
     await el.updateComplete;
     expect(el.value).toBe("a");
+  });
+
+  it("marks children while the group is disabled without fading the group host", async () => {
+    const el = await fixture<GkRadioGroup>(html`
+      <gk-radio-group disabled value="a">
+        <gk-radio value="a">A</gk-radio>
+        <gk-radio value="b">B</gk-radio>
+      </gk-radio-group>
+    `);
+    const a = el.querySelector('gk-radio[value="a"]') as GkRadio;
+    const b = el.querySelector('gk-radio[value="b"]') as GkRadio;
+    expect(a.checked).toBe(true);
+    expect(a.hasAttribute("data-gk-group-disabled")).toBe(true);
+    expect(b.hasAttribute("data-gk-group-disabled")).toBe(true);
+    expect(radioGroupStyles.cssText).not.toMatch(/opacity/);
+    el.disabled = false;
+    await el.updateComplete;
+    expect(a.hasAttribute("data-gk-group-disabled")).toBe(false);
+    expect(b.hasAttribute("data-gk-group-disabled")).toBe(false);
   });
 
   it("disabled group blocks child select", async () => {

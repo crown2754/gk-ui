@@ -69,9 +69,14 @@ export class GkRadioGroup extends LitElement {
     for (const radio of this.radios()) {
       radio.checked = radio.value === this.value;
       if (this.size) radio.size = this.size;
+      radio.toggleAttribute("data-gk-group-disabled", this.disabled);
     }
     this.syncTabStops();
   }
+
+  private onSlotChange = () => {
+    this.syncChildren();
+  };
 
   private syncTabStops() {
     const enabled = this.enabledRadios();
@@ -110,7 +115,7 @@ export class GkRadioGroup extends LitElement {
   }
 
   render() {
-    return html`<slot></slot>`;
+    return html`<slot @slotchange=${this.onSlotChange}></slot>`;
   }
 }
 

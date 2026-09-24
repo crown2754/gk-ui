@@ -58,8 +58,13 @@ export class GkCheckboxGroup extends LitElement {
     for (const box of this.checkboxes()) {
       box.checked = selected.has(box.value);
       if (this.size) box.size = this.size;
+      box.toggleAttribute("data-gk-group-disabled", this.disabled);
     }
   }
+
+  private onSlotChange = () => {
+    this.syncChildren();
+  };
 
   protected updated(changed: Map<string, unknown>) {
     if (changed.has("value") || changed.has("size") || changed.has("disabled")) {
@@ -68,7 +73,7 @@ export class GkCheckboxGroup extends LitElement {
   }
 
   render() {
-    return html`<slot></slot>`;
+    return html`<slot @slotchange=${this.onSlotChange}></slot>`;
   }
 }
 

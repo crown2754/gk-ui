@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { fixture, html } from "@open-wc/testing";
 import "./gk-switch.js";
 import type { GkSwitch } from "./gk-switch.js";
+import { switchStyles } from "./gk-switch.styles.js";
 
 function track(el: GkSwitch) {
   return el.shadowRoot?.querySelector(
@@ -32,6 +33,20 @@ describe("gk-switch", () => {
     el.click();
     await el.updateComplete;
     expect(el.checked).toBe(false);
+  });
+
+  it("fades only an unchecked disabled switch so the on state stays readable", () => {
+    const css = switchStyles.cssText;
+    expect(css).toMatch(
+      /:host\(\[disabled\]:not\(\[checked\]\)\)(?:\s*,[^{]*)?\s*\{[^}]*opacity:\s*0\.4/,
+    );
+    expect(css).not.toMatch(/:host\(\[disabled\]\)\s*\{[^}]*opacity:/);
+    expect(css).toMatch(
+      /:host\(\[disabled\]\[checked\]\) \[part="label"\]\s*\{[^}]*--gk-color-text-muted/,
+    );
+    expect(css).toMatch(
+      /:host\(\[checked\]\) \[part="track"\]\s*\{[^}]*--gk-color-brand/,
+    );
   });
 
   it("disabled blocks toggle", async () => {

@@ -78,9 +78,27 @@ export const checkboxStyles = css`
     font-size: 15px;
   }
 
-  :host([disabled]) {
-    opacity: 0.5;
+  :host([disabled]),
+  :host([data-gk-group-disabled]) {
     cursor: not-allowed;
     pointer-events: none;
+  }
+
+  /* Unchecked stays subdued. Checked and mixed keep the brand mark readable. */
+  :host([disabled]:not([checked]):not([indeterminate])),
+  :host([data-gk-group-disabled]:not([checked]):not([indeterminate])) {
+    opacity: 0.5;
+  }
+
+  :host([disabled]) [part="box"],
+  :host([data-gk-group-disabled]) [part="box"] {
+    opacity: 1;
+  }
+
+  :host([disabled][checked]) [part="label"],
+  :host([disabled][indeterminate]) [part="label"],
+  :host([data-gk-group-disabled][checked]) [part="label"],
+  :host([data-gk-group-disabled][indeterminate]) [part="label"] {
+    color: var(--gk-color-text-muted, rgb(118, 124, 130));
   }
 `;
