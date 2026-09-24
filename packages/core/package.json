@@ -32,7 +32,12 @@
     "./src/radio/gk-radio.ts",
     "./src/radio/gk-radio-group.ts",
     "./src/select/gk-option.ts",
-    "./src/select/gk-select.ts"
+    "./src/select/gk-select.ts",
+    "./src/tooltip/gk-tooltip.ts",
+    "./src/dropdown/gk-dropdown-item.ts",
+    "./src/dropdown/gk-dropdown.ts",
+    "./src/modal/gk-modal.ts",
+    "./src/drawer/gk-drawer.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
