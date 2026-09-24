@@ -267,6 +267,20 @@ export const buttonStyles = css`
     background: color-mix(in srgb, currentColor 8%, transparent);
   }
 
+  :host([quaternary]) [part="base"] {
+    background: transparent;
+    color: var(--gk-color-text, rgb(31, 34, 37));
+    box-shadow: none;
+    border: 0;
+  }
+
+  :host([quaternary]) [part="base"]:hover,
+  :host([quaternary]) [part="base"]:active {
+    transform: none;
+    box-shadow: none;
+    background: color-mix(in srgb, var(--gk-color-on-surface, rgb(31, 34, 37)) 8%, transparent);
+  }
+
   :host([disabled]) [part="base"],
   :host([loading]) [part="base"] {
     opacity: 0.5;

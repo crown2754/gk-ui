@@ -15,6 +15,11 @@ import "./radio/gk-radio.js";
 import "./radio/gk-radio-group.js";
 import "./select/gk-option.js";
 import "./select/gk-select.js";
+import "./tooltip/gk-tooltip.js";
+import "./dropdown/gk-dropdown-item.js";
+import "./dropdown/gk-dropdown.js";
+import "./modal/gk-modal.js";
+import "./drawer/gk-drawer.js";
 export { GkButton } from "./button/gk-button.js";
 export type { GkButtonVariant, GkButtonSize, GkButtonType } from "./button/gk-button.js";
 export { GkButtonGroup } from "./button/gk-button-group.js";
@@ -61,3 +66,17 @@ export { GkRadioGroup } from "./radio/gk-radio-group.js";
 export { GkOption, GkOptionGroup } from "./select/gk-option.js";
 export { GkSelect } from "./select/gk-select.js";
 export type { GkSelectSize, GkSelectStatus } from "./select/gk-select.js";
+export { GkTooltip } from "./tooltip/gk-tooltip.js";
+export type { GkPlacement } from "./overlay/placement.js";
+export { GkDropdown } from "./dropdown/gk-dropdown.js";
+export type {
+  GkDropdownSize,
+  GkDropdownTrigger,
+  GkDropdownVariant,
+} from "./dropdown/gk-dropdown.js";
+export { GkDropdownItem } from "./dropdown/gk-dropdown-item.js";
+export type { GkDropdownItemType } from "./dropdown/gk-dropdown-item.js";
+export { GkModal } from "./modal/gk-modal.js";
+export type { GkModalConfirmVariant, GkModalPreset } from "./modal/gk-modal.js";
+export { GkDrawer } from "./drawer/gk-drawer.js";
+export type { GkDrawerPlacement } from "./drawer/gk-drawer.js";

@@ -32,6 +32,8 @@ const codes = {
 <gk-button variant="success" dashed>成功</gk-button>
 <gk-button variant="warning" dashed>警告</gk-button>
 <gk-button variant="danger" dashed>危險</gk-button>`,
+  quaternary: `<gk-button quaternary>更多</gk-button>
+<gk-button quaternary aria-label="更多操作">⋯</gk-button>`,
   textMode: `<gk-button text>預設</gk-button>
 <gk-button variant="primary" text>主要</gk-button>
 <gk-button variant="info" text>資訊</gk-button>
@@ -115,6 +117,14 @@ const codes = {
   <gk-button variant="danger" text>危險</gk-button>
 </DemoCard>
 
+<DemoCard title="Quaternary" :code="codes.quaternary">
+  <template #description>
+    <code>quaternary</code> 是安靜的透明按鈕（對齊 Naive quaternary），適合圖示或選單觸發器。
+  </template>
+  <gk-button quaternary>更多</gk-button>
+  <gk-button quaternary aria-label="更多操作">⋯</gk-button>
+</DemoCard>
+
 <DemoCard title="停用" :code="codes.disabled">
   <template #description>
     按鈕可設為停用。
@@ -186,6 +196,7 @@ const codes = {
 | `secondary` | `boolean` | `false` |
 | `dashed` | `boolean` | `false` |
 | `text` | `boolean` | `false` |
+| `quaternary` | `boolean` | `false` |
 | `href` | `string` | — |
 
 ### Button Slots

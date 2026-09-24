@@ -32,6 +32,8 @@ const codes = {
 <gk-button variant="success" dashed>Success</gk-button>
 <gk-button variant="warning" dashed>Warning</gk-button>
 <gk-button variant="danger" dashed>Danger</gk-button>`,
+  quaternary: `<gk-button quaternary>More</gk-button>
+<gk-button quaternary aria-label="More actions">⋯</gk-button>`,
   textMode: `<gk-button text>Default</gk-button>
 <gk-button variant="primary" text>Primary</gk-button>
 <gk-button variant="info" text>Info</gk-button>
@@ -115,6 +117,14 @@ Button is used to trigger some actions.
   <gk-button variant="danger" text>Danger</gk-button>
 </DemoCard>
 
+<DemoCard title="Quaternary" :code="codes.quaternary">
+  <template #description>
+    <code>quaternary</code> is a quiet transparent button (Naive quaternary). Use it for icon or menu triggers.
+  </template>
+  <gk-button quaternary>More</gk-button>
+  <gk-button quaternary aria-label="More actions">⋯</gk-button>
+</DemoCard>
+
 <DemoCard title="Disabled" :code="codes.disabled">
   <template #description>
     Buttons can be disabled.
@@ -186,6 +196,7 @@ Button is used to trigger some actions.
 | `secondary` | `boolean` | `false` |
 | `dashed` | `boolean` | `false` |
 | `text` | `boolean` | `false` |
+| `quaternary` | `boolean` | `false` |
 | `href` | `string` | — |
 
 ### Button Slots

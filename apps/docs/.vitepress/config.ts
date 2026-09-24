@@ -59,6 +59,7 @@ export default defineConfig({
               { text: "Checkbox", link: "/components/checkbox" },
               { text: "Radio", link: "/components/radio" },
               { text: "Select", link: "/components/select" },
+              { text: "Dropdown", link: "/components/dropdown" },
             ],
           },
           {
@@ -73,6 +74,9 @@ export default defineConfig({
             items: [
               { text: "Alert", link: "/components/alert" },
               { text: "Message", link: "/components/message" },
+              { text: "Modal", link: "/components/modal" },
+              { text: "Tooltip", link: "/components/tooltip" },
+              { text: "Drawer", link: "/components/drawer" },
             ],
           },
         ],
@@ -119,6 +123,7 @@ export default defineConfig({
               { text: "Checkbox 核取方塊", link: "/zh-TW/components/checkbox" },
               { text: "Radio 單選", link: "/zh-TW/components/radio" },
               { text: "Select 選擇器", link: "/zh-TW/components/select" },
+              { text: "Dropdown 下拉選單", link: "/zh-TW/components/dropdown" },
             ],
           },
           {
@@ -133,6 +138,9 @@ export default defineConfig({
             items: [
               { text: "Alert 警示", link: "/zh-TW/components/alert" },
               { text: "Message 訊息", link: "/zh-TW/components/message" },
+              { text: "Modal 對話框", link: "/zh-TW/components/modal" },
+              { text: "Tooltip 提示", link: "/zh-TW/components/tooltip" },
+              { text: "Drawer 抽屜", link: "/zh-TW/components/drawer" },
             ],
           },
         ],

@@ -41,6 +41,10 @@ export class GkButton extends LitElement {
   @property({ type: Boolean, reflect: true })
   text = false;
 
+  /** Transparent button with a quiet hover wash (Naive quaternary). */
+  @property({ type: Boolean, reflect: true })
+  quaternary = false;
+
   @property({ reflect: true })
   href?: string;
 
