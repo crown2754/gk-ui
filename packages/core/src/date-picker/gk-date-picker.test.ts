@@ -183,6 +183,105 @@ describe("gk-date-picker", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
+  it("keeps the trigger width stable with and without a value", async () => {
+    const empty = await fixture<GkDatePicker>(
+      html`<gk-date-picker placeholder="Pick"></gk-date-picker>`,
+    );
+    const filled = await fixture<GkDatePicker>(
+      html`<gk-date-picker value="2026-09-17"></gk-date-picker>`,
+    );
+    const emptyRange = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="daterange" start-placeholder="Start" end-placeholder="End"></gk-date-picker>`,
+    );
+    const filledRange = await fixture<GkDatePicker>(html`
+      <gk-date-picker
+        type="daterange"
+        .value=${["2026-09-01", "2026-09-17"]}
+      ></gk-date-picker>
+    `);
+    const declaredWidth = (el: GkDatePicker) => {
+      const rules = [
+        ...(el.shadowRoot?.adoptedStyleSheets?.[0]?.cssRules ?? []),
+      ] as CSSStyleRule[];
+      const type = el.getAttribute("type");
+      const host = rules.find((rule) => rule.selectorText === ":host");
+      const typed =
+        type && type !== "date"
+          ? rules.find((rule) => rule.selectorText === `:host([type="${type}"])`)
+          : undefined;
+      return (typed ?? host)?.style.getPropertyValue("width").trim() ?? "";
+    };
+    const emptyWidth = declaredWidth(empty);
+    const filledWidth = declaredWidth(filled);
+    expect(emptyWidth).toBe(filledWidth);
+    expect(emptyWidth).toBe("14rem");
+    expect(declaredWidth(emptyRange)).toBe(declaredWidth(filledRange));
+    expect(declaredWidth(emptyRange)).toBe("22rem");
+  });
+
+  it("opens a year panel from the header and completes the pick", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker value="2026-09-01"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const yearBtn = document.querySelector(
+      '.gk-date-picker-panel [data-nav="pick-year"]',
+    ) as HTMLButtonElement;
+    expect(yearBtn).toBeTruthy();
+    expect(yearBtn.dataset.year).toBe("2026");
+    yearBtn.click();
+    await el.updateComplete;
+    expect(document.querySelector('.gk-date-picker-panel [data-panel="years"]')).toBeTruthy();
+    const year = document.querySelector(
+      '.gk-date-picker-panel button[data-year="2024"]',
+    ) as HTMLButtonElement;
+    expect(year).toBeTruthy();
+    year.click();
+    await el.updateComplete;
+    expect(document.querySelector('.gk-date-picker-panel [data-panel="months"]')).toBeTruthy();
+    const month = document.querySelector(
+      '.gk-date-picker-panel button[data-month="2024-03"]',
+    ) as HTMLButtonElement;
+    expect(month).toBeTruthy();
+    month.click();
+    await el.updateComplete;
+    const day = document.querySelector(
+      '.gk-date-picker-panel button[data-iso="2024-03-15"]',
+    ) as HTMLButtonElement;
+    expect(day).toBeTruthy();
+    day.click();
+    await el.updateComplete;
+    expect(el.value).toBe("2024-03-15");
+    expect(el.open).toBe(false);
+  });
+
+  it("opens a month panel from the header and returns to that month", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker value="2026-09-01"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const monthBtn = document.querySelector(
+      '.gk-date-picker-panel [data-nav="pick-month"]',
+    ) as HTMLButtonElement;
+    expect(monthBtn).toBeTruthy();
+    expect(monthBtn.dataset.month).toBe("09");
+    monthBtn.click();
+    await el.updateComplete;
+    const march = document.querySelector(
+      '.gk-date-picker-panel button[data-month="2026-03"]',
+    ) as HTMLButtonElement;
+    expect(march).toBeTruthy();
+    march.click();
+    await el.updateComplete;
+    expect(
+      document.querySelector('.gk-date-picker-panel button[data-iso="2026-03-15"]'),
+    ).toBeTruthy();
+    expect(el.value).toBe("2026-09-01");
+    expect(el.open).toBe(true);
+  });
+
   it("outside click closes panel without changing value", async () => {
     const el = await fixture<GkDatePicker>(
       html`<gk-date-picker value="2026-09-17"></gk-date-picker>`,
@@ -215,7 +314,7 @@ describe("gk-date-picker daterange", () => {
     expect(el.value).toBeNull();
   });
 
-  it("two-click selection does not commit until Confirm", async () => {
+  it("two-click selection commits the range without Confirm", async () => {
     const el = await fixture<GkDatePicker>(
       html`<gk-date-picker type="daterange"></gk-date-picker>`,
     );
@@ -234,16 +333,10 @@ describe("gk-date-picker daterange", () => {
     el.addEventListener("input", onInput);
     a.click();
     await el.updateComplete;
-    b.click();
-    await el.updateComplete;
     expect(el.value).toBeNull();
     expect(el.open).toBe(true);
     expect(onInput).not.toHaveBeenCalled();
-    (
-      document.querySelector(
-        '.gk-date-picker-panel button[data-action="confirm"]',
-      ) as HTMLButtonElement
-    ).click();
+    b.click();
     await el.updateComplete;
     expect(el.value).not.toBeNull();
     const [start, end] = el.value as [string, string];
@@ -273,16 +366,10 @@ describe("gk-date-picker daterange", () => {
     await el.updateComplete;
     earlier.click();
     await el.updateComplete;
-    expect(el.value).toBeNull();
-    (
-      document.querySelector(
-        '.gk-date-picker-panel button[data-action="confirm"]',
-      ) as HTMLButtonElement
-    ).click();
-    await el.updateComplete;
     const [start, end] = el.value as [string, string];
     expect(start).toBe(earlier.dataset.iso);
     expect(end).toBe(later.dataset.iso);
+    expect(el.open).toBe(false);
   });
 
   it("renders dual calendars for daterange", async () => {
@@ -412,12 +499,12 @@ describe("gk-date-picker daterange", () => {
     ).toBeTruthy();
     expect(
       document.querySelector(
-        '.gk-date-picker-panel input[data-field="start-time"]',
+        '.gk-date-picker-panel [data-field="start-time"]',
       ),
     ).toBeTruthy();
     expect(
       document.querySelector(
-        '.gk-date-picker-panel input[data-field="end-time"]',
+        '.gk-date-picker-panel [data-field="end-time"]',
       ),
     ).toBeTruthy();
     expect(
@@ -667,39 +754,58 @@ describe("gk-date-picker datetime", () => {
     expect((onInput.mock.calls[0][0] as CustomEvent).detail).toEqual({ value: "" });
   });
 
-  it("Confirm commits selected day and time draft", async () => {
+  it("Confirm commits a day and a time picked from the time panel", async () => {
     const el = await fixture<GkDatePicker>(
       html`<gk-date-picker type="datetime"></gk-date-picker>`,
     );
     el.open = true;
     await el.updateComplete;
-    expect(
-      document.querySelector(".gk-date-picker-panel button[data-h]"),
-    ).toBeNull();
     const day = document.querySelector(
       ".gk-date-picker-panel button[data-iso]:not(.is-outside):not([disabled])",
     ) as HTMLButtonElement;
     const iso = day.dataset.iso!;
     day.click();
     await el.updateComplete;
-    const timeInput = document.querySelector(
-      '.gk-date-picker-panel input[data-field="time"]',
-    ) as HTMLInputElement;
-    expect(timeInput).toBeTruthy();
-    timeInput.value = "14:00:00";
-    timeInput.dispatchEvent(new Event("change", { bubbles: true }));
+    const timeBtn = document.querySelector(
+      '.gk-date-picker-panel [data-field="time"]',
+    ) as HTMLButtonElement;
+    expect(timeBtn.tagName).toBe("BUTTON");
+    timeBtn.click();
     await el.updateComplete;
+    expect(document.querySelector('.gk-date-picker-panel [data-panel="time"]')).toBeTruthy();
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-hour="14"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-minute="30"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-second="5"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    const shown = document.querySelector(
+      '.gk-date-picker-panel [data-field="time"]',
+    ) as HTMLButtonElement;
+    expect(shown.textContent?.trim()).toBe("14:30:05");
     (
       document.querySelector(
         '.gk-date-picker-panel button[data-action="confirm"]',
       ) as HTMLButtonElement
     ).click();
     await el.updateComplete;
-    expect(el.value).toBe(`${iso} 14:00:00`);
+    expect(el.value).toBe(`${iso} 14:30:05`);
     expect(el.open).toBe(false);
   });
 
-  it("datetime panel has date and time fields, no time columns", async () => {
+  it("datetime time control opens a panel instead of scroll columns", async () => {
     const el = await fixture<GkDatePicker>(
       html`<gk-date-picker type="datetime"></gk-date-picker>`,
     );
@@ -708,15 +814,17 @@ describe("gk-date-picker datetime", () => {
     expect(
       document.querySelector('.gk-date-picker-panel input[data-field="date"]'),
     ).toBeTruthy();
+    const timeBtn = document.querySelector(
+      '.gk-date-picker-panel [data-field="time"]',
+    ) as HTMLButtonElement;
+    expect(timeBtn?.tagName).toBe("BUTTON");
+    timeBtn.click();
+    await el.updateComplete;
     expect(
-      document.querySelector('.gk-date-picker-panel input[data-field="time"]'),
+      document.querySelector('.gk-date-picker-panel button[data-hour="0"]'),
     ).toBeTruthy();
-    expect(
-      document.querySelector(".gk-date-picker-panel button[data-h]"),
-    ).toBeNull();
-    expect(
-      document.querySelector(".gk-date-picker-panel .gk-dp-time"),
-    ).toBeNull();
+    expect(document.querySelector(".gk-date-picker-panel button[data-h]")).toBeNull();
+    expect(document.querySelector(".gk-date-picker-panel .gk-dp-time-col")).toBeNull();
   });
 
   it("trigger Clear wipes draft, closes panel, and Confirm cannot resurrect", async () => {
@@ -780,14 +888,8 @@ describe("gk-date-picker datetimerange", () => {
     const isoB = b.dataset.iso!;
     a.click();
     await el.updateComplete;
-    b.click();
-    await el.updateComplete;
     expect(el.value).toBeNull();
-    (
-      document.querySelector(
-        '.gk-date-picker-panel button[data-action="confirm"]',
-      ) as HTMLButtonElement
-    ).click();
+    b.click();
     await el.updateComplete;
     const pair = el.value as [string, string];
     expect(pair[0] <= pair[1]).toBe(true);
@@ -845,13 +947,6 @@ describe("gk-date-picker datetimerange", () => {
     later.click();
     await el.updateComplete;
     earlier.click();
-    await el.updateComplete;
-    expect(el.value).toBeNull();
-    (
-      document.querySelector(
-        '.gk-date-picker-panel button[data-action="confirm"]',
-      ) as HTMLButtonElement
-    ).click();
     await el.updateComplete;
     const pair = el.value as [string, string];
     expect(datePart(pair[0])).toBe(isoEarlier);
@@ -930,6 +1025,36 @@ describe("gk-date-picker month", () => {
     expect(panel.querySelector('[data-action="clear"]')).toBeTruthy();
     expect(panel.querySelector('[data-action="now"]')).toBeTruthy();
     expect(panel.querySelector('[data-action="confirm"]')).toBeFalsy();
+  });
+
+  it("header year opens a year panel and a month cell still commits", async () => {
+    const el = await fixture<GkDatePicker>(
+      html`<gk-date-picker type="month" value="2026-09"></gk-date-picker>`,
+    );
+    el.open = true;
+    await el.updateComplete;
+    const yearBtn = document.querySelector(
+      '.gk-date-picker-panel [data-nav="pick-year"]',
+    ) as HTMLButtonElement;
+    expect(yearBtn.dataset.year).toBe("2026");
+    yearBtn.click();
+    await el.updateComplete;
+    (
+      document.querySelector(
+        '.gk-date-picker-panel button[data-year="2024"]',
+      ) as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(el.value).toBe("2026-09");
+    expect(el.open).toBe(true);
+    const month = document.querySelector(
+      '.gk-date-picker-panel button[data-month="2024-03"]',
+    ) as HTMLButtonElement;
+    expect(month).toBeTruthy();
+    month.click();
+    await el.updateComplete;
+    expect(el.value).toBe("2024-03");
+    expect(el.open).toBe(false);
   });
 
   it("Now sets current month", async () => {
