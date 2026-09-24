@@ -166,6 +166,18 @@ describe("gk-dropdown", () => {
     expect(el.open).toBe(false);
   });
 
+  it("paints the built-in text trigger with the brand fill when variant is primary", async () => {
+    const el = await fixture<GkDropdown>(html`
+      <gk-dropdown label="More actions" variant="primary">
+        <gk-dropdown-item key="edit">Edit</gk-dropdown-item>
+      </gk-dropdown>
+    `);
+    expect(el.variant).toBe("primary");
+    expect(el.getAttribute("variant")).toBe("primary");
+    expect(trigger(el).textContent).toContain("More actions");
+    expect(el.shadowRoot?.querySelector(".gk-dropdown__chevron")).toBeTruthy();
+  });
+
   it("accepts a slotted quaternary button trigger", async () => {
     const el = await fixture<GkDropdown>(html`
       <gk-dropdown>

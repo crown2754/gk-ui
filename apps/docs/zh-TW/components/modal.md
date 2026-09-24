@@ -30,9 +30,7 @@ const codes = {
 </gk-modal>`,
   width: `<gk-modal :open="open" :width="width" title="寬度">...</gk-modal>`,
   dialog: `<gk-modal preset="dialog" title="發佈？" :open="open" @confirm="open = false"></gk-modal>`,
-  danger: `<gk-modal title="刪除專案？" width="sm" :open="open">
-  <gk-button slot="footer" variant="danger">刪除</gk-button>
-</gk-modal>`,
+  danger: `<gk-modal preset="dialog" title="刪除專案？" width="sm" confirm-variant="danger" confirm-text="刪除" cancel-text="取消" :open="open" @confirm="open = false"></gk-modal>`,
   form: `<gk-modal preset="card" title="編輯資料" :open="open"><gk-input placeholder="名稱"></gk-input></gk-modal>`,
   loading: `<gk-modal preset="dialog" :loading="loading" title="發佈中" @confirm="confirmSave"></gk-modal>`,
   locked: `<gk-modal :closable="false" title="必須完成" :open="open"></gk-modal>`,
@@ -88,15 +86,11 @@ const codes = {
 
 <DemoCard title="危險確認" :code="codes.danger">
   <template #description>
-    無法復原的動作請在 <code>footer</code> 放入 danger 按鈕。
+    <code>confirm-variant="danger"</code> 把對話框主按鈕畫成危險色。它仍是平坦的頁尾按鈕，與核准示意相同，不是帶位移陰影的 <code>gk-button</code>。
   </template>
   <gk-button variant="danger" @click="danger = true">刪除</gk-button>
-  <gk-modal title="刪除專案？" width="sm" :open="danger" @update:open="danger = $event.detail">
-    <p style="margin:0">「攤位簡介」將永久刪除。</p>
-    <div slot="footer" style="display:flex;gap:0.75rem;justify-content:flex-end;width:100%">
-      <gk-button variant="ghost" @click="danger = false">取消</gk-button>
-      <gk-button variant="danger" @click="danger = false">刪除</gk-button>
-    </div>
+  <gk-modal preset="dialog" title="刪除專案？" width="sm" confirm-variant="danger" confirm-text="刪除" cancel-text="取消" :open="danger" @confirm="danger = false" @update:open="danger = $event.detail">
+    <p style="margin:0">「攤位簡介」將永久刪除，無法復原。</p>
   </gk-modal>
 </DemoCard>
 
@@ -194,6 +188,7 @@ const codes = {
 | `preset` | `'dialog' \| 'card' \| ''` | `''` |
 | `width` | `number \| 'sm' \| 'md' \| 'lg'` | `'md'`（520px） |
 | `loading` | `boolean` | `false` |
+| `confirm-variant` | `'primary' \| 'danger'` | `'primary'` |
 | `confirm-text` | `string` | `'Confirm'` |
 | `cancel-text` | `string` | `'Cancel'` |
 

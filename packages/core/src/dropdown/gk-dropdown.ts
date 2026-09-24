@@ -10,6 +10,7 @@ import type { GkDropdownItem } from "./gk-dropdown-item.js";
 
 export type GkDropdownSize = "sm" | "md" | "lg";
 export type GkDropdownTrigger = "click" | "hover" | "manual";
+export type GkDropdownVariant = "default" | "primary";
 
 let uid = 0;
 
@@ -28,6 +29,10 @@ export class GkDropdown extends LitElement {
 
   @property({ reflect: true })
   size: GkDropdownSize = "md";
+
+  /** Built-in text + chevron chrome. `primary` is the brand fill from the approved mock. */
+  @property({ reflect: true })
+  variant: GkDropdownVariant = "default";
 
   @property({ type: Boolean, reflect: true, converter: falseableBoolean })
   disabled = false;

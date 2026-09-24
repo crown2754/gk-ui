@@ -69,10 +69,14 @@ export type { GkSelectSize, GkSelectStatus } from "./select/gk-select.js";
 export { GkTooltip } from "./tooltip/gk-tooltip.js";
 export type { GkPlacement } from "./overlay/placement.js";
 export { GkDropdown } from "./dropdown/gk-dropdown.js";
-export type { GkDropdownSize, GkDropdownTrigger } from "./dropdown/gk-dropdown.js";
+export type {
+  GkDropdownSize,
+  GkDropdownTrigger,
+  GkDropdownVariant,
+} from "./dropdown/gk-dropdown.js";
 export { GkDropdownItem } from "./dropdown/gk-dropdown-item.js";
 export type { GkDropdownItemType } from "./dropdown/gk-dropdown-item.js";
 export { GkModal } from "./modal/gk-modal.js";
-export type { GkModalPreset } from "./modal/gk-modal.js";
+export type { GkModalConfirmVariant, GkModalPreset } from "./modal/gk-modal.js";
 export { GkDrawer } from "./drawer/gk-drawer.js";
 export type { GkDrawerPlacement } from "./drawer/gk-drawer.js";

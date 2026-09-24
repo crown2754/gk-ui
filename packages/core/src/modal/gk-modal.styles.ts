@@ -145,6 +145,20 @@ export const modalStyles = css`
     background: var(--gk-color-brand-hover, rgb(246, 217, 122));
   }
 
+  [part="confirm"][data-variant="danger"] {
+    background: var(--gk-color-danger, #d03050);
+    color: #fff;
+  }
+
+  [part="confirm"][data-variant="danger"]:hover:not(:disabled) {
+    background: var(--gk-color-danger-hover, #de576d);
+  }
+
+  [part="confirm"][data-variant="danger"] [part="spinner"] {
+    border-color: color-mix(in srgb, #fff 25%, transparent);
+    border-top-color: #fff;
+  }
+
   [part="cancel"]:disabled,
   [part="confirm"]:disabled {
     opacity: 0.5;

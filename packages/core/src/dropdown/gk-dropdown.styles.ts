@@ -76,6 +76,16 @@ export const dropdownStyles = css`
     transform: rotate(180deg);
   }
 
+  :host([variant="primary"]) .gk-dropdown__fallback {
+    background: var(--gk-color-brand, rgb(242, 206, 94));
+    border-color: transparent;
+    color: var(--gk-color-brand-on, rgb(31, 34, 37));
+  }
+
+  :host([variant="primary"]) .gk-dropdown__fallback:hover:not(:disabled) {
+    background: var(--gk-color-brand-hover, rgb(246, 217, 122));
+  }
+
   [part="menu"] {
     position: fixed;
     z-index: 4000;
@@ -87,7 +97,7 @@ export const dropdownStyles = css`
     background: var(--gk-color-surface, #fff);
     color: var(--gk-color-on-surface, rgb(31, 34, 37));
     border: 1px solid var(--gk-color-border, rgb(224, 224, 230));
-    border-radius: var(--gk-radius-md, 0.5rem);
+    border-radius: var(--gk-radius-sm, 0.375rem);
     box-shadow: var(--gk-shadow-md, 0 4px 12px rgb(28 25 23 / 0.12));
     font-family: var(--gk-font-family-sans, "Source Sans 3", "Segoe UI", sans-serif);
     max-height: 16rem;
@@ -128,7 +138,7 @@ export const dropdownItemStyles = css`
     min-height: var(--gk-dropdown-item-min-height, 34px);
     padding: 0.5rem 0.65rem;
     border: 0;
-    border-radius: calc(var(--gk-radius-md, 0.5rem) - 1px);
+    border-radius: calc(var(--gk-radius-sm, 0.375rem) - 1px);
     background: transparent;
     color: var(--gk-color-on-surface, rgb(31, 34, 37));
     font: inherit;

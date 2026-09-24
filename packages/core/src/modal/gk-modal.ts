@@ -9,6 +9,7 @@ import { overlayZ, registerBlockingOverlay } from "../overlay/stack.js";
 import { modalStyles } from "./gk-modal.styles.js";
 
 export type GkModalPreset = "dialog" | "card" | "";
+export type GkModalConfirmVariant = "primary" | "danger";
 
 let uid = 0;
 
@@ -51,6 +52,10 @@ export class GkModal extends LitElement {
 
   @property({ type: Boolean, reflect: true, converter: falseableBoolean })
   loading = false;
+
+  /** Dialog preset primary action. `danger` uses the danger fill from the approved mock. */
+  @property({ reflect: true, attribute: "confirm-variant" })
+  confirmVariant: GkModalConfirmVariant = "primary";
 
   @property({ attribute: "confirm-text" })
   confirmText = "Confirm";
@@ -284,6 +289,7 @@ export class GkModal extends LitElement {
                 <button
                   type="button"
                   part="confirm"
+                  data-variant=${this.confirmVariant}
                   ?disabled=${this.loading}
                   @click=${this.onConfirm}
                 >

@@ -8,9 +8,12 @@ function onSelect(event: CustomEvent<{ key: string }>) {
 }
 
 const codes = {
-  basic: `<gk-dropdown label="更多操作" @select="onSelect">
-  <gk-dropdown-item key="edit">編輯</gk-dropdown-item>
-  <gk-dropdown-item key="copy">複製連結</gk-dropdown-item>
+  basic: `<gk-dropdown label="更多操作" variant="primary" @select="onSelect">
+  <gk-dropdown-item key="edit" shortcut="⌘E">編輯</gk-dropdown-item>
+  <gk-dropdown-item key="copy" shortcut="⌘C">複製連結</gk-dropdown-item>
+  <gk-dropdown-item key="archive" disabled>封存（不可用）</gk-dropdown-item>
+  <gk-dropdown-item type="divider"></gk-dropdown-item>
+  <gk-dropdown-item key="delete" shortcut="⌫" danger>刪除</gk-dropdown-item>
 </gk-dropdown>`,
   danger: `<gk-dropdown label="更多">
   <gk-dropdown-item type="divider"></gk-dropdown-item>
@@ -29,18 +32,20 @@ const codes = {
 
 # Dropdown 下拉選單
 
-動作選單，不是表單選擇器。選單沿用 Select 清單的淡洗：白底、1px 邊框、`--gk-radius-md`、懸停 22% 品牌色。危險列使用危險色文字與淡危險底。z-index 為 **4000**。
+動作選單，不是表單選擇器。選單沿用 Select 清單的淡洗：白底、1px 邊框、`--gk-radius-sm`（6px）、懸停 22% 品牌色。危險列使用危險色文字與淡危險底。z-index 為 **4000**。
 
 ## 範例
 
-<DemoCard title="基本動作" :code="codes.basic">
+<DemoCard title="文字與箭頭" :code="codes.basic">
   <template #description>
-    點觸發器開關選單。選取後送出 <code>select</code>，內容為 <code>{ key, item }</code>，並關閉選單。
+    內建觸發器是文字加箭頭。<code>variant="primary"</code> 是核准示意裡的品牌黃底；預設 variant 是下方的描邊尺寸列。選取後送出 <code>select</code>，內容為 <code>{ key, item }</code>，並關閉選單。
   </template>
-  <gk-dropdown label="更多操作" @select="onSelect">
-    <gk-dropdown-item key="edit">編輯</gk-dropdown-item>
-    <gk-dropdown-item key="copy">複製連結</gk-dropdown-item>
-    <gk-dropdown-item key="download">下載</gk-dropdown-item>
+  <gk-dropdown label="更多操作" variant="primary" @select="onSelect">
+    <gk-dropdown-item key="edit" shortcut="⌘E">編輯</gk-dropdown-item>
+    <gk-dropdown-item key="copy" shortcut="⌘C">複製連結</gk-dropdown-item>
+    <gk-dropdown-item key="archive" disabled>封存（不可用）</gk-dropdown-item>
+    <gk-dropdown-item type="divider"></gk-dropdown-item>
+    <gk-dropdown-item key="delete" shortcut="⌫" danger>刪除</gk-dropdown-item>
   </gk-dropdown>
   <p style="margin:0;font-size:0.875rem;opacity:0.8">上次的 key：{{ last || "（無）" }}</p>
 </DemoCard>
@@ -91,9 +96,9 @@ const codes = {
   </div>
 </DemoCard>
 
-<DemoCard title="文字與箭頭" :code="codes.text">
+<DemoCard title="觸發器尺寸" :code="codes.text">
   <template #description>
-    沒有 <code>trigger</code> slot 時，內建按鈕顯示 <code>label</code> 與箭頭。高度跟著 <code>size</code>：28／34／40。
+    沒有 <code>trigger</code> slot 時，描邊按鈕顯示 <code>label</code> 與箭頭。高度跟著 <code>size</code>：28／34／40。預設尺寸是 <code>md</code>。
   </template>
   <gk-dropdown label="小" size="sm">
     <gk-dropdown-item key="view">檢視</gk-dropdown-item>
@@ -143,6 +148,7 @@ const codes = {
 | `trigger` | `'click' \| 'hover' \| 'manual'` | `'click'` |
 | `disabled` | `boolean` | `false` |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |
+| `variant` | `'default' \| 'primary'` | `'default'` |
 | `open` | `boolean` | `false` |
 
 ### 項目屬性
@@ -179,4 +185,4 @@ const codes = {
 
 `gk-dropdown`：`trigger`、`menu`。`gk-dropdown-item`：`item`、`label`、`shortcut`、`divider`。
 
-選單圓角使用權杖 `--gk-radius-md`（0.5rem）。HTML 示意稿是 6px；實作以權杖為準，讓選單與其他元件對齊。
+選單圓角使用 `--gk-radius-sm`（0.375rem，6px），與 Select 清單相同。規格在「6px」旁寫了 `--gk-radius-md`，但該權杖是 0.5rem，因此以核准示意的 6px 與 Select 淡洗為準。

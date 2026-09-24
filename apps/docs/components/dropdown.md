@@ -8,10 +8,12 @@ function onSelect(event: CustomEvent<{ key: string }>) {
 }
 
 const codes = {
-  basic: `<gk-dropdown label="More actions" @select="onSelect">
-  <gk-dropdown-item key="edit">Edit</gk-dropdown-item>
-  <gk-dropdown-item key="copy">Copy link</gk-dropdown-item>
-  <gk-dropdown-item key="download">Download</gk-dropdown-item>
+  basic: `<gk-dropdown label="More actions" variant="primary" @select="onSelect">
+  <gk-dropdown-item key="edit" shortcut="⌘E">Edit</gk-dropdown-item>
+  <gk-dropdown-item key="copy" shortcut="⌘C">Copy link</gk-dropdown-item>
+  <gk-dropdown-item key="archive" disabled>Archive (unavailable)</gk-dropdown-item>
+  <gk-dropdown-item type="divider"></gk-dropdown-item>
+  <gk-dropdown-item key="delete" shortcut="⌫" danger>Delete</gk-dropdown-item>
 </gk-dropdown>`,
   danger: `<gk-dropdown label="More">
   <gk-dropdown-item key="edit">Edit</gk-dropdown-item>
@@ -31,18 +33,20 @@ const codes = {
 
 # Dropdown
 
-An action menu, not a form select. The menu reuses the Select listbox wash: white surface, 1px border, `--gk-radius-md`, and a 22% brand wash on hover. Danger rows use danger text and a soft danger wash. z-index is **4000**.
+An action menu, not a form select. The menu reuses the Select listbox wash: white surface, 1px border, `--gk-radius-sm` (6px), and a 22% brand wash on hover. Danger rows use danger text and a soft danger wash. z-index is **4000**.
 
 ## Demos
 
-<DemoCard title="Basic actions" :code="codes.basic">
+<DemoCard title="Text and chevron" :code="codes.basic">
   <template #description>
-    Click the trigger to toggle. Choosing an item emits <code>select</code> with <code>{ key, item }</code> and closes the menu.
+    The built-in trigger is label plus a chevron. <code>variant="primary"</code> is the brand fill from the approved mock; the default variant is the outlined size scale below. Choosing an item emits <code>select</code> with <code>{ key, item }</code> and closes the menu.
   </template>
-  <gk-dropdown label="More actions" @select="onSelect">
-    <gk-dropdown-item key="edit">Edit</gk-dropdown-item>
-    <gk-dropdown-item key="copy">Copy link</gk-dropdown-item>
-    <gk-dropdown-item key="download">Download</gk-dropdown-item>
+  <gk-dropdown label="More actions" variant="primary" @select="onSelect">
+    <gk-dropdown-item key="edit" shortcut="⌘E">Edit</gk-dropdown-item>
+    <gk-dropdown-item key="copy" shortcut="⌘C">Copy link</gk-dropdown-item>
+    <gk-dropdown-item key="archive" disabled>Archive (unavailable)</gk-dropdown-item>
+    <gk-dropdown-item type="divider"></gk-dropdown-item>
+    <gk-dropdown-item key="delete" shortcut="⌫" danger>Delete</gk-dropdown-item>
   </gk-dropdown>
   <p style="margin:0;font-size:0.875rem;opacity:0.8">Last key: {{ last || "(none)" }}</p>
 </DemoCard>
@@ -93,9 +97,9 @@ An action menu, not a form select. The menu reuses the Select listbox wash: whit
   </div>
 </DemoCard>
 
-<DemoCard title="Text and chevron" :code="codes.text">
+<DemoCard title="Trigger sizes" :code="codes.text">
   <template #description>
-    Without a <code>trigger</code> slot, the built-in button shows <code>label</code> plus a chevron. Heights follow <code>size</code>: 28 / 34 / 40.
+    Without a <code>trigger</code> slot, the outlined button shows <code>label</code> plus a chevron. Heights follow <code>size</code>: 28 / 34 / 40. Default size is <code>md</code>.
   </template>
   <gk-dropdown label="Small" size="sm">
     <gk-dropdown-item key="view">View</gk-dropdown-item>
@@ -145,6 +149,7 @@ An action menu, not a form select. The menu reuses the Select listbox wash: whit
 | `trigger` | `'click' \| 'hover' \| 'manual'` | `'click'` |
 | `disabled` | `boolean` | `false` |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |
+| `variant` | `'default' \| 'primary'` | `'default'` |
 | `open` | `boolean` | `false` |
 
 ### Dropdown item props
@@ -181,4 +186,4 @@ Arrow Up/Down move the active item, Home/End jump, Enter selects, Escape closes.
 
 `gk-dropdown`: `trigger`, `menu`. `gk-dropdown-item`: `item`, `label`, `shortcut`, `divider`.
 
-Menu radius follows the token `--gk-radius-md` (0.5rem). The HTML mock used 6px; the token wins so menus stay aligned with the rest of the system.
+Menu radius uses `--gk-radius-sm` (0.375rem, 6px), the same token as the Select listbox. The spec also wrote `--gk-radius-md` next to “6px”; that token is 0.5rem, so the approved 6px mock and the Select wash win.

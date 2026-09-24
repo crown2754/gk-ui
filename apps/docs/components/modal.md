@@ -38,13 +38,7 @@ const codes = {
 </gk-modal>`,
   width: `<gk-modal :open="open" :width="width" title="Width">...</gk-modal>`,
   dialog: `<gk-modal preset="dialog" title="Publish?" :open="open" @confirm="open = false" @update:open="open = $event.detail"></gk-modal>`,
-  danger: `<gk-modal title="Delete project?" :open="open" width="sm" @update:open="open = $event.detail">
-  <p>This cannot be undone.</p>
-  <div slot="footer">
-    <gk-button variant="ghost" @click="open = false">Cancel</gk-button>
-    <gk-button variant="danger" @click="open = false">Delete</gk-button>
-  </div>
-</gk-modal>`,
+  danger: `<gk-modal preset="dialog" title="Delete project?" width="sm" confirm-variant="danger" confirm-text="Delete" cancel-text="Cancel" :open="open" @confirm="open = false" @update:open="open = $event.detail"></gk-modal>`,
   form: `<gk-modal title="Edit profile" preset="card" :open="open">
   <gk-input label-like placeholder="Name"></gk-input>
 </gk-modal>`,
@@ -104,15 +98,11 @@ Mask uses `color-mix(in srgb, #000 40%, transparent)` at z-index **3990**. The p
 
 <DemoCard title="Danger confirm" :code="codes.danger">
   <template #description>
-    Slot a danger button in <code>footer</code> when the action cannot be undone.
+    <code>confirm-variant="danger"</code> paints the dialog primary button with the danger fill. It stays a flat footer button, the same chrome as the approved mock.
   </template>
   <gk-button variant="danger" @click="danger = true">Delete</gk-button>
-  <gk-modal title="Delete project?" width="sm" :open="danger" @update:open="danger = $event.detail">
+  <gk-modal preset="dialog" title="Delete project?" width="sm" confirm-variant="danger" confirm-text="Delete" cancel-text="Cancel" :open="danger" @confirm="danger = false" @update:open="danger = $event.detail">
     <p style="margin:0">“Booth intro” will be removed permanently.</p>
-    <div slot="footer" style="display:flex;gap:0.75rem;justify-content:flex-end;width:100%">
-      <gk-button variant="ghost" @click="danger = false">Cancel</gk-button>
-      <gk-button variant="danger" @click="danger = false">Delete</gk-button>
-    </div>
   </gk-modal>
 </DemoCard>
 
@@ -213,6 +203,7 @@ The string `"false"` is treated as closed, so attribute bindings from Alpine wor
 | `preset` | `'dialog' \| 'card' \| ''` | `''` |
 | `width` | `number \| 'sm' \| 'md' \| 'lg'` | `'md'` (520px) |
 | `loading` | `boolean` | `false` |
+| `confirm-variant` | `'primary' \| 'danger'` | `'primary'` |
 | `confirm-text` | `string` | `'Confirm'` |
 | `cancel-text` | `string` | `'Cancel'` |
 

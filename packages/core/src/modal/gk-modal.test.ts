@@ -134,6 +134,25 @@ describe("gk-modal", () => {
     ).toBeTruthy();
   });
 
+  it("renders a danger confirm button for the dialog preset", async () => {
+    const el = await fixture<GkModal>(html`
+      <gk-modal
+        open
+        preset="dialog"
+        title="Delete project?"
+        confirm-variant="danger"
+        confirm-text="Delete"
+        cancel-text="Cancel"
+      ></gk-modal>
+    `);
+    const confirm = el.shadowRoot?.querySelector("[part='confirm']");
+    expect(confirm?.getAttribute("data-variant")).toBe("danger");
+    expect(confirm?.textContent).toContain("Delete");
+    expect(el.shadowRoot?.querySelector("[part='cancel']")?.textContent).toContain(
+      "Cancel",
+    );
+  });
+
   it("locks body scroll and restores it when the last modal closes", async () => {
     document.body.style.overflow = "";
     const a = await fixture<GkModal>(html`<gk-modal open title="A"></gk-modal>`);
