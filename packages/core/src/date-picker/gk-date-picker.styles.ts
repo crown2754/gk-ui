@@ -4,7 +4,22 @@ export const datePickerStyles = css`
   :host {
     display: inline-block;
     vertical-align: middle;
+    box-sizing: border-box;
+    /* Fixed width so empty and filled trigger text do not resize the control. */
+    width: 14rem;
     max-width: 100%;
+  }
+
+  :host([type="datetime"]) {
+    width: 16.5rem;
+  }
+
+  :host([type="daterange"]) {
+    width: 22rem;
+  }
+
+  :host([type="datetimerange"]) {
+    width: 28rem;
   }
 
   [part="base"] {
@@ -173,6 +188,28 @@ export const datePickerPanelCssText = `
   flex: 1;
   text-align: center;
 }
+.gk-date-picker-panel .gk-date-picker-panel__nav-titles {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.gk-date-picker-panel .gk-date-picker-panel__nav-titles button {
+  margin: 0;
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--gk-radius-sm, 0.375rem);
+  font: inherit;
+  font-weight: 600;
+}
+.gk-date-picker-panel .gk-date-picker-panel__nav-titles button:hover {
+  background: color-mix(in srgb, var(--gk-color-brand, rgb(242, 206, 94)) 18%, transparent);
+}
 .gk-date-picker-panel .gk-date-picker-panel__nav button {
   margin: 0;
   padding: 4px 8px;
@@ -325,7 +362,8 @@ export const datePickerPanelCssText = `
   gap: 8px;
   margin-bottom: 8px;
 }
-.gk-date-picker-panel .gk-dp-fields input {
+.gk-date-picker-panel .gk-dp-fields input,
+.gk-date-picker-panel .gk-dp-fields button[data-field] {
   box-sizing: border-box;
   flex: 1;
   min-width: 0;
@@ -337,10 +375,47 @@ export const datePickerPanelCssText = `
   color: inherit;
   font: inherit;
 }
-.gk-date-picker-panel .gk-dp-fields input:focus {
+.gk-date-picker-panel .gk-dp-fields button[data-field] {
+  cursor: pointer;
+  text-align: center;
+}
+.gk-date-picker-panel .gk-dp-fields input:focus,
+.gk-date-picker-panel .gk-dp-fields button[data-field]:focus {
   outline: 2px solid var(--gk-color-focus-ring, rgb(242, 206, 94));
   outline-offset: 1px;
   border-color: var(--gk-color-focus-ring, rgb(242, 206, 94));
+}
+.gk-date-picker-panel .gk-dp-time-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+.gk-date-picker-panel .gk-dp-time-grid[data-step="hour"] {
+  grid-template-columns: repeat(4, 1fr);
+}
+.gk-date-picker-panel .gk-dp-time-grid button {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: var(--gk-radius-sm, 0.375rem);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1.2;
+}
+.gk-date-picker-panel .gk-dp-time-grid button:hover {
+  background: color-mix(in srgb, var(--gk-color-brand, rgb(242, 206, 94)) 18%, transparent);
+}
+.gk-date-picker-panel .gk-dp-time-grid button[data-selected],
+.gk-date-picker-panel .gk-dp-time-grid button.is-selected {
+  background: var(--gk-color-brand, rgb(242, 206, 94));
+  color: var(--gk-color-brand-on, rgb(31, 34, 37));
+}
+.gk-date-picker-panel .gk-dp-time-step {
+  font-weight: 600;
+  text-align: center;
 }
 .gk-date-picker-panel .gk-dp-fields__sep {
   flex-shrink: 0;

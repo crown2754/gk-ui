@@ -120,15 +120,17 @@ const codes = {
 
 # Date Picker
 
-Date Picker selects a single calendar day, a date range (`type="daterange"`), a date-time (`type="datetime"`), a date-time range (`type="datetimerange"`), a calendar month (`type="month"`), or a calendar year (`type="year"`). The trigger matches Input sizing and chrome; the panel portals to `document.body`. At viewport widths of **640px or less**, the panel opens as a **bottom sheet** with a backdrop instead of an anchored popup. Day panels show editable **panel fields** at the top (ISO dates and, for datetime types, `HH:mm:ss` text — no hour/minute/second scroll columns). Range types use **dual-month** calendars (left month = view; right = next month) with `<<` / `<` / title / `>` / `>>` navigation per calendar. Month and year types keep their grid panels (unchanged).
+Date Picker selects a single calendar day, a date range (`type="daterange"`), a date-time (`type="datetime"`), a date-time range (`type="datetimerange"`), a calendar month (`type="month"`), or a calendar year (`type="year"`). The trigger matches Input sizing and chrome and uses a **fixed width** so empty and filled text do not resize the control (`14rem` for date / month / year, `16.5rem` for datetime, `22rem` for daterange, `28rem` for datetimerange; overflow ellipsizes). The panel portals to `document.body`. At viewport widths of **640px or less**, the panel opens as a **bottom sheet** with a backdrop instead of an anchored popup. Day panels show an editable date field. Datetime types use a **time button** that opens an hour, then minute, then second grid (the same drill-down as year / month, not scroll columns). Each day-calendar header’s **year** and **month** labels open those panels: picking a year continues to months, and picking a month returns to the day grid. On `type="month"`, the year label opens the year panel, then a month cell commits. Range types use **dual-month** calendars (left month = view; right = next month) with `<<` / `<` / year / month / `>` / `>>` navigation per calendar.
 
-`type="date"` commits on day click (**Clear** / **Now**). `datetime` and both range types keep a panel draft until **Confirm** (**Clear** commits immediately). `daterange` and `datetimerange` show **Clear** + **Confirm** (no **Now**). Default range display separator is ` → ` (override with `separator`).
+`type="date"` commits on day click (**Clear** / **Now**). `daterange` and `datetimerange` commit and close when the end date is picked (order is normalized); **Confirm** remains for typed date fields but is not required after the second click. `datetime` stays a draft until **Confirm** (**Clear** / **Now** commit immediately). Default range display separator is ` → ` (override with `separator`).
 
 ## Breaking changes
 
-- **`daterange`**: no longer commits on the second day click; click **Confirm** to emit the pair.
-- **`datetime` / `datetimerange`**: H/M/S scroll columns removed; edit time in panel text fields (`HH:mm:ss`, blur or Enter to parse; invalid input reverts).
-- **`separator` default**: `' - '` → `' → '`.
+- **Trigger width** is fixed per `type`, so the input no longer grows or shrinks with the value.
+- **`daterange` / `datetimerange`**: the second day click commits the range and closes. **Confirm** is optional.
+- **Year / month**: click the header year or month to open that panel and finish the pick.
+- **Datetime time**: click the time field to open the time panel (hour → minute → second).
+- **`separator` default**: `' → '`.
 
 ## Demos
 
@@ -144,7 +146,7 @@ Date Picker selects a single calendar day, a date range (`type="daterange"`), a 
 
 <DemoCard title="Range" :code="codes.range">
   <template #description>
-    Set <code>type="daterange"</code> and bind <code>:value</code> to <code>[start, end] | null</code>. The panel shows start/end date fields and **dual-month** calendars. Two clicks pick start then end (order is normalized); values stay draft until you click <strong>Confirm</strong>. Footer: <strong>Clear</strong> + <strong>Confirm</strong> (no Now). Trigger display uses the default <code>separator</code> <code> → </code> between dates.
+    Set <code>type="daterange"</code> and bind <code>:value</code> to <code>[start, end] | null</code>. The panel shows start/end date fields and **dual-month** calendars. Two clicks pick start then end (order is normalized) and the range **fills in without Confirm**. Footer: <strong>Clear</strong> + optional <strong>Confirm</strong> (no Now). Trigger display uses the default <code>separator</code> <code> → </code> between dates.
   </template>
   <div style="display:grid;gap:0.75rem;max-width:24rem">
     <gk-date-picker
@@ -161,7 +163,7 @@ Date Picker selects a single calendar day, a date range (`type="daterange"`), a 
 
 <DemoCard title="Datetime" :code="codes.datetime">
   <template #description>
-    Set <code>type="datetime"</code> and bind <code>value</code> as local <code>YYYY-MM-DD HH:mm:ss</code> (or empty). Editable date and <code>HH:mm:ss</code> panel fields and the calendar edit a draft until <strong>Confirm</strong> (<strong>Clear</strong> / <strong>Now</strong> commit immediately).
+    Set <code>type="datetime"</code> and bind <code>value</code> as local <code>YYYY-MM-DD HH:mm:ss</code> (or empty). The date field and calendar edit a draft; click the time field to open the time panel (hour, then minute, then second). <strong>Confirm</strong> commits (<strong>Clear</strong> / <strong>Now</strong> commit immediately).
   </template>
   <div style="display:grid;gap:0.75rem;max-width:20rem">
     <gk-date-picker
@@ -176,9 +178,9 @@ Date Picker selects a single calendar day, a date range (`type="daterange"`), a 
 
 <DemoCard title="Datetimerange" :code="codes.datetimerange">
   <template #description>
-    Set <code>type="datetimerange"</code> and bind <code>:value</code> to <code>[start, end] | null</code> (each string <code>YYYY-MM-DD HH:mm:ss</code>). **Dual-month** calendars plus start/end date and time fields; pick the range on the grid or type in the fields, then <strong>Confirm</strong>. Footer: <strong>Clear</strong> + <strong>Confirm</strong> only.
+    Set <code>type="datetimerange"</code> and bind <code>:value</code> to <code>[start, end] | null</code> (each string <code>YYYY-MM-DD HH:mm:ss</code>). **Dual-month** calendars plus start/end dates; time fields open the same time panel. The second day click commits and closes (no Confirm required). Footer: <strong>Clear</strong> + optional <strong>Confirm</strong>.
   </template>
-  <div style="display:grid;gap:0.75rem;max-width:24rem">
+  <div style="display:grid;gap:0.75rem;max-width:32rem">
     <gk-date-picker
       type="datetimerange"
       clearable
@@ -193,7 +195,7 @@ Date Picker selects a single calendar day, a date range (`type="daterange"`), a 
 
 <DemoCard title="Month" :code="codes.month">
   <template #description>
-    Set <code>type="month"</code> and bind <code>value</code> as <code>YYYY-MM</code> (or empty). The panel shows a 12-month grid with year navigation; picking a month commits and closes. Default display <code>format</code> is <code>yyyy-MM</code>. Panel actions: <strong>Clear</strong> / <strong>Now</strong> (no Confirm).
+    Set <code>type="month"</code> and bind <code>value</code> as <code>YYYY-MM</code> (or empty). The panel shows a 12-month grid; click the year label to open the year panel, then pick a month to commit and close. Default display <code>format</code> is <code>yyyy-MM</code>. Panel actions: <strong>Clear</strong> / <strong>Now</strong> (no Confirm).
   </template>
   <div style="display:grid;gap:0.75rem;max-width:20rem">
     <gk-date-picker
@@ -295,7 +297,7 @@ Date Picker selects a single calendar day, a date range (`type="daterange"`), a 
 | `locale` | `'en' \| 'zh-TW'` | `'en'` |
 | `isDateDisabled` | `(iso: string) => boolean` | — |
 
-For `type="date"`, `value` is ISO `YYYY-MM-DD` or empty string. For `type="daterange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD`). For `type="datetime"`, `value` is local `YYYY-MM-DD HH:mm:ss` or empty string. For `type="datetimerange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD HH:mm:ss`). For `type="month"`, `value` is `YYYY-MM` or empty string. For `type="year"`, `value` is four-digit `YYYY` or empty string. Prefer `:value` property binding; range attributes may be a JSON array. `format` only affects trigger display: date types use `yyyy` `MM` `dd`; datetime types also support `HH` `mm` `ss`; month uses `yyyy` `MM`; year uses `yyyy`. Default `format` is coerced when `type` changes: `yyyy-MM-dd HH:mm:ss` for `datetime` / `datetimerange`, `yyyy-MM` for `month`, `yyyy` for `year` (from the date default `yyyy-MM-dd`). `separator` (default `' → '`) and `start-placeholder` / `end-placeholder` apply to range trigger display and panel field separators (placeholders fall back to `placeholder` when empty). `isDateDisabled` is property-only (not an HTML attribute): for day types it receives `YYYY-MM-DD`; for `month`, `YYYY-MM`; for `year`, `YYYY`. Panel fields parse on blur/Enter (`YYYY-MM-DD` and `HH:mm:ss`); invalid text reverts. **Confirm** commits the panel draft for `datetime`, `daterange`, and `datetimerange`; **Now** and **Clear** commit immediately where shown. `date` / `month` / `year` commit on cell click (plus **Clear** / **Now** in the footer). Footer actions: `date` / `month` / `year` → **Clear** / **Now**; `datetime` → **Clear** / **Now** / **Confirm**; `daterange` / `datetimerange` → **Clear** / **Confirm**.
+For `type="date"`, `value` is ISO `YYYY-MM-DD` or empty string. For `type="daterange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD`). For `type="datetime"`, `value` is local `YYYY-MM-DD HH:mm:ss` or empty string. For `type="datetimerange"`, `value` is `[start, end] | null` (each `YYYY-MM-DD HH:mm:ss`). For `type="month"`, `value` is `YYYY-MM` or empty string. For `type="year"`, `value` is four-digit `YYYY` or empty string. Prefer `:value` property binding; range attributes may be a JSON array. `format` only affects trigger display: date types use `yyyy` `MM` `dd`; datetime types also support `HH` `mm` `ss`; month uses `yyyy` `MM`; year uses `yyyy`. Default `format` is coerced when `type` changes: `yyyy-MM-dd HH:mm:ss` for `datetime` / `datetimerange`, `yyyy-MM` for `month`, `yyyy` for `year` (from the date default `yyyy-MM-dd`). `separator` (default `' → '`) and `start-placeholder` / `end-placeholder` apply to range trigger display and panel field separators (placeholders fall back to `placeholder` when empty). `isDateDisabled` is property-only (not an HTML attribute): for day types it receives `YYYY-MM-DD`; for `month`, `YYYY-MM`; for `year`, `YYYY`. Date panel fields parse on blur/Enter (`YYYY-MM-DD`); invalid text reverts. Header **year** / **month** open drill-down panels. The datetime **time** control opens an hour → minute → second panel. `daterange` / `datetimerange` commit when the end day is picked. **Confirm** still commits a `datetime` draft (and typed range fields). **Now** and **Clear** commit immediately where shown. `date` / `month` / `year` commit on cell click (plus **Clear** / **Now** in the footer). Footer actions: `date` / `month` / `year` → **Clear** / **Now**; `datetime` → **Clear** / **Now** / **Confirm**; `daterange` / `datetimerange` → **Clear** / **Confirm**. The trigger width is fixed per type so empty and filled values do not change layout.
 
 ### Date Picker Events
 
@@ -316,7 +318,7 @@ Trigger parts are exposable via `gk-date-picker::part(...)`. The panel is portal
 | `suffix` | Clear + calendar icon area (`::part`) |
 | `clear` | Trigger clear button (`::part`) |
 | `panel` | Portaled popup root — style via `.gk-date-picker-panel` |
-| `panel-fields` | Editable date/time inputs at top of day panels — under `.gk-date-picker-panel` |
+| `panel-fields` | Date inputs and time buttons at the top of day panels — under `.gk-date-picker-panel` |
 | `calendar` | Month grid region (dual grids for range types) — under `.gk-date-picker-panel` |
 | `confirm` | Confirm button — under `.gk-date-picker-panel` |
 | `actions` | Clear / Now / Confirm row (varies by `type`) — under `.gk-date-picker-panel` |
