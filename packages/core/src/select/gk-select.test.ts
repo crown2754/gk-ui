@@ -3,6 +3,7 @@ import { fixture, html } from "@open-wc/testing";
 import "./gk-option.js";
 import "./gk-select.js";
 import type { GkSelect } from "./gk-select.js";
+import { selectListboxCssText, selectStyles } from "./gk-select.styles.js";
 
 function cleanupPortals() {
   document.querySelectorAll(".gk-select-listbox").forEach((n) => n.remove());
@@ -168,6 +169,34 @@ describe("gk-select", () => {
     );
     await el.updateComplete;
     expect(el.open).toBe(false);
+  });
+
+  it("uses a lighter single focus ring instead of a stacked yellow border", () => {
+    const css = selectStyles.cssText;
+    const focus = css.match(
+      /\[part="base"\]:focus-visible,\s*:host\(\[open\]\) \[part="base"\]\s*\{([^}]+)\}/,
+    );
+    expect(focus).toBeTruthy();
+    const body = focus![1];
+    expect(body).toContain(
+      "color-mix(in srgb, var(--gk-color-focus-ring, rgb(242, 206, 94)) 70%, transparent)",
+    );
+    expect(body).toContain("outline-offset: 2px");
+    expect(body).not.toMatch(/border-color/);
+    for (const [status, token] of [
+      ["success", "--gk-color-success"],
+      ["warning", "--gk-color-warning"],
+      ["error", "--gk-color-danger"],
+    ] as const) {
+      expect(css).toMatch(
+        new RegExp(
+          `status="${status}"[\\s\\S]*color-mix\\(in srgb, var\\(${token}`,
+        ),
+      );
+    }
+    expect(selectListboxCssText).toContain(
+      "color-mix(in srgb, var(--gk-color-brand, rgb(242, 206, 94)) 22%, transparent)",
+    );
   });
 
   it("combobox trigger exposes aria-expanded", async () => {

@@ -9,7 +9,7 @@ export const radioGroupStyles = css`
   }
 
   :host([disabled]) {
-    opacity: 0.5;
+    cursor: not-allowed;
     pointer-events: none;
   }
 `;

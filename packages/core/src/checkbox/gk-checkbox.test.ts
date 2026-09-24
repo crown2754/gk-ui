@@ -4,6 +4,8 @@ import "./gk-checkbox.js";
 import "./gk-checkbox-group.js";
 import type { GkCheckbox } from "./gk-checkbox.js";
 import type { GkCheckboxGroup } from "./gk-checkbox-group.js";
+import { checkboxStyles } from "./gk-checkbox.styles.js";
+import { checkboxGroupStyles } from "./gk-checkbox-group.styles.js";
 
 function box(el: GkCheckbox) {
   return el.shadowRoot?.querySelector(
@@ -33,6 +35,23 @@ describe("gk-checkbox", () => {
     expect(ev.bubbles).toBe(true);
     expect(ev.composed).toBe(true);
     expect(ev.detail).toEqual({ checked: true });
+  });
+
+  it("fades only an unchecked disabled checkbox so checked stays readable", () => {
+    const css = checkboxStyles.cssText;
+    expect(css).toMatch(
+      /:host\(\[disabled\]:not\(\[checked\]\):not\(\[indeterminate\]\)\)(?:\s*,[^{]*)?\s*\{[^}]*opacity:\s*0\.5/,
+    );
+    expect(css).toMatch(
+      /:host\(\[data-gk-group-disabled\]:not\(\[checked\]\):not\(\[indeterminate\]\)\)(?:\s*,[^{]*)?\s*\{[^}]*opacity:\s*0\.5/,
+    );
+    expect(css).not.toMatch(/:host\(\[disabled\]\)\s*\{[^}]*opacity:/);
+    expect(css).toMatch(
+      /:host\(\[disabled\]\[checked\]\) \[part="label"\][\s\S]*--gk-color-text-muted/,
+    );
+    expect(css).toMatch(
+      /:host\(\[checked\]\) \[part="box"\][\s\S]*--gk-color-brand/,
+    );
   });
 
   it("disabled blocks toggle", async () => {
@@ -126,6 +145,26 @@ describe("gk-checkbox-group", () => {
     const b = el.querySelector('gk-checkbox[value="b"]') as GkCheckbox;
     expect(a.checked).toBe(false);
     expect(b.checked).toBe(true);
+  });
+
+  it("marks children while the group is disabled without fading checked items via the group", async () => {
+    const el = await fixture<GkCheckboxGroup>(html`
+      <gk-checkbox-group disabled .value=${["a"]}>
+        <gk-checkbox value="a">A</gk-checkbox>
+        <gk-checkbox value="b">B</gk-checkbox>
+      </gk-checkbox-group>
+    `);
+    const a = el.querySelector('gk-checkbox[value="a"]') as GkCheckbox;
+    const b = el.querySelector('gk-checkbox[value="b"]') as GkCheckbox;
+    expect(a.checked).toBe(true);
+    expect(b.checked).toBe(false);
+    expect(a.hasAttribute("data-gk-group-disabled")).toBe(true);
+    expect(b.hasAttribute("data-gk-group-disabled")).toBe(true);
+    expect(checkboxGroupStyles.cssText).not.toMatch(/opacity/);
+    el.disabled = false;
+    await el.updateComplete;
+    expect(a.hasAttribute("data-gk-group-disabled")).toBe(false);
+    expect(b.hasAttribute("data-gk-group-disabled")).toBe(false);
   });
 
   it("disabled group blocks child toggles", async () => {

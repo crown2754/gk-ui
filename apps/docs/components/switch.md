@@ -72,7 +72,7 @@ Switch toggles a boolean in a settings row. Sizes share Button/Input’s `sm` / 
 
 <DemoCard title="Disabled" :code="codes.disabled">
   <template #description>
-    <code>disabled</code> blocks toggling (opacity 0.4).
+    <code>disabled</code> blocks toggling. An off switch stays subdued; an on switch keeps a readable track.
   </template>
   <gk-switch disabled aria-label="Disabled off"></gk-switch>
   <gk-switch disabled checked aria-label="Disabled on"></gk-switch>
