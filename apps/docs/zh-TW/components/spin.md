@@ -40,9 +40,18 @@ Spin 是區塊載入指示：可單獨顯示品牌轉圈，或在內容上蓋一
     直徑為 <code>sm</code> 18、<code>md</code> 28、<code>lg</code> 40。描邊寬度 2 / 2.5 / 3。軌道是 25% 品牌色，頂端為實心品牌色，0.75 秒轉一圈。
   </template>
   <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-end">
-    <gk-spin size="sm"></gk-spin>
-    <gk-spin size="md" description="載入中…"></gk-spin>
-    <gk-spin size="lg" description="正在取得資料"></gk-spin>
+    <div style="display:grid;justify-items:center;gap:8px">
+      <gk-spin size="sm"></gk-spin>
+      <span style="font-size:12px;font-weight:600;color:var(--gk-color-text-muted, rgb(118, 124, 130))">sm 18</span>
+    </div>
+    <div style="display:grid;justify-items:center;gap:8px">
+      <gk-spin size="md" description="載入中…"></gk-spin>
+      <span style="font-size:12px;font-weight:600;color:var(--gk-color-text-muted, rgb(118, 124, 130))">md 28</span>
+    </div>
+    <div style="display:grid;justify-items:center;gap:8px">
+      <gk-spin size="lg" description="正在取得資料"></gk-spin>
+      <span style="font-size:12px;font-weight:600;color:var(--gk-color-text-muted, rgb(118, 124, 130))">lg 40</span>
+    </div>
   </div>
 </DemoCard>
 

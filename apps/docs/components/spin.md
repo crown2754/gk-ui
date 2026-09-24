@@ -41,9 +41,18 @@ Spin is the block loading indicator: a brand ring by itself, or a soft white mas
     Diameters are <code>sm</code> 18, <code>md</code> 28, and <code>lg</code> 40. Stroke widths are 2 / 2.5 / 3. The track is 25% brand and the top edge is solid brand, rotating for 0.75s.
   </template>
   <div style="display:flex;flex-wrap:wrap;gap:28px;align-items:flex-end">
-    <gk-spin size="sm"></gk-spin>
-    <gk-spin size="md" description="Loading…"></gk-spin>
-    <gk-spin size="lg" description="Fetching data"></gk-spin>
+    <div style="display:grid;justify-items:center;gap:8px">
+      <gk-spin size="sm"></gk-spin>
+      <span style="font-size:12px;font-weight:600;color:var(--gk-color-text-muted, rgb(118, 124, 130))">sm 18</span>
+    </div>
+    <div style="display:grid;justify-items:center;gap:8px">
+      <gk-spin size="md" description="Loading…"></gk-spin>
+      <span style="font-size:12px;font-weight:600;color:var(--gk-color-text-muted, rgb(118, 124, 130))">md 28</span>
+    </div>
+    <div style="display:grid;justify-items:center;gap:8px">
+      <gk-spin size="lg" description="Fetching data"></gk-spin>
+      <span style="font-size:12px;font-weight:600;color:var(--gk-color-text-muted, rgb(118, 124, 130))">lg 40</span>
+    </div>
   </div>
 </DemoCard>
 
