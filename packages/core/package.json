@@ -37,7 +37,12 @@
     "./src/dropdown/gk-dropdown-item.ts",
     "./src/dropdown/gk-dropdown.ts",
     "./src/modal/gk-modal.ts",
-    "./src/drawer/gk-drawer.ts"
+    "./src/drawer/gk-drawer.ts",
+    "./src/tag/gk-tag.ts",
+    "./src/tabs/gk-tab-pane.ts",
+    "./src/tabs/gk-tabs.ts",
+    "./src/spin/gk-spin.ts",
+    "./src/empty/gk-empty.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",

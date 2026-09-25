@@ -67,13 +67,20 @@ export default defineConfig({
             items: [
               { text: "Avatar", link: "/components/avatar" },
               { text: "Card", link: "/components/card" },
+              { text: "Tag", link: "/components/tag" },
+              { text: "Empty", link: "/components/empty" },
             ],
+          },
+          {
+            text: "Navigation",
+            items: [{ text: "Tabs", link: "/components/tabs" }],
           },
           {
             text: "Feedback",
             items: [
               { text: "Alert", link: "/components/alert" },
               { text: "Message", link: "/components/message" },
+              { text: "Spin", link: "/components/spin" },
               { text: "Modal", link: "/components/modal" },
               { text: "Tooltip", link: "/components/tooltip" },
               { text: "Drawer", link: "/components/drawer" },
@@ -131,13 +138,20 @@ export default defineConfig({
             items: [
               { text: "Avatar 頭像", link: "/zh-TW/components/avatar" },
               { text: "Card 卡片", link: "/zh-TW/components/card" },
+              { text: "Tag 標籤", link: "/zh-TW/components/tag" },
+              { text: "Empty 空狀態", link: "/zh-TW/components/empty" },
             ],
+          },
+          {
+            text: "導覽",
+            items: [{ text: "Tabs 分頁", link: "/zh-TW/components/tabs" }],
           },
           {
             text: "回饋",
             items: [
               { text: "Alert 警示", link: "/zh-TW/components/alert" },
               { text: "Message 訊息", link: "/zh-TW/components/message" },
+              { text: "Spin 載入", link: "/zh-TW/components/spin" },
               { text: "Modal 對話框", link: "/zh-TW/components/modal" },
               { text: "Tooltip 提示", link: "/zh-TW/components/tooltip" },
               { text: "Drawer 抽屜", link: "/zh-TW/components/drawer" },
