@@ -46,7 +46,13 @@
     "./src/badge/gk-badge.ts",
     "./src/skeleton/gk-skeleton.ts",
     "./src/result/gk-result.ts",
-    "./src/pagination/gk-pagination.ts"
+    "./src/pagination/gk-pagination.ts",
+    "./src/breadcrumb/gk-breadcrumb.ts",
+    "./src/breadcrumb/gk-breadcrumb-item.ts",
+    "./src/progress/gk-progress.ts",
+    "./src/steps/gk-step.ts",
+    "./src/steps/gk-steps.ts",
+    "./src/popconfirm/gk-popconfirm.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
