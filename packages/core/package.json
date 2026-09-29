@@ -42,7 +42,11 @@
     "./src/tabs/gk-tab-pane.ts",
     "./src/tabs/gk-tabs.ts",
     "./src/spin/gk-spin.ts",
-    "./src/empty/gk-empty.ts"
+    "./src/empty/gk-empty.ts",
+    "./src/badge/gk-badge.ts",
+    "./src/skeleton/gk-skeleton.ts",
+    "./src/result/gk-result.ts",
+    "./src/pagination/gk-pagination.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",
