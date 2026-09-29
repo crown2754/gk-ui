@@ -29,6 +29,10 @@ import "./badge/gk-badge.js";
 import "./skeleton/gk-skeleton.js";
 import "./result/gk-result.js";
 import "./pagination/gk-pagination.js";
+import "./breadcrumb/gk-breadcrumb.js";
+import "./progress/gk-progress.js";
+import "./steps/gk-steps.js";
+import "./popconfirm/gk-popconfirm.js";
 export { GkButton } from "./button/gk-button.js";
 export type { GkButtonVariant, GkButtonSize, GkButtonType } from "./button/gk-button.js";
 export { GkButtonGroup } from "./button/gk-button-group.js";
@@ -105,3 +109,29 @@ export { GkResult } from "./result/gk-result.js";
 export type { GkResultStatus } from "./result/gk-result.js";
 export { GkPagination } from "./pagination/gk-pagination.js";
 export type { GkPaginationSize, GkPageToken } from "./pagination/gk-pagination.js";
+export { GkBreadcrumb } from "./breadcrumb/gk-breadcrumb.js";
+export type {
+  GkBreadcrumbSize,
+  GkBreadcrumbItemData,
+} from "./breadcrumb/gk-breadcrumb.js";
+export { GkBreadcrumbItem } from "./breadcrumb/gk-breadcrumb-item.js";
+export { GkProgress } from "./progress/gk-progress.js";
+export type {
+  GkProgressType,
+  GkProgressStatus,
+  GkProgressSize,
+  GkProgressIndicatorPlacement,
+} from "./progress/gk-progress.js";
+export { GkSteps, resolveStepStatus } from "./steps/gk-steps.js";
+export type {
+  GkStepItem,
+  GkStepStatus,
+  GkStepsDirection,
+  GkStepsSize,
+} from "./steps/gk-steps.js";
+export { GkStep } from "./steps/gk-step.js";
+export { GkPopconfirm } from "./popconfirm/gk-popconfirm.js";
+export type {
+  GkPopconfirmType,
+  GkPopconfirmCancelReason,
+} from "./popconfirm/gk-popconfirm.js";

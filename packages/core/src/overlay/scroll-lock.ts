@@ -13,7 +13,7 @@ export function acquireScrollLock() {
 export function releaseScrollLock() {
   if (locks === 0) return;
   locks -= 1;
-  if (locks === 0 && typeof document !== "undefined") {
+  if (locks === 0 && typeof document !== "undefined" && document.body) {
     document.body.style.overflow = previousOverflow;
   }
 }
