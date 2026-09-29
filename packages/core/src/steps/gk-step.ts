@@ -76,7 +76,7 @@ export class GkStep extends LitElement {
   protected override willUpdate() {
     const owner = this.owner();
     if (!owner) return;
-    const steps = owner.steps();
+    const steps = owner.steps?.() ?? [];
     const index = steps.indexOf(this);
     if (index < 0) return;
     const current = Math.min(Math.max(0, owner.current), Math.max(0, steps.length - 1));
