@@ -52,7 +52,12 @@
     "./src/progress/gk-progress.ts",
     "./src/steps/gk-step.ts",
     "./src/steps/gk-steps.ts",
-    "./src/popconfirm/gk-popconfirm.ts"
+    "./src/popconfirm/gk-popconfirm.ts",
+    "./src/input-number/gk-input-number.ts",
+    "./src/rate/gk-rate.ts",
+    "./src/cascader/gk-cascader.ts",
+    "./src/form/gk-form.ts",
+    "./src/form/gk-form-item.ts"
   ],
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json",

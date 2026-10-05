@@ -1,6 +1,7 @@
 import { LitElement, html, nothing, render, svg } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { computeFixedPanelPosition } from "../date-picker/date-utils.js";
+import { markOwnedSize } from "../internal/field.js";
 import type { GkOption } from "./gk-option.js";
 import {
   SELECT_LISTBOX_STYLE_ID,
@@ -99,6 +100,15 @@ export class GkSelect extends LitElement {
       attachInternals?: () => ElementInternals;
     };
     return element.attachInternals?.();
+  }
+
+  override attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null,
+  ) {
+    super.attributeChangedCallback(name, old, value);
+    markOwnedSize(this, name);
   }
 
   connectedCallback() {
@@ -671,8 +681,14 @@ export class GkSelect extends LitElement {
         aria-controls=${this.open ? `${this.instanceId}-listbox` : nothing}
         aria-activedescendant=${this.open ? activeId : nothing}
         aria-disabled=${this.disabled ? "true" : "false"}
-        aria-required=${this.required ? "true" : "false"}
-        aria-invalid=${this.internals?.validity.valid === false ? "true" : "false"}
+        aria-required=${this.required || this.getAttribute("aria-required") === "true" ? "true" : "false"}
+        aria-invalid=${
+          this.getAttribute("aria-invalid") === "true" || this.internals?.validity.valid === false
+            ? "true"
+            : "false"
+        }
+        aria-labelledby=${this.getAttribute("aria-labelledby") || nothing}
+        aria-describedby=${this.getAttribute("aria-describedby") || nothing}
         aria-busy=${this.loading ? "true" : "false"}
         @click=${this.onTriggerClick}
         @keydown=${this.onTriggerKeydown}

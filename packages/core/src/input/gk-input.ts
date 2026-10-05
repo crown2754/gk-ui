@@ -1,5 +1,6 @@
 import { LitElement, html, nothing, svg } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { markOwnedSize } from "../internal/field.js";
 import { inputStyles } from "./gk-input.styles.js";
 
 export type GkInputType = "text" | "password" | "textarea";
@@ -79,8 +80,26 @@ export class GkInput extends LitElement {
     }
   }
 
+  override attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null,
+  ) {
+    super.attributeChangedCallback(name, old, value);
+    markOwnedSize(this, name);
+  }
+
   protected firstUpdated() {
     this.syncSlotState();
+  }
+
+  private ariaPassThrough() {
+    return {
+      labelledBy: this.getAttribute("aria-labelledby") || nothing,
+      describedBy: this.getAttribute("aria-describedby") || nothing,
+      required: this.getAttribute("aria-required") === "true" ? "true" : nothing,
+      invalid: this.getAttribute("aria-invalid") === "true" ? "true" : nothing,
+    };
   }
 
   private emit(name: "input" | "change") {
@@ -177,6 +196,7 @@ export class GkInput extends LitElement {
   }
 
   render() {
+    const aria = this.ariaPassThrough();
     const control =
       this.type === "textarea"
         ? html`<textarea
@@ -187,6 +207,10 @@ export class GkInput extends LitElement {
             name=${this.name || nothing}
             ?disabled=${this.disabled}
             ?readonly=${this.readonly}
+            aria-labelledby=${aria.labelledBy}
+            aria-describedby=${aria.describedBy}
+            aria-required=${aria.required}
+            aria-invalid=${aria.invalid}
             @input=${this.onNativeInput}
             @change=${this.onNativeChange}
           ></textarea>`
@@ -198,6 +222,10 @@ export class GkInput extends LitElement {
             name=${this.name || nothing}
             ?disabled=${this.disabled}
             ?readonly=${this.readonly}
+            aria-labelledby=${aria.labelledBy}
+            aria-describedby=${aria.describedBy}
+            aria-required=${aria.required}
+            aria-invalid=${aria.invalid}
             @input=${this.onNativeInput}
             @change=${this.onNativeChange}
           />`;

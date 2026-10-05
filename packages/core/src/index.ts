@@ -33,6 +33,11 @@ import "./breadcrumb/gk-breadcrumb.js";
 import "./progress/gk-progress.js";
 import "./steps/gk-steps.js";
 import "./popconfirm/gk-popconfirm.js";
+import "./input-number/gk-input-number.js";
+import "./rate/gk-rate.js";
+import "./cascader/gk-cascader.js";
+import "./form/gk-form.js";
+import "./form/gk-form-item.js";
 export { GkButton } from "./button/gk-button.js";
 export type { GkButtonVariant, GkButtonSize, GkButtonType } from "./button/gk-button.js";
 export { GkButtonGroup } from "./button/gk-button-group.js";
@@ -131,6 +136,32 @@ export type {
 } from "./steps/gk-steps.js";
 export { GkStep } from "./steps/gk-step.js";
 export { GkPopconfirm } from "./popconfirm/gk-popconfirm.js";
+export { GkInputNumber } from "./input-number/gk-input-number.js";
+export type {
+  GkInputNumberSize,
+  GkInputNumberStatus,
+  GkInputNumberPlacement,
+} from "./input-number/gk-input-number.js";
+export { GkRate } from "./rate/gk-rate.js";
+export type { GkRateSize } from "./rate/gk-rate.js";
+export { GkCascader } from "./cascader/gk-cascader.js";
+export type {
+  CascaderOption,
+  GkCascaderSize,
+  GkCascaderStatus,
+  GkCascaderExpandTrigger,
+  GkCascaderCheckStrategy,
+  GkCascaderPlacement,
+} from "./cascader/gk-cascader.js";
+export { GkForm } from "./form/gk-form.js";
+export type {
+  GkFormSize,
+  GkFormLabelPlacement,
+  GkFormLabelAlign,
+} from "./form/gk-form.js";
+export { GkFormItem } from "./form/gk-form-item.js";
+export type { GkFormStatus } from "./form/gk-form-item.js";
+export type { GkFormRule, GkFormRules, GkFormError } from "./form/rules.js";
 export type {
   GkPopconfirmType,
   GkPopconfirmCancelReason,
