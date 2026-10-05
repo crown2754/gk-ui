@@ -3,7 +3,11 @@ import { customElement, property, state } from "lit/decorators.js";
 import { computeFixedPanelPosition } from "../date-picker/date-utils.js";
 import { markOwnedSize, prefersZh } from "../internal/field.js";
 import { PANEL_Z_BASE, Z_STEP } from "../overlay/stack.js";
-import { cascaderStyles } from "./gk-cascader.styles.js";
+import {
+  CASCADER_PANEL_STYLE_ID,
+  cascaderPanelCssText,
+  cascaderStyles,
+} from "./gk-cascader.styles.js";
 
 export type GkCascaderSize = "sm" | "md" | "lg";
 export type GkCascaderStatus = "success" | "warning" | "error" | "";
@@ -99,7 +103,11 @@ export class GkCascader extends LitElement {
   private activeIndex = 0;
 
   private readonly panelId = `gk-cascader-${++uid}`;
+  private panel: HTMLDivElement | null = null;
   private dismissBound = false;
+  private positionBound = false;
+  private positionFrame = 0;
+  private positionTimer = 0;
 
   override attributeChangedCallback(
     name: string,
@@ -112,28 +120,26 @@ export class GkCascader extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    if (this.open) this.bindDismiss();
+    if (this.open) this.ensurePanel();
   }
 
   override disconnectedCallback() {
-    this.unbindDismiss();
+    this.teardownPanel();
     super.disconnectedCallback();
   }
 
   protected override willUpdate(changed: PropertyValues) {
     if (changed.has("open") && this.open) this.syncExpandedFromValue();
-    this.style.setProperty("--gk-cascader-column", `${this.columnWidth}px`);
   }
 
   protected override updated(changed: PropertyValues) {
-    if (changed.has("open")) {
-      if (this.open) {
-        this.bindDismiss();
-        this.positionPanel();
-      } else {
-        this.unbindDismiss();
-      }
-    } else if (this.open && (changed.has("expanded") || changed.has("options"))) {
+    if (!this.open) {
+      if (changed.has("open")) this.teardownPanel();
+      return;
+    }
+    if (changed.has("open") || !this.panel) this.ensurePanel();
+    else {
+      this.renderPanel();
       this.positionPanel();
     }
   }
@@ -283,7 +289,8 @@ export class GkCascader extends LitElement {
 
   private onDocClick = (event: MouseEvent) => {
     if (!this.open) return;
-    if (event.composedPath().includes(this)) return;
+    const path = event.composedPath();
+    if (path.includes(this) || (this.panel && path.includes(this.panel))) return;
     this.open = false;
   };
 
@@ -299,14 +306,140 @@ export class GkCascader extends LitElement {
     this.dismissBound = false;
   }
 
-  private positionPanel() {
-    if (typeof window === "undefined") return;
-    const panel = this.renderRoot.querySelector<HTMLElement>("[part='panel']");
+  private bindPosition() {
+    if (this.positionBound || typeof window === "undefined") return;
+    window.addEventListener("scroll", this.onViewportChange, true);
+    window.addEventListener("resize", this.onViewportChange);
+    this.positionBound = true;
+  }
+
+  private unbindPosition() {
+    if (!this.positionBound || typeof window === "undefined") return;
+    window.removeEventListener("scroll", this.onViewportChange, true);
+    window.removeEventListener("resize", this.onViewportChange);
+    this.positionBound = false;
+  }
+
+  private onViewportChange = () => {
+    if (this.open) this.positionPanel();
+  };
+
+  private ensurePanelStyle() {
+    if (document.getElementById(CASCADER_PANEL_STYLE_ID)) return;
+    const styleEl = document.createElement("style");
+    styleEl.id = CASCADER_PANEL_STYLE_ID;
+    styleEl.textContent = cascaderPanelCssText;
+    document.head.appendChild(styleEl);
+  }
+
+  private ensurePanel() {
+    if (typeof document === "undefined") return;
+    this.ensurePanelStyle();
+    if (!this.panel) {
+      this.panel = document.createElement("div");
+      this.panel.className = "gk-cascader-panel";
+      this.panel.id = this.panelId;
+      this.panel.setAttribute("part", "panel");
+      document.body.appendChild(this.panel);
+    }
+    this.renderPanel();
+    this.positionPanel();
+    this.armSettle();
+    this.bindDismiss();
+    this.bindPosition();
+  }
+
+  private teardownPanel() {
+    if (this.positionFrame) {
+      cancelAnimationFrame(this.positionFrame);
+      this.positionFrame = 0;
+    }
+    if (this.positionTimer) {
+      clearTimeout(this.positionTimer);
+      this.positionTimer = 0;
+    }
+    this.unbindDismiss();
+    this.unbindPosition();
+    if (this.panel) {
+      this.panel.replaceChildren();
+      this.panel.remove();
+      this.panel = null;
+    }
+    if (typeof document !== "undefined" && !document.querySelector(".gk-cascader-panel")) {
+      document.getElementById(CASCADER_PANEL_STYLE_ID)?.remove();
+    }
+  }
+
+  private renderPanel() {
+    if (!this.panel) return;
+    this.panel.style.setProperty("--gk-cascader-column", `${this.columnWidth}px`);
+    const cols = this.columns();
+    this.panel.replaceChildren();
+    if (!cols.length) {
+      const empty = document.createElement("div");
+      empty.setAttribute("part", "empty");
+      empty.setAttribute("role", "status");
+      const source = this.querySelector("[slot='empty']");
+      if (source) empty.append(source.cloneNode(true));
+      else empty.textContent = prefersZh(this) ? "沒有資料" : "No data";
+      this.panel.append(empty);
+      return;
+    }
+    const selected = this.value ?? [];
+    cols.forEach((options, column) => {
+      const list = document.createElement("ul");
+      list.setAttribute("part", "column");
+      list.setAttribute("role", "listbox");
+      list.setAttribute("aria-label", this.columnLabel(column));
+      options.forEach((option, index) => {
+        const onPath =
+          selected[column] === option.value || this.expanded[column] === option.value;
+        const item = document.createElement("li");
+        item.setAttribute("part", "option");
+        item.setAttribute("role", "option");
+        item.setAttribute("aria-selected", onPath ? "true" : "false");
+        item.setAttribute("aria-disabled", option.disabled ? "true" : "false");
+        if (column === this.activeCol && index === this.activeIndex) {
+          item.setAttribute("data-active", "");
+        }
+        const label = document.createElement("span");
+        label.textContent = option.label;
+        item.append(label);
+        if (option.children?.length) item.append(this.nextIcon());
+        item.addEventListener("click", (event) => {
+          event.stopPropagation();
+          this.onOption(column, option);
+        });
+        item.addEventListener("mouseenter", () => {
+          if (this.expandTrigger === "hover" && option.children?.length && !option.disabled) {
+            this.expanded = [...this.expanded.slice(0, column), option.value];
+            this.activeCol = column + 1;
+            this.activeIndex = 0;
+          }
+        });
+        list.append(item);
+      });
+      this.panel?.append(list);
+    });
+  }
+
+  private nextIcon() {
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z");
+    icon.append(path);
+    return icon;
+  }
+
+  private positionPanel(follow = true) {
+    if (!this.panel || typeof window === "undefined") return;
     const trigger = this.renderRoot.querySelector<HTMLElement>("[part='trigger']");
-    if (!panel || !trigger) return;
+    if (!trigger) return;
     const rect = trigger.getBoundingClientRect();
-    const width = Math.max(panel.offsetWidth, this.columnWidth);
-    const height = panel.offsetHeight || 40;
+    const width = Math.max(this.panel.offsetWidth, this.columnWidth);
+    const height = this.panel.offsetHeight || 40;
     const pos = computeFixedPanelPosition({
       trigger: rect,
       panelWidth: width,
@@ -319,9 +452,28 @@ export class GkCascader extends LitElement {
       const above = rect.top - 4 - height;
       if (above >= 4) top = above;
     }
-    panel.style.top = `${top}px`;
-    panel.style.left = `${pos.left}px`;
-    panel.style.zIndex = String(PANEL_Z_BASE + this.nestLevel() * Z_STEP);
+    this.panel.style.top = `${top}px`;
+    this.panel.style.left = `${pos.left}px`;
+    this.panel.style.zIndex = String(PANEL_Z_BASE + this.nestLevel() * Z_STEP);
+    if (follow) this.schedulePosition();
+  }
+
+  /** Modal entrance moves the trigger for 180ms; settle after that animation. */
+  private armSettle() {
+    if (this.positionTimer || typeof window === "undefined") return;
+    this.positionTimer = window.setTimeout(() => {
+      this.positionTimer = 0;
+      if (this.open && this.panel) this.positionPanel(false);
+    }, 220);
+  }
+
+  /** The first layout pass can report a zero trigger rect inside a modal. */
+  private schedulePosition() {
+    if (this.positionFrame || typeof requestAnimationFrame === "undefined") return;
+    this.positionFrame = requestAnimationFrame(() => {
+      this.positionFrame = 0;
+      if (this.open && this.panel) this.positionPanel(false);
+    });
   }
 
   private nestLevel() {
@@ -365,8 +517,6 @@ export class GkCascader extends LitElement {
     const labels = this.labelsFor(this.value);
     const text = labels.join(this.separator);
     const showClear = this.clearable && !this.disabled && !!this.value?.length;
-    const cols = this.columns();
-    const selected = this.value ?? [];
     const icons = this.icons();
     const labelledBy = this.getAttribute("aria-labelledby");
     const describedBy = this.getAttribute("aria-describedby");
@@ -403,59 +553,13 @@ export class GkCascader extends LitElement {
           ${icons.chevron}
         </span>
       </div>
-      <div id=${this.panelId} part="panel" ?hidden=${!this.open}>
-        ${cols.length
-          ? cols.map(
-              (options, column) => html`
-                <ul
-                  part="column"
-                  role="listbox"
-                  aria-label=${this.columnLabel(column)}
-                >
-                  ${options.map((option, index) => {
-                    const onPath =
-                      selected[column] === option.value ||
-                      this.expanded[column] === option.value;
-                    return html`
-                      <li
-                        part="option"
-                        role="option"
-                        aria-selected=${onPath ? "true" : "false"}
-                        aria-disabled=${option.disabled ? "true" : "false"}
-                        ?data-active=${column === this.activeCol && index === this.activeIndex}
-                        @click=${(event: Event) => {
-                          event.stopPropagation();
-                          this.onOption(column, option);
-                        }}
-                        @mouseenter=${() => {
-                          if (
-                            this.expandTrigger === "hover" &&
-                            option.children?.length &&
-                            !option.disabled
-                          ) {
-                            this.expanded = [
-                              ...this.expanded.slice(0, column),
-                              option.value,
-                            ];
-                            this.activeCol = column + 1;
-                            this.activeIndex = 0;
-                          }
-                        }}
-                      >
-                        <span>${option.label}</span>
-                        ${option.children?.length ? icons.next : nothing}
-                      </li>
-                    `;
-                  })}
-                </ul>
-              `,
-            )
-          : html`<div part="empty" role="status">
-              <slot name="empty">${zh ? "沒有資料" : "No data"}</slot>
-            </div>`}
-      </div>
+      <slot name="empty" hidden @slotchange=${this.onEmptySlot}></slot>
     `;
   }
+
+  private onEmptySlot = () => {
+    if (this.open) this.renderPanel();
+  };
 }
 
 function nextEnabled(items: CascaderOption[], from: number, direction: 1 | -1) {

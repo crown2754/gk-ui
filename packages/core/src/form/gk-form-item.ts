@@ -286,7 +286,7 @@ export class GkFormItem extends LitElement {
 
     this.pushValue(el);
     this.syncAria(el);
-    if (el.tagName !== "GK-RATE") {
+    if (el.tagName !== "GK-RATE" && el.tagName !== "GK-BUTTON") {
       el.style.width = "100%";
       el.style.maxWidth = "100%";
     }

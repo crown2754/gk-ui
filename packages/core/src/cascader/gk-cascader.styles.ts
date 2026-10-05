@@ -123,82 +123,79 @@ export const cascaderStyles = css`
     transform: rotate(180deg);
   }
 
-  [part="panel"] {
-    position: fixed;
-    display: none;
-    box-sizing: border-box;
-    max-width: min(100vw - 32px, 100%);
-    max-height: 280px;
-    margin: 0;
-    overflow: auto;
-    background: var(--gk-color-surface, #fff);
-    border: 1px solid var(--gk-color-border, rgb(224, 224, 230));
-    border-radius: var(--gk-radius-md, 0.5rem);
-    box-shadow: var(--gk-shadow-md, 0 4px 12px rgb(28 25 23 / 0.12));
-  }
+`;
 
-  :host([open]) [part="panel"] {
-    display: flex;
-  }
+export const CASCADER_PANEL_STYLE_ID = "gk-cascader-panel-style";
 
-  [part="column"] {
-    box-sizing: border-box;
-    flex: 0 0 var(--gk-cascader-column, 160px);
-    width: var(--gk-cascader-column, 160px);
-    max-height: 280px;
-    margin: 0;
-    padding: 4px;
-    overflow-y: auto;
-    list-style: none;
+/** Portaled to document.body, so these rules cannot live in the shadow root. */
+export const cascaderPanelCssText = `
+.gk-cascader-panel {
+  position: fixed;
+  z-index: 4000;
+  display: flex;
+  box-sizing: border-box;
+  max-width: min(100vw - 32px, 100%);
+  max-height: 280px;
+  margin: 0;
+  overflow: auto;
+  background: var(--gk-color-surface, #fff);
+  color: var(--gk-color-on-surface, rgb(31, 34, 37));
+  border: 1px solid var(--gk-color-border, rgb(224, 224, 230));
+  border-radius: var(--gk-radius-md, 0.5rem);
+  box-shadow: var(--gk-shadow-md, 0 4px 12px rgb(28 25 23 / 0.12));
+  font-family: var(--gk-font-family-sans, "Source Sans 3", "Segoe UI", sans-serif);
+  font-size: 14px;
+}
+.gk-cascader-panel [part="column"] {
+  box-sizing: border-box;
+  flex: 0 0 var(--gk-cascader-column, 160px);
+  width: var(--gk-cascader-column, 160px);
+  max-height: 280px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+}
+.gk-cascader-panel [part="column"] + [part="column"] {
+  border-inline-start: 1px solid var(--gk-color-border, rgb(224, 224, 230));
+}
+@media (max-width: 767px) {
+  .gk-cascader-panel [part="column"] {
+    flex-basis: 148px;
+    width: 148px;
   }
-
-  [part="column"] + [part="column"] {
-    border-inline-start: 1px solid var(--gk-color-border, rgb(224, 224, 230));
-  }
-
-  @media (max-width: 767px) {
-    [part="column"] {
-      flex-basis: 148px;
-      width: 148px;
-    }
-  }
-
-  [part="option"] {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: var(--gk-radius-sm, 0.375rem);
-    cursor: pointer;
-    font-size: 14px;
-  }
-
-  [part="option"]:hover,
-  [part="option"][data-active] {
-    background: color-mix(in srgb, var(--gk-color-brand, rgb(242, 206, 94)) 20%, transparent);
-  }
-
-  [part="option"][aria-selected="true"] {
-    background: color-mix(in srgb, var(--gk-color-brand, rgb(242, 206, 94)) 28%, transparent);
-    font-weight: 600;
-  }
-
-  [part="option"][aria-disabled="true"] {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-
-  [part="option"] svg {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    fill: currentColor;
-  }
-
-  [part="empty"] {
-    padding: 16px;
-    color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
-    text-align: center;
-  }
+}
+.gk-cascader-panel [part="option"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--gk-radius-sm, 0.375rem);
+  cursor: pointer;
+  font-size: 14px;
+}
+.gk-cascader-panel [part="option"]:hover,
+.gk-cascader-panel [part="option"][data-active] {
+  background: color-mix(in srgb, var(--gk-color-brand, rgb(242, 206, 94)) 20%, transparent);
+}
+.gk-cascader-panel [part="option"][aria-selected="true"] {
+  background: color-mix(in srgb, var(--gk-color-brand, rgb(242, 206, 94)) 28%, transparent);
+  font-weight: 600;
+}
+.gk-cascader-panel [part="option"][aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.gk-cascader-panel [part="option"] svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+.gk-cascader-panel [part="empty"] {
+  padding: 16px;
+  color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
+  text-align: center;
+}
 `;

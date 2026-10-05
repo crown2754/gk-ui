@@ -39,28 +39,46 @@ export const inputNumberStyles = css`
     width: 11rem;
   }
 
-  :host([size="sm"]) [part="base"],
-  :host([size="sm"]) [part="increment"],
-  :host([size="sm"]) [part="decrement"] {
+  :host([size="sm"]) [part="base"] {
+    height: 28px;
     min-height: 28px;
+    max-height: 28px;
     font-size: 14px;
   }
 
   :host([size="md"]) [part="base"],
-  :host(:not([size])) [part="base"],
-  :host([size="md"]) [part="increment"],
-  :host([size="md"]) [part="decrement"],
-  :host(:not([size])) [part="increment"],
-  :host(:not([size])) [part="decrement"] {
+  :host(:not([size])) [part="base"] {
+    height: 34px;
     min-height: 34px;
+    max-height: 34px;
     font-size: 14px;
   }
 
-  :host([size="lg"]) [part="base"],
-  :host([size="lg"]) [part="increment"],
-  :host([size="lg"]) [part="decrement"] {
+  :host([size="lg"]) [part="base"] {
+    height: 40px;
     min-height: 40px;
+    max-height: 40px;
     font-size: 15px;
+  }
+
+  :host([size="sm"][button-placement="both"]) [part="increment"],
+  :host([size="sm"][button-placement="both"]) [part="decrement"] {
+    height: 28px;
+    min-height: 28px;
+  }
+
+  :host([size="md"][button-placement="both"]) [part="increment"],
+  :host([size="md"][button-placement="both"]) [part="decrement"],
+  :host(:not([size])[button-placement="both"]) [part="increment"],
+  :host(:not([size])[button-placement="both"]) [part="decrement"] {
+    height: 34px;
+    min-height: 34px;
+  }
+
+  :host([size="lg"][button-placement="both"]) [part="increment"],
+  :host([size="lg"][button-placement="both"]) [part="decrement"] {
+    height: 40px;
+    min-height: 40px;
   }
 
   [part="base"]:hover {
@@ -158,24 +176,33 @@ export const inputNumberStyles = css`
     display: flex;
     flex-direction: column;
     flex: 0 0 22px;
+    align-self: stretch;
+    min-height: 0;
     border-inline-start: 1px solid var(--gk-color-border, rgb(224, 224, 230));
+    background-image: linear-gradient(
+      var(--gk-color-border, rgb(224, 224, 230)),
+      var(--gk-color-border, rgb(224, 224, 230))
+    );
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 1px;
   }
 
   :host(:not([button-placement="both"])) [part="increment"],
   :host(:not([button-placement="both"])) [part="decrement"] {
-    flex: 1;
+    box-sizing: border-box;
+    appearance: none;
+    flex: 1 1 0;
     min-height: 0;
+    height: auto;
     width: 22px;
     margin: 0;
     padding: 0;
     border: 0;
+    line-height: 0;
     background: transparent;
     color: var(--gk-color-on-surface-muted, rgb(118, 124, 130));
     cursor: pointer;
-  }
-
-  :host(:not([button-placement="both"])) [part="increment"] {
-    border-bottom: 1px solid var(--gk-color-border, rgb(224, 224, 230));
   }
 
   :host([button-placement="both"]) [part="increment"],
@@ -214,5 +241,11 @@ export const inputNumberStyles = css`
     display: block;
     margin: 0 auto;
     fill: currentColor;
+  }
+
+  :host([size="sm"]) [part="increment"] svg,
+  :host([size="sm"]) [part="decrement"] svg {
+    width: 12px;
+    height: 12px;
   }
 `;
