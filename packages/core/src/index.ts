@@ -36,6 +36,9 @@ import "./popconfirm/gk-popconfirm.js";
 import "./input-number/gk-input-number.js";
 import "./rate/gk-rate.js";
 import "./cascader/gk-cascader.js";
+import "./upload/gk-upload.js";
+import "./tree-select/gk-tree-select.js";
+import "./transfer/gk-transfer.js";
 import "./form/gk-form.js";
 import "./form/gk-form-item.js";
 export { GkButton } from "./button/gk-button.js";
@@ -153,6 +156,24 @@ export type {
   GkCascaderCheckStrategy,
   GkCascaderPlacement,
 } from "./cascader/gk-cascader.js";
+export { GkUpload } from "./upload/gk-upload.js";
+export type {
+  UploadFile,
+  UploadStatus,
+  UploadListType,
+  UploadSize,
+  UploadRequestOptions,
+} from "./upload/gk-upload.js";
+export { GkTreeSelect } from "./tree-select/gk-tree-select.js";
+export type {
+  TreeNode,
+  GkTreeSelectSize,
+  GkTreeSelectStatus,
+  GkTreeSelectCheckStrategy,
+  GkTreeSelectPlacement,
+} from "./tree-select/gk-tree-select.js";
+export { GkTransfer } from "./transfer/gk-transfer.js";
+export type { TransferOption, GkTransferSize } from "./transfer/gk-transfer.js";
 export { GkForm } from "./form/gk-form.js";
 export type {
   GkFormSize,

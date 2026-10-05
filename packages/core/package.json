@@ -56,6 +56,9 @@
     "./src/input-number/gk-input-number.ts",
     "./src/rate/gk-rate.ts",
     "./src/cascader/gk-cascader.ts",
+    "./src/upload/gk-upload.ts",
+    "./src/tree-select/gk-tree-select.ts",
+    "./src/transfer/gk-transfer.ts",
     "./src/form/gk-form.ts",
     "./src/form/gk-form-item.ts"
   ],

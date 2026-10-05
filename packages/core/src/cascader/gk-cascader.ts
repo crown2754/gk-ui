@@ -481,6 +481,7 @@ export class GkCascader extends LitElement {
       "GK-MODAL",
       "GK-DRAWER",
       "GK-CASCADER",
+      "GK-TREE-SELECT",
       "GK-SELECT",
       "GK-DROPDOWN",
       "GK-TOOLTIP",

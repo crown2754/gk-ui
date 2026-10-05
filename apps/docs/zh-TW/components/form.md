@@ -34,7 +34,7 @@ function onField(key: keyof typeof model, e: CustomEvent<{ value: unknown }>) {
 
 # Form 表單
 
-`gk-form` 與 `gk-form-item` 負責標籤、必填星號與錯誤訊息，包住 Input、Select、InputNumber、Rate、Cascader。元件本身不會在窄螢幕自動改成上下排；寬度約 640px 以下請由應用綁定 `label-placement="top"`。
+`gk-form` 與 `gk-form-item` 負責標籤、必填星號與錯誤訊息，包住 Input、Select、InputNumber、Rate、Cascader、Upload、TreeSelect、Transfer。元件本身不會在窄螢幕自動改成上下排；寬度約 640px 以下請由應用綁定 `label-placement="top"`。
 
 ## 範例
 
@@ -97,4 +97,4 @@ function onField(key: keyof typeof model, e: CustomEvent<{ value: unknown }>) {
 
 `validate()` 回傳 `{ valid, errors }`。`restoreValidation()` 清除錯誤。重設會改同一個 model 物件。規則若回傳 Promise，會得到「尚不支援非同步驗證」。
 
-`gk-rate` 沒有狀態框線，錯誤只顯示在說明文字。`feedback` 會蓋過規則產生的訊息。
+`gk-rate` 沒有狀態框線，錯誤只顯示在說明文字。Upload、Transfer 也是。TreeSelect 會跟著驗證狀態改框線。`feedback` 會蓋過規則產生的訊息。

@@ -55,7 +55,7 @@ const codes = {
 
 # Form
 
-`gk-form` and `gk-form-item` lay out labels, required marks, and validation messages around Input, Select, InputNumber, Rate, and Cascader. They do not replace those controls.
+`gk-form` and `gk-form-item` lay out labels, required marks, and validation messages around Input, Select, InputNumber, Rate, Cascader, Upload, TreeSelect, and Transfer. They do not replace those controls.
 
 Labels default to the left, 7.5rem wide in the demo, aligned right. The component does not switch layout at a breakpoint. Bind `label-placement="top"` below about 640px.
 
@@ -190,4 +190,4 @@ Parts: `row`, `label`, `mark`, `control`, `help`, `feedback`, `extra`.
 
 The required asterisk is real text with `aria-hidden="true"`. The control gets `aria-required`. Errors set `aria-invalid` and `aria-describedby`. When `show-label` is false, give the control its own accessible name.
 
-`gk-rate` has no status border; the feedback text is the error cue. Known status children are Input, Select, InputNumber, Cascader, and Date Picker.
+`gk-rate` has no status border; the feedback text is the error cue. Known status children are Input, Select, InputNumber, Cascader, Date Picker, and TreeSelect. Upload and Transfer use the feedback text the same way Rate does.

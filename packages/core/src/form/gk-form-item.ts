@@ -14,6 +14,9 @@ const SIZE_CONTROLS = new Set([
   "GK-CASCADER",
   "GK-DATE-PICKER",
   "GK-RATE",
+  "GK-UPLOAD",
+  "GK-TREE-SELECT",
+  "GK-TRANSFER",
 ]);
 
 const STATUS_CONTROLS = new Set([
@@ -22,6 +25,7 @@ const STATUS_CONTROLS = new Set([
   "GK-INPUT-NUMBER",
   "GK-CASCADER",
   "GK-DATE-PICKER",
+  "GK-TREE-SELECT",
 ]);
 
 const triBool = {

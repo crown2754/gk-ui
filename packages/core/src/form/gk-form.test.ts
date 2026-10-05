@@ -3,12 +3,16 @@ import { fixture, html } from "@open-wc/testing";
 import "../input/gk-input.js";
 import "../input-number/gk-input-number.js";
 import "../rate/gk-rate.js";
+import "../tree-select/gk-tree-select.js";
+import "../upload/gk-upload.js";
+import "../transfer/gk-transfer.js";
 import "./gk-form.js";
 import "./gk-form-item.js";
 import type { GkForm } from "./gk-form.js";
 import type { GkFormItem } from "./gk-form-item.js";
 import type { GkInput } from "../input/gk-input.js";
 import type { GkRate } from "../rate/gk-rate.js";
+import type { GkTreeSelect } from "../tree-select/gk-tree-select.js";
 
 describe("gk-form", () => {
   it("lays out a left label with a required mark and reserves feedback", async () => {
@@ -135,5 +139,37 @@ describe("gk-form", () => {
       true,
     );
     expect(item.querySelector("gk-input")?.getAttribute("status")).toBe("error");
+  });
+
+  it("passes size to upload, tree-select, and transfer and writes their values", async () => {
+    const el = await fixture<GkForm>(html`
+      <gk-form size="sm">
+        <gk-form-item label="部門" path="dept" required>
+          <gk-tree-select></gk-tree-select>
+        </gk-form-item>
+        <gk-form-item label="附件" path="files">
+          <gk-upload></gk-upload>
+        </gk-form-item>
+        <gk-form-item label="欄位" path="cols">
+          <gk-transfer></gk-transfer>
+        </gk-form-item>
+      </gk-form>
+    `);
+    await el.updateComplete;
+    const tree = el.querySelector("gk-tree-select") as GkTreeSelect;
+    const upload = el.querySelector("gk-upload");
+    const transfer = el.querySelector("gk-transfer");
+    expect(tree.getAttribute("size")).toBe("sm");
+    expect(upload?.getAttribute("size")).toBe("sm");
+    expect(transfer?.getAttribute("size")).toBe("sm");
+    tree.dispatchEvent(
+      new CustomEvent("change", { detail: { value: "design" }, bubbles: true, composed: true }),
+    );
+    expect(el.model.dept).toBe("design");
+    const item = el.querySelector("gk-form-item") as GkFormItem;
+    el.model.dept = null;
+    await el.validate();
+    expect(item.validationStatus).toBe("error");
+    expect(tree.status).toBe("error");
   });
 });
