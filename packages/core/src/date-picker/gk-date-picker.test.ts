@@ -532,19 +532,21 @@ describe("gk-date-picker daterange", () => {
     const el = await fixture<GkDatePicker>(
       html`<gk-date-picker type="daterange"></gk-date-picker>`,
     );
-    el.isDateDisabled = (iso) => iso === "2026-09-17";
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    el.isDateDisabled = (iso) => iso === `${month}-17`;
     el.open = true;
     await el.updateComplete;
     const onInput = vi.fn();
     el.addEventListener("input", onInput);
     (
       document.querySelector(
-        '.gk-date-picker-panel button[data-iso="2026-09-10"]',
+        `.gk-date-picker-panel button[data-iso="${month}-10"]`,
       ) as HTMLButtonElement
     ).click();
     await el.updateComplete;
     const blocked = document.querySelector(
-      '.gk-date-picker-panel button[data-iso="2026-09-17"]',
+      `.gk-date-picker-panel button[data-iso="${month}-17"]`,
     ) as HTMLButtonElement;
     expect(blocked.disabled).toBe(true);
     blocked.click();

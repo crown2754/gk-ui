@@ -5,6 +5,7 @@ import {
   datePickerStyles,
   datePickerPanelCssText,
 } from "./gk-date-picker.styles.js";
+import { markOwnedSize } from "../internal/field.js";
 import {
   addMonths,
   buildMonthGrid,
@@ -252,6 +253,15 @@ export class GkDatePicker extends LitElement {
   private listenersBound = false;
   private positionListenersBound = false;
   private compactMql: MediaQueryList | null = null;
+
+  override attributeChangedCallback(
+    name: string,
+    old: string | null,
+    value: string | null,
+  ) {
+    super.attributeChangedCallback(name, old, value);
+    markOwnedSize(this, name);
+  }
 
   connectedCallback() {
     super.connectedCallback();
