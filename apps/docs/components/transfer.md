@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-const options = [
+const options = ref([
   { label: "訂單編號", value: "id" },
   { label: "客戶名稱", value: "name" },
   { label: "下單日期", value: "date" },
   { label: "付款狀態", value: "pay" },
   { label: "內部備註（停用）", value: "note", disabled: true },
   { label: "物流單號", value: "ship" },
-];
+]);
 const keys = ref<string[]>(["id", "name"]);
+const pickedShip = ref(["ship"]);
+const pickedId = ref(["id"]);
 
 function onChange(event: CustomEvent<{ value: string[] }>) {
   keys.value = event.detail.value;
@@ -42,9 +44,9 @@ Two lists and four move buttons. `>` and `>>` are brand primary. `<` and `<<` ar
       source-title="可選"
       target-title="已選"
       :options="options"
-      :value="['ship']"
+      :value="pickedShip"
     ></gk-transfer>
-    <gk-transfer lang="zh-Hant" disabled :options="options" :value="['id']"></gk-transfer>
+    <gk-transfer lang="zh-Hant" disabled :options="options" :value="pickedId"></gk-transfer>
     <gk-transfer lang="zh-Hant" size="sm" :options="options"></gk-transfer>
   </div>
 </DemoCard>

@@ -54,6 +54,12 @@ describe("gk-upload", () => {
     expect(el.value[0]?.status).toBe("success");
     expect(el.shadowRoot?.textContent).toContain("成功");
     expect(el.fileList).toBe(el.value);
+    const icon = el.shadowRoot?.querySelector("[part='thumbnail'] svg") as SVGElement | null;
+    expect(icon).toBeTruthy();
+    const painted = getComputedStyle(icon!);
+    expect(painted.width).toBe("16px");
+    expect(painted.height).toBe("16px");
+    expect(painted.fill).not.toBe("rgb(0, 0, 0)");
   });
 
   it("cancels a file when before-upload is prevented and ignores files past max", async () => {
@@ -136,9 +142,16 @@ describe("gk-upload", () => {
     const cards = await fixture<GkUpload>(html`<gk-upload list-type="picture-card" lang="zh-Hant"></gk-upload>`);
     cards.value = [
       { id: "1", name: "cover.png", status: "success", percent: 100, thumbnailUrl: "data:image/gif;base64,R0lGODlhAQABAAAAACw=" },
+      { id: "2", name: "notes.pdf", status: "success", percent: 100 },
     ];
     await cards.updateComplete;
     expect(cards.shadowRoot?.querySelector("[part~='add']")?.textContent).toContain("上傳");
+    const cardIcon = cards.shadowRoot?.querySelector("[part='thumbnail'] svg") as SVGElement | null;
+    expect(cardIcon).toBeTruthy();
+    const cardPainted = getComputedStyle(cardIcon!);
+    expect(cardPainted.width).toBe("16px");
+    expect(cardPainted.height).toBe("16px");
+    expect(cardPainted.fill).not.toBe("rgb(0, 0, 0)");
     const preview = vi.fn();
     cards.addEventListener("preview", preview);
     (cards.shadowRoot?.querySelector("[part='preview']") as HTMLButtonElement).click();

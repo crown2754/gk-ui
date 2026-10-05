@@ -225,6 +225,12 @@ export const uploadStyles = css`
     display: block;
   }
 
+  [part="thumbnail"] svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
   [part="name"] {
     font-weight: 600;
     overflow: hidden;

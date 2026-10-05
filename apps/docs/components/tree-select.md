@@ -2,7 +2,7 @@
 import { ref } from "vue";
 
 const dept = ref<string | null>("design");
-const options = [
+const options = ref([
   {
     label: "總公司",
     value: "hq",
@@ -21,7 +21,7 @@ const options = [
     ],
   },
   { label: "分公司", value: "branch", children: [{ label: "台中", value: "txg" }] },
-];
+]);
 
 function onDept(event: CustomEvent<{ value: string | null }>) {
   dept.value = event.detail.value;

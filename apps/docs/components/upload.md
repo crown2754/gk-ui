@@ -15,6 +15,7 @@ const cards = ref([
   { id: "p1", name: "cover.png", status: "success", percent: 100, thumbnailUrl: thumb },
   { id: "p2", name: "fail.png", status: "error", percent: 20, thumbnailUrl: thumb },
 ]);
+const atMax = ref([{ id: "m", name: "only.pdf", status: "success", percent: 100 }]);
 </script>
 
 # Upload
@@ -46,7 +47,7 @@ The built-in transport simulates progress so a demo can finish without an endpoi
   <div style="display:grid;gap:0.75rem">
     <gk-upload size="sm" lang="zh-Hant"></gk-upload>
     <gk-upload size="lg" lang="zh-Hant"></gk-upload>
-    <gk-upload max="1" lang="zh-Hant" :value="[{ id: 'm', name: 'only.pdf', status: 'success', percent: 100 }]"></gk-upload>
+    <gk-upload max="1" lang="zh-Hant" :value="atMax"></gk-upload>
     <gk-upload disabled lang="zh-Hant"></gk-upload>
   </div>
 </DemoCard>
